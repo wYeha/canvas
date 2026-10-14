@@ -72,6 +72,7 @@ export function stepNumber(
 /**
  * Фиксирует правку: пусто → null, число → значение с ограничением по min/max,
  * нечисло → откат к последнему корректному значению (fallback).
+ * При `nullable = false` пусто тоже откатывается к fallback: обязательное поле не остаётся пустым.
  */
 export function resolveCommit(
   text: string,
@@ -79,9 +80,10 @@ export function resolveCommit(
   min?: number,
   max?: number,
   unit?: string,
+  nullable = true,
 ): CommitResult {
   const parsed = parseNumberText(text, unit)
-  if (parsed.kind === 'empty') return { value: null, text: '' }
+  if (parsed.kind === 'empty' && nullable) return { value: null, text: '' }
   const value = parsed.kind === 'number' ? clampNumber(parsed.value, min, max) : fallback
   return { value, text: formatNumber(value) }
 }

@@ -15,6 +15,8 @@ export interface UiNumberInputProps {
   prefix?: string
   placeholder?: string
   error?: boolean
+  /** Можно ли очистить поле (пусто = null); по умолчанию да. При false пустой ввод откатывается к прошлому значению. */
+  nullable?: boolean
   disabled?: boolean
   /** Атрибуты нативного поля (id, aria-describedby, aria-labelledby) — например, из слота UiField. */
   inputAttrs?: UiInputAttrs

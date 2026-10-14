@@ -21,7 +21,7 @@ import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import type { UiNumberInputProps } from '@/scripts/components/ui-number-input/ui-number-input.types'
 import { useUiNumberInput } from '@/scripts/components/ui-number-input/use-ui-number-input'
 
-const props = defineProps<UiNumberInputProps>()
+const props = withDefaults(defineProps<UiNumberInputProps>(), { nullable: true })
 const model = defineModel<number | null>({ default: null })
 const { draft, controlAttrs, onKeydown, onBlur } = useUiNumberInput(props, model)
 </script>

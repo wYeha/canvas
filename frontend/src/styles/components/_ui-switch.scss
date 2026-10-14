@@ -1,0 +1,43 @@
+// Стили общего компонента ui-switch: дорожка с бегунком; включён — accent, выключен — subtle
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-switch {
+  $b: &;
+
+  position: relative;
+  flex: none;
+  width: v.$switch-width;
+  height: v.$switch-height;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-pill;
+
+  @include mx.focus-ring;
+
+  &__thumb {
+    position: absolute;
+    top: 50%;
+    left: v.$space-2;
+    width: v.$switch-thumb-size;
+    height: v.$switch-thumb-size;
+    background: var(--color-muted);
+    border-radius: v.$radius-pill;
+    transform: translateY(-50%);
+  }
+
+  &--on {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+
+    #{$b}__thumb {
+      left: calc(100% - #{v.$switch-thumb-size} - #{v.$space-2});
+      background: var(--color-on-accent);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
+  }
+}

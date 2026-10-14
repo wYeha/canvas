@@ -22,6 +22,18 @@ function setup(initial: number | null, props: Record<string, unknown> = {}) {
 }
 
 describe('UiNumberInput', () => {
+  it('nullable=false: пустой ввод на Enter и blur откатывается, null не эмитится', async () => {
+    const { input, state } = setup(5, { nullable: false })
+    await input.setValue('')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(state.value).toBe(5)
+    expect((input.element as HTMLInputElement).value).toBe('5')
+    await input.setValue('  ')
+    await input.trigger('blur')
+    expect(state.value).toBe(5)
+    expect((input.element as HTMLInputElement).value).toBe('5')
+  })
+
   it('стрелки меняют значение на шаг, Shift — ×10, с учётом min/max', async () => {
     const { input, state } = setup(10, { step: 2, min: 0, max: 30 })
     await input.trigger('keydown', { key: 'ArrowUp' })

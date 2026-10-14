@@ -6,6 +6,12 @@
 @use 'components/ui-panel-section';
 @use 'components/ui-pill';
 @use 'components/ui-empty-state';
+@use 'components/ui-field';
+@use 'components/ui-chips';
+@use 'components/ui-text-input';
+@use 'components/ui-number-input';
+@use 'components/ui-segmented';
+@use 'components/ui-switch';
 @use 'canvas-page';
 @use 'canvas-header';
 @use 'canvas-viewport';
@@ -14,6 +20,7 @@
 @use 'canvas-node';
 @use 'canvas-layers';
 @use 'canvas-props';
+@use 'canvas-props-preview';
 @use 'canvas-toolbar';
 @use 'canvas-breadcrumbs';
 @use 'canvas-zoom';

@@ -240,3 +240,42 @@ export const PROPS_EMPTY_TEXT = 'Ничего не выделено'
 
 /** Подсказка пустого состояния панели свойств. */
 export const PROPS_EMPTY_HINT = 'Кликните по блоку'
+
+/** Пресеты ширины превью корневого блока, px. */
+export const WIDTH_PRESETS = [1920, 1440, 1280, 1024, 480] as const
+
+/** Минимальная ширина и высота превью, px. */
+export const PREVIEW_MIN_SIZE = 1
+
+/** Шаг стрелок в числовых полях размеров превью, px. */
+export const PREVIEW_SIZE_STEP = 10
+
+/** Высота, которую получает корень при переключении на «фиксированная», если замера нет, px. */
+export const PREVIEW_FALLBACK_HEIGHT = 600
+
+/** Режимы высоты превью: по содержимому или фиксированная. */
+export const HEIGHT_MODE = { content: 'content', fixed: 'fixed' } as const
+
+/** Подписи режимов высоты превью. */
+export const HEIGHT_MODE_LABELS = { content: 'По содержимому', fixed: 'Фиксированная' } as const
+
+/** Подпись поля «Ширина» панели свойств. */
+export const PREVIEW_WIDTH_LABEL = 'Ширина'
+
+/** Подпись группы пресетов ширины (для скринридера). */
+export const PREVIEW_PRESETS_LABEL = 'Пресеты ширины'
+
+/** Подпись поля «Высота» панели свойств. */
+export const PREVIEW_HEIGHT_LABEL = 'Высота'
+
+/** Подпись числового поля фиксированной высоты. */
+export const PREVIEW_HEIGHT_VALUE_LABEL = 'Высота, px'
+
+/** Подпись переключателя экспорта как max-width. */
+export const PREVIEW_MAX_WIDTH_LABEL = 'Экспортировать как max-width'
+
+/** Подсказка под переключателем, когда max-width выключен. */
+export const PREVIEW_HINT_OFF = 'Ширина превью в код не попадает — только комментарием'
+
+/** Подсказка под переключателем, когда max-width включён. */
+export const PREVIEW_HINT_ON = 'Ширина превью в код уйдёт как max-width + margin: 0 auto'

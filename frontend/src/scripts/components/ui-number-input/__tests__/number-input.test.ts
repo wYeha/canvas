@@ -76,6 +76,11 @@ describe('resolveCommit', () => {
     expect(resolveCommit('', 5)).toEqual({ value: null, text: '' })
   })
 
+  it('nullable=false: пусто откатывается к fallback, число работает как обычно', () => {
+    expect(resolveCommit('', 5, undefined, undefined, undefined, false)).toEqual({ value: 5, text: '5' })
+    expect(resolveCommit('7', 5, undefined, undefined, undefined, false)).toEqual({ value: 7, text: '7' })
+  })
+
   it('число ограничивается и форматируется', () => {
     expect(resolveCommit('150', 5, 0, 100)).toEqual({ value: 100, text: '100' })
     expect(resolveCommit('2,5', 5)).toEqual({ value: 2.5, text: '2.5' })

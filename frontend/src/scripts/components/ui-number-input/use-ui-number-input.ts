@@ -39,9 +39,9 @@ export function useUiNumberInput(
     'aria-valuetext': model.value === null ? undefined : [String(model.value), props.unit].filter(Boolean).join(' '),
   }))
 
-  /** Фиксирует черновик: пусто → null, нечисло → откат, число → с ограничением по min/max. */
+  /** Фиксирует черновик: пусто → null (или откат при nullable=false), нечисло → откат, число → с ограничением по min/max. */
   function commit(): void {
-    const result = resolveCommit(draft.value, model.value, props.min, props.max, props.unit)
+    const result = resolveCommit(draft.value, model.value, props.min, props.max, props.unit, props.nullable)
     draft.value = result.text
     model.value = result.value
   }

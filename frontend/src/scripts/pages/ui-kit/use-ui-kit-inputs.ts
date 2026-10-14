@@ -6,14 +6,16 @@ const INITIAL_TEXT = 'Блок-1'
 /** Начальное число демонстрационного числового поля. */
 const INITIAL_NUMBER = 16
 
-/** Возвращает реактивные значения полей витрины: текстовое, числовое и числовое с пустым значением. */
+/** Возвращает реактивные значения полей витрины: текстовое, числовое, числовое с пустым значением и состояние переключателя. */
 export function useUiKitInputs(): {
   text: Ref<string>
   number: Ref<number | null>
   emptyNumber: Ref<number | null>
+  enabled: Ref<boolean>
 } {
   const text = ref(INITIAL_TEXT)
   const number = ref<number | null>(INITIAL_NUMBER)
   const emptyNumber = ref<number | null>(null)
-  return { text, number, emptyNumber }
+  const enabled = ref(true)
+  return { text, number, emptyNumber, enabled }
 }

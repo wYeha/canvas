@@ -1,0 +1,12 @@
+// Стили фрагмента canvas-props-preview: поля секции «Ширина превью» друг под другом
+@use 'variables' as v;
+
+.canvas-props-preview {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-12;
+
+  &__switch {
+    align-self: flex-start;
+  }
+}
