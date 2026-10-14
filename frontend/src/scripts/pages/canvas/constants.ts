@@ -105,3 +105,36 @@ export const WHEEL_DELTA_LINE = 1
 
 /** `WheelEvent.deltaMode`: дельта в страницах (DOM_DELTA_PAGE). */
 export const WHEEL_DELTA_PAGE = 2
+
+/** Значение `flex-direction` по умолчанию в CSS: такое не выводится в стили. */
+export const CSS_DEFAULT_FLEX_DIRECTION = 'row'
+
+/** Значение `justify-content` по умолчанию в CSS. */
+export const CSS_DEFAULT_JUSTIFY_CONTENT = 'flex-start'
+
+/** Значение `align-items` / `justify-items` по умолчанию в CSS. */
+export const CSS_DEFAULT_ALIGN = 'stretch'
+
+/** Значение `grid-template-rows`, равное поведению по умолчанию. */
+export const CSS_DEFAULT_GRID_ROWS = 'auto'
+
+/** Значение `flex-wrap` для включённого переноса. */
+export const CSS_FLEX_WRAP = 'wrap'
+
+/** Значение `display` для flex-контейнера. */
+export const CSS_DISPLAY_FLEX = 'flex'
+
+/** Значение `display` для grid-контейнера. */
+export const CSS_DISPLAY_GRID = 'grid'
+
+/** Единица измерения отступов и размеров, хранящихся числами. */
+export const CSS_PX_UNIT = 'px'
+
+/** Ключевое слово `span` для `grid-column` / `grid-row`. */
+export const CSS_GRID_SPAN = 'span'
+
+/** Минимальный span, ниже которого `grid-column` / `grid-row` не выводятся. */
+export const CSS_MIN_SPAN = 1
+
+/** Разделитель деклараций в инлайн-стиле для экспорта. */
+export const INLINE_STYLE_SEPARATOR = '; '
