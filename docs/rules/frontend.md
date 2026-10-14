@@ -201,7 +201,7 @@ src/
 
 Динамические стили камеры канваса тоже идут через `:style`: `transform` и переменная `--camera-zoom` (для обратного масштаба подписей) слоя `canvas-viewport__world` и `background-position` / `background-size` у `.canvas-viewport`. Они формируются **только** функциями из `scripts/pages/canvas/camera-style.ts`. Так же через `:style` задаются позиция и ширина превью корня на поле (`rootPlacementStyle()` из `node-view.ts`) и прямоугольники оверлея выделения (`overlayRectStyle()` из `selection.ts`). Всё остальное оформление поля — BEM-классы.
 
-Координаты всплывающих списков (выпадашки, селекты), которые рендерятся с `position: fixed` поверх панелей, задаются через `:style` **только** функцией `popupStyle()` из `scripts/components/ui-select/select-popup.ts` (или её будущими общими аналогами в `scripts/globals/`). Всё остальное оформление списка — BEM-классы.
+Координаты всплывающих списков (выпадашки, селекты), которые рендерятся с `position: fixed` поверх панелей, задаются через `:style` **только** функцией `popupStyle()` из `scripts/globals/popup.ts` (или её будущими общими аналогами в `scripts/globals/`). Всё остальное оформление списка — BEM-классы.
 
 ---
 

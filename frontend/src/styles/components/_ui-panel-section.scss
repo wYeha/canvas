@@ -1,0 +1,49 @@
+// Стили общего компонента ui-panel-section: сворачиваемая секция панели (заголовок-кнопка с шевроном, hint справа)
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-panel-section {
+  border-bottom: 1px solid var(--color-line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &__toggle {
+    display: flex;
+    gap: v.$space-6;
+    align-items: center;
+    width: 100%;
+    padding: v.$space-10 v.$space-12;
+    text-align: left;
+
+    @include mx.focus-ring;
+  }
+
+  &__chevron {
+    color: var(--color-muted);
+
+    &--collapsed {
+      transform: rotate(v.$section-chevron-collapsed-rotation);
+    }
+  }
+
+  &__title {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+  }
+
+  &__hint {
+    margin-left: auto;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-8;
+    padding: 0 v.$space-12 v.$space-12;
+  }
+}

@@ -63,7 +63,9 @@
 - [x] **2.3** `UiSelect`, `UiSegmented` (переключатель вариантов в одну строку для direction, justify и т. п.).
 
 > `UiSelect` — кастомный listbox (фокус уходит в список, `aria-activedescendant`, typeahead по первой букве); список `position: fixed` с координатами через `:style` (чтобы не обрезался `overflow` панели), закрывается по клику мимо, прокрутке и ресайзу. `UiSegmented` — radiogroup с roving tabindex; иконочный сегмент: подпись в `aria-label` и `title`; слот `option` для произвольного содержимого. Навигация — чистые функции `globals/list-nav.ts`.
-- [ ] **2.4** `UiField` (подпись + контрол), `UiPanelSection` (секция панели с заголовком), `UiDropdown` (меню).
+- [x] **2.4** `UiField` (подпись + контрол), `UiPanelSection` (секция панели с заголовком), `UiDropdown` (меню).
+
+> Добавлен `UiChips` (пресет-чипы, `aria-pressed`). Общая логика всплывающих списков вынесена в `scripts/globals/` (`popup.ts`, `use-popup-list.ts`, `use-popup-dismiss.ts`), на ней сделаны `UiSelect` и `UiDropdown`; миксины `popup-list` и `popup-item`. `UiField` отдаёт в слот `id`, `describedBy`, `invalid`; `UiPanelSection` — `v-model:open` (true = раскрыта), `UiDropdown` — триггер из слота `trigger` с `attrs` для `v-bind`.
 - [ ] **2.5** `UiModal` (оверлей, закрытие по Esc и клику мимо, фокус-ловушка).
 
 ## Этап 3. Панель свойств

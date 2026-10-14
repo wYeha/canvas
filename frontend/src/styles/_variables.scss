@@ -216,7 +216,9 @@ $canvas-grid-step: 16px; // шаг точек сетки поля
 $canvas-dot-radius: 1px;
 $min-screen-width: 1366px; // минимальная ширина экрана (ноутбук), адаптива нет
 $icon-size: 16px;
-$select-list-max-height: 240px; // продублировано в POPUP_MAX_HEIGHT (select-popup.ts)
+$popup-list-max-height: 240px; // продублировано в POPUP_MAX_HEIGHT (globals/popup.ts)
+$popup-menu-min-width: 200px; // продублировано в POPUP_MENU_WIDTH (globals/popup.ts)
+$section-chevron-collapsed-rotation: -90deg; // поворот шеврона свёрнутой секции
 $ui-kit-segmented-width: 240px; // ширина переключателей в dev-витрине компонентов
 $ui-kit-field-width: 160px; // ширина полей в dev-витрине компонентов
 $ui-kit-caption-width: 120px; // колонка подписей в dev-витрине компонентов

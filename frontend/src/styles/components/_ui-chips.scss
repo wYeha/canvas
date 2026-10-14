@@ -1,0 +1,35 @@
+// Стили общего компонента ui-chips: пресет-чипы 22px (активный — accent-soft), перенос в несколько строк
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-4;
+
+  &__chip {
+    height: v.$preset-chip-height;
+    padding: 0 v.$space-8;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+    background: var(--color-subtle);
+    border-radius: v.$radius-segment;
+
+    @include mx.focus-ring;
+
+    &:hover:not(:disabled) {
+      color: var(--color-text);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: v.$disabled-opacity;
+    }
+
+    &--selected {
+      color: var(--color-accent-text);
+      background: var(--color-accent-soft);
+    }
+  }
+}

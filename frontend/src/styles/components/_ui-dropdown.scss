@@ -1,0 +1,35 @@
+// Стили общего компонента ui-dropdown: меню действий (fixed поверх панелей), пункты, danger и disabled
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-dropdown {
+  position: relative;
+  display: inline-flex;
+
+  &__trigger {
+    display: inline-flex;
+  }
+
+  &__menu {
+    @include mx.popup-list;
+
+    min-width: v.$popup-menu-min-width;
+  }
+
+  &__item {
+    @include mx.popup-item;
+
+    &--active {
+      background: var(--color-hover);
+    }
+
+    &--danger {
+      color: var(--color-danger);
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: v.$disabled-opacity;
+    }
+  }
+}

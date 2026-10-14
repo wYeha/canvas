@@ -9,6 +9,7 @@
       <UiKitButtons />
       <UiKitInputs />
       <UiKitSelects />
+      <UiKitPanelParts />
       <UiKitSurfaces />
     </main>
   </div>
@@ -18,6 +19,7 @@
 import UiButton from '@/views/components/ui-button/UiButton.vue'
 import UiKitButtons from '@/views/pages/ui-kit/UiKitButtons.vue'
 import UiKitInputs from '@/views/pages/ui-kit/UiKitInputs.vue'
+import UiKitPanelParts from '@/views/pages/ui-kit/UiKitPanelParts.vue'
 import UiKitSelects from '@/views/pages/ui-kit/UiKitSelects.vue'
 import UiKitSurfaces from '@/views/pages/ui-kit/UiKitSurfaces.vue'
 import { useUiKitPage } from '@/scripts/pages/ui-kit/use-ui-kit-page'

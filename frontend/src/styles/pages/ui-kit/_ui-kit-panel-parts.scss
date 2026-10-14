@@ -1,0 +1,24 @@
+// Стили фрагмента ui-kit-panel-parts: ряд полей, панель с секциями и строка значений витрины
+@use 'variables' as v;
+
+.ui-kit-panel-parts {
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-12;
+  }
+
+  &__field {
+    width: v.$ui-kit-field-width;
+  }
+
+  &__panel {
+    width: v.$props-width;
+  }
+
+  &__value {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+}

@@ -46,3 +46,29 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/// Контейнер всплывающего списка (селект, меню): fixed поверх панелей, координаты задаёт popupStyle() через :style.
+@mixin popup-list {
+  position: fixed;
+  z-index: v.$z-dropdown;
+  max-height: v.$popup-list-max-height;
+  padding: v.$space-4;
+  overflow-y: auto;
+  outline: none;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-control;
+  box-shadow: var(--shadow-popover);
+}
+
+/// Пункт всплывающего списка: строка высотой с сегмент, mono-текст, подсветка активного пункта.
+@mixin popup-item {
+  display: flex;
+  align-items: center;
+  height: v.$segment-height;
+  padding: 0 v.$space-8;
+  font-family: v.$font-mono;
+  font-size: v.$font-size-sm;
+  cursor: pointer;
+  border-radius: v.$radius-segment;
+}

@@ -48,27 +48,11 @@
 
   // Список показывается поверх панелей: position fixed, координаты считает composable (:style)
   &__list {
-    position: fixed;
-    z-index: v.$z-dropdown;
-    max-height: v.$select-list-max-height;
-    padding: v.$space-4;
-    overflow-y: auto;
-    outline: none;
-    background: var(--color-panel);
-    border: 1px solid var(--color-line);
-    border-radius: v.$radius-control;
-    box-shadow: var(--shadow-popover);
+    @include mx.popup-list;
   }
 
   &__option {
-    display: flex;
-    align-items: center;
-    height: v.$segment-height;
-    padding: 0 v.$space-8;
-    font-family: v.$font-mono;
-    font-size: v.$font-size-sm;
-    cursor: pointer;
-    border-radius: v.$radius-segment;
+    @include mx.popup-item;
 
     &--active {
       background: var(--color-hover);
