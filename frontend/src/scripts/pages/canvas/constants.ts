@@ -37,3 +37,6 @@ export const DEFAULT_DOCUMENT_NAME = 'Без названия'
 
 /** Префикс автоподписи блока: `Блок-N`. */
 export const AUTO_LABEL_PREFIX = 'Блок-'
+
+/** Зазор между корнем и его копией при дублировании, px: копия встаёт справа, чтобы её было видно сразу. */
+export const DUPLICATE_ROOT_GAP = 80
