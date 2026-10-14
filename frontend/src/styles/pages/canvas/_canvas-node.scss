@@ -1,0 +1,90 @@
+// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи, заглушка связи); геометрию не меняет
+@use 'sass:list';
+@use 'sass:map';
+@use 'variables' as v;
+
+.canvas-node {
+  $b: &;
+
+  position: relative;
+  min-width: 0;
+  border-radius: v.$radius-block;
+  outline: 1px solid color-mix(in srgb, var(--node-color) calc(var(--alpha-stroke) * 100%), transparent);
+  outline-offset: -1px; // обводка внутрь: размеры блока не меняются
+  background-color: var(--color-paper);
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--node-color) calc(var(--alpha-fill) * 100%), transparent),
+    color-mix(in srgb, var(--node-color) calc(var(--alpha-fill) * 100%), transparent)
+  );
+
+  @for $i from 0 to list.length(map.keys(v.$block-palette-light)) {
+    &--depth-#{$i} {
+      --node-color: var(--block-#{$i});
+    }
+  }
+
+  // Редакторский min-height пустого листа без заданной высоты; в экспорт не идёт
+  &--min-height {
+    min-height: v.$empty-leaf-min-height;
+  }
+
+  &__chip {
+    position: absolute;
+    top: v.$label-chip-offset;
+    left: v.$label-chip-offset;
+    z-index: v.$z-chip;
+    display: inline-flex;
+    gap: v.$space-4;
+    align-items: center;
+    height: v.$label-chip-height;
+    padding: 0 v.$space-6;
+    font-size: v.$font-size-2xs;
+    line-height: 1;
+    color: var(--color-text);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    background: color-mix(in srgb, var(--node-color) calc(var(--alpha-chip) * 100%), transparent);
+    border-radius: v.$radius-block;
+  }
+
+  &__caption {
+    position: absolute;
+    inset: 0;
+    z-index: v.$z-chip;
+    display: flex;
+    gap: v.$space-4;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: v.$font-size-md;
+    color: var(--color-text);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__icon {
+    font-family: v.$font-mono;
+    color: var(--color-muted);
+  }
+
+  // Заглушка плашки связи (полная плашка — итерация 8.4)
+  &--link {
+    --node-color: var(--color-link);
+
+    display: flex;
+    align-items: center;
+    min-height: v.$control-height;
+    padding: 0 v.$space-8;
+    font-size: v.$font-size-sm;
+    color: var(--color-text);
+    white-space: nowrap;
+    outline-style: dashed;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--node-color) calc(var(--alpha-link-hatch) * 100%), transparent) 0 v.$hatch-line,
+      transparent v.$hatch-line v.$hatch-step
+    );
+  }
+}

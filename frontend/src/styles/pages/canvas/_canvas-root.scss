@@ -1,0 +1,42 @@
+// Стили фрагмента canvas-root: корневой блок на поле, подпись и ширина превью над ним, лёгкая тень
+@use 'variables' as v;
+
+.canvas-root {
+  position: absolute; // left/top/width/height задаёт :style (позиция и ширина превью на поле)
+  z-index: v.$z-canvas;
+  border-radius: v.$radius-block;
+  box-shadow: var(--shadow-root);
+
+  &__header {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + #{v.$root-header-gap});
+    left: 0;
+    display: flex;
+    gap: v.$space-8;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-base;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  &__title {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: v.$font-weight-medium;
+    color: var(--color-text);
+    text-overflow: ellipsis;
+  }
+
+  &__width {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__node {
+    height: 100%;
+  }
+}

@@ -138,3 +138,30 @@ export const CSS_MIN_SPAN = 1
 
 /** Разделитель деклараций в инлайн-стиле для экспорта. */
 export const INLINE_STYLE_SEPARATOR = '; '
+
+/** Размер палитры блоков: цвет блока берётся по `depth % BLOCK_PALETTE_SIZE`. */
+export const BLOCK_PALETTE_SIZE = 8
+
+/** Значки направления контейнера в чипе подписи. */
+export const DIRECTION_ICONS = {
+  row: '→',
+  column: '↓',
+  'row-reverse': '←',
+  'column-reverse': '↑',
+  grid: '#',
+} as const
+
+/** Значок плашки связи. */
+export const LINK_ICON = '→'
+
+/** Подпись источника связи, если корень не найден. */
+export const LINK_MISSING_LABEL = 'без источника'
+
+/** Подпись корня, если у блока нет подписи. */
+export const ROOT_UNTITLED_LABEL = 'Без подписи'
+
+/** Разделитель подписи корня и ширины превью. */
+export const ROOT_TITLE_SEPARATOR = ' · '
+
+/** Имя параметра URL, включающего демо-документ (только в dev). */
+export const DEMO_QUERY_PARAM = 'demo'

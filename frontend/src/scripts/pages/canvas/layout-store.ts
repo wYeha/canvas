@@ -4,6 +4,7 @@
  */
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
 import { createBlock, createDocument, createRootEntry, type CanvasPoint } from './factories'
 import * as tree from './tree'
@@ -90,6 +91,16 @@ export const useLayoutStore = defineStore('layout', () => {
     return commit(tree.updateRootPlacement(document.value, rootId, patch))
   }
 
+  /** Заменяет документ проверенным (parseDocument), сбрасывает выделение и ховер; при ошибке документ не меняется. */
+  function loadDocument(data: unknown): ParseDocumentResult {
+    const result = parseDocument(data)
+    if (!result.ok) return result
+    document.value = result.document
+    selectedId.value = null
+    hoveredId.value = null
+    return result
+  }
+
   /** Выделяет узел; `null` снимает выделение. Несуществующий id снимает выделение. */
   function select(id: NodeId | null): void {
     selectedId.value = id === null || tree.findNode(document.value, id) ? id : null
@@ -114,6 +125,7 @@ export const useLayoutStore = defineStore('layout', () => {
     moveNode,
     updateNode,
     updateRootPlacement,
+    loadDocument,
     select,
     hover,
   }

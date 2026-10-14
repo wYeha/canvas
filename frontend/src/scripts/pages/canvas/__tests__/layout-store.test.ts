@@ -131,3 +131,22 @@ describe('layout-store', () => {
     expect(store.hoveredId).toBeNull()
   })
 })
+
+describe('layout-store: loadDocument', () => {
+  it('загружает валидный документ и сбрасывает выделение', () => {
+    const { store, rootId } = withRoot()
+    store.select(rootId)
+    const other = useLayoutStore()
+    const doc = { ...other.document, roots: [] }
+    expect(store.loadDocument(doc).ok).toBe(true)
+    expect(store.document.roots).toHaveLength(0)
+    expect(store.selectedId).toBeNull()
+  })
+
+  it('отклоняет повреждённый документ и не меняет текущий', () => {
+    const { store } = withRoot()
+    const result = store.loadDocument({ foo: 1 })
+    expect(result.ok).toBe(false)
+    expect(store.document.roots).toHaveLength(1)
+  })
+})

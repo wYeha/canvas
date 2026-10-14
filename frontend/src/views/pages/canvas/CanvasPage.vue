@@ -21,6 +21,8 @@ import CanvasToolbar from '@/views/pages/canvas/CanvasToolbar.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
 import { useCanvasHotkeys } from '@/scripts/pages/canvas/use-canvas-hotkeys'
+import { useCanvasDemo } from '@/scripts/pages/canvas/use-canvas-demo'
 
 useCanvasHotkeys()
+useCanvasDemo()
 </script>
