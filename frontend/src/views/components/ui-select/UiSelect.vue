@@ -11,6 +11,7 @@
       :aria-label="label"
       :aria-invalid="error ? 'true' : undefined"
       :disabled="disabled"
+      v-bind="inputAttrs"
       @click="toggle"
       @keydown="onTriggerKeydown"
     >

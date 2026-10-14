@@ -5,6 +5,7 @@
     class="ui-segmented"
     :class="{ 'ui-segmented--disabled': disabled }"
     role="radiogroup"
+    v-bind="inputAttrs"
     :aria-label="label"
   >
     <button

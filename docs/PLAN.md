@@ -66,7 +66,9 @@
 - [x] **2.4** `UiField` (подпись + контрол), `UiPanelSection` (секция панели с заголовком), `UiDropdown` (меню).
 
 > Добавлен `UiChips` (пресет-чипы, `aria-pressed`). Общая логика всплывающих списков вынесена в `scripts/globals/` (`popup.ts`, `use-popup-list.ts`, `use-popup-dismiss.ts`), на ней сделаны `UiSelect` и `UiDropdown`; миксины `popup-list` и `popup-item`. `UiField` отдаёт в слот `id`, `describedBy`, `invalid`; `UiPanelSection` — `v-model:open` (true = раскрыта), `UiDropdown` — триггер из слота `trigger` с `attrs` для `v-bind`.
-- [ ] **2.5** `UiModal` (оверлей, закрытие по Esc и клику мимо, фокус-ловушка).
+- [x] **2.5** `UiModal` (оверлей, закрытие по Esc и клику мимо, фокус-ловушка).
+
+> `UiModal`: Teleport в body, `v-model:open`, размер пресетом `size` (`export` 1040×700 по умолчанию, `compact` 480 × по содержимому) — без inline-стилей; закрытие по Esc, `mousedown` на оверлее и крестику; фокус на `initialFocus` или первый фокусируемый, возврат инициатору, блокировка прокрутки со счётчиком (`globals/scroll-lock.ts`), фокус-ловушка (`globals/focus-trap.ts`). Доводка 2.4: все контролы (`UiNumberInput`, `UiSelect`, `UiSegmented`, `UiChips`) принимают `inputAttrs` для связки с `UiField`.
 
 ## Этап 3. Панель свойств
 

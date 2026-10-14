@@ -1,6 +1,8 @@
 /** Типы общего компонента UiSegmented: вариант сегмента и пропсы переключателя. */
 import type { UiIconName } from '@/scripts/components/ui-icon/ui-icon.types'
 
+import type { UiInputAttrs } from '@/scripts/components/ui-text-input/ui-text-input.types'
+
 /** Вариант сегмента: подпись обязательна (для иконочных она уходит в aria-label и title). */
 export interface UiSegmentedOption {
   value: string
@@ -16,4 +18,6 @@ export interface UiSegmentedProps {
   options: readonly UiSegmentedOption[]
   label: string
   disabled?: boolean
+  /** Атрибуты группы (id, aria-describedby, aria-labelledby) — например, из слота UiField. */
+  inputAttrs?: UiInputAttrs
 }

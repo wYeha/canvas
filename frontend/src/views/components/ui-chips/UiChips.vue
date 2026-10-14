@@ -1,6 +1,6 @@
 <!-- Общий компонент: группа пресет-чипов; нажатие задаёт значение, подходящий чип подсвечен (v-model) -->
 <template>
-  <div class="ui-chips" role="group" :aria-label="label">
+  <div class="ui-chips" role="group" :aria-label="label" v-bind="inputAttrs">
     <button
       v-for="option in options"
       :key="option.value"

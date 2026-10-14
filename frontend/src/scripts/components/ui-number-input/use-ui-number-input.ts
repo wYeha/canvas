@@ -19,7 +19,7 @@ export function useUiNumberInput(
   model: Ref<number | null>,
 ): {
   draft: Ref<string>
-  inputAttrs: ComputedRef<UiInputAttrs>
+  controlAttrs: ComputedRef<UiInputAttrs>
   onKeydown: (event: KeyboardEvent) => void
   onBlur: () => void
 } {
@@ -29,7 +29,8 @@ export function useUiNumberInput(
     draft.value = formatNumber(value)
   })
 
-  const inputAttrs = computed<UiInputAttrs>(() => ({
+  const controlAttrs = computed<UiInputAttrs>(() => ({
+    ...props.inputAttrs,
     role: 'spinbutton',
     inputmode: 'decimal',
     'aria-valuenow': model.value ?? undefined,
@@ -67,5 +68,5 @@ export function useUiNumberInput(
     }
   }
 
-  return { draft, inputAttrs, onKeydown, onBlur: commit }
+  return { draft, controlAttrs, onKeydown, onBlur: commit }
 }

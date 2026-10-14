@@ -10,7 +10,7 @@
     :placeholder="placeholder"
     :error="error"
     :disabled="disabled"
-    :input-attrs="inputAttrs"
+    :input-attrs="controlAttrs"
     @keydown="onKeydown"
     @blur="onBlur"
   />
@@ -23,5 +23,5 @@ import { useUiNumberInput } from '@/scripts/components/ui-number-input/use-ui-nu
 
 const props = defineProps<UiNumberInputProps>()
 const model = defineModel<number | null>({ default: null })
-const { draft, inputAttrs, onKeydown, onBlur } = useUiNumberInput(props, model)
+const { draft, controlAttrs, onKeydown, onBlur } = useUiNumberInput(props, model)
 </script>
