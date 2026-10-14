@@ -7,6 +7,7 @@
     </header>
     <main class="ui-kit-page__content">
       <UiKitButtons />
+      <UiKitInputs />
       <UiKitSurfaces />
     </main>
   </div>
@@ -15,6 +16,7 @@
 <script setup lang="ts">
 import UiButton from '@/views/components/ui-button/UiButton.vue'
 import UiKitButtons from '@/views/pages/ui-kit/UiKitButtons.vue'
+import UiKitInputs from '@/views/pages/ui-kit/UiKitInputs.vue'
 import UiKitSurfaces from '@/views/pages/ui-kit/UiKitSurfaces.vue'
 import { useUiKitPage } from '@/scripts/pages/ui-kit/use-ui-kit-page'
 

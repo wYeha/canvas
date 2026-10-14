@@ -1,0 +1,56 @@
+// Стили общего компонента ui-text-input: однострочное поле (префикс, суффикс, ошибка, disabled)
+@use 'variables' as v;
+
+.ui-text-input {
+  display: flex;
+  gap: v.$space-4;
+  align-items: center;
+  min-width: 0;
+  height: v.$control-height;
+  padding: 0 v.$space-8;
+  font-size: v.$font-size-sm;
+  color: var(--color-text);
+  background: var(--color-input);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-control;
+
+  &:focus-within {
+    outline: v.$focus-ring-width solid var(--color-accent);
+    outline-offset: v.$focus-ring-offset;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    outline: none;
+    background: transparent;
+    border: 0;
+
+    &::placeholder {
+      color: var(--color-muted);
+    }
+  }
+
+  &__prefix,
+  &__suffix {
+    flex: none;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &--mono {
+    font-family: v.$font-mono;
+  }
+
+  &--error {
+    border-color: var(--color-danger);
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
+  }
+}

@@ -57,7 +57,9 @@
 - [x] **2.1** `UiButton`, `UiIconButton` (варианты, размеры, иконка, disabled) + `UiIcon` (набор SVG-иконок).
 
 > Добавлены: `disabled` (нативный атрибут + стиль), вариант `danger`, `aria-keyshortcuts` из подсказки клавиши, иконка `trash`, токен `$disabled-opacity`. Инфраструктура DOM-тестов (`*.dom.test.ts`, happy-dom, `test.projects`) и dev-витрина `?ui` (`pages/ui-kit`, стили подключены в `main.scss` ради витрины).
-- [ ] **2.2** `UiTextInput`, `UiNumberInput` (стрелки, шаг, единицы px/%/fr).
+- [x] **2.2** `UiTextInput`, `UiNumberInput` (стрелки, шаг, единицы px/%/fr).
+
+> `UiNumberInput` собран на `UiTextInput` (префикс/суффикс/ошибка общие); значение фиксируется на blur/Enter, стрелки меняют сразу, Esc отменяет правку, пусто → `null`. Единица — только суффикс. Витрина `?ui` расширена фрагментом `UiKitInputs`.
 - [ ] **2.3** `UiSelect`, `UiSegmented` (переключатель вариантов в одну строку для direction, justify и т. п.).
 - [ ] **2.4** `UiField` (подпись + контрол), `UiPanelSection` (секция панели с заголовком), `UiDropdown` (меню).
 - [ ] **2.5** `UiModal` (оверлей, закрытие по Esc и клику мимо, фокус-ловушка).

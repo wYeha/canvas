@@ -1,0 +1,20 @@
+// Стили фрагмента ui-kit-inputs: ряд полей ввода витрины и строка текущих значений
+@use 'variables' as v;
+
+.ui-kit-inputs {
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-12;
+  }
+
+  &__field {
+    width: v.$ui-kit-field-width;
+  }
+
+  &__value {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+}
