@@ -381,11 +381,8 @@ export const CHILD_FLEX_LABEL = 'flex'
 /** Подпись группы быстрых значений `flex` для скринридера. */
 export const CHILD_FLEX_PRESETS_LABEL = 'Быстрые значения flex'
 
-/** Подпись текстового поля своего значения `flex`. */
-export const CHILD_FLEX_CUSTOM_LABEL = 'Своё значение flex'
-
-/** Подсказка поля своего значения `flex`. */
-export const CHILD_FLEX_PLACEHOLDER = 'напр. 0 0 280px'
+/** Подсказка поля `flex`: пометка «своё» живёт здесь, а имя поля для скринридера — подпись «flex». */
+export const CHILD_FLEX_PLACEHOLDER = 'своё, напр. 0 0 280px'
 
 /** Подпись поля `width`. */
 export const CHILD_WIDTH_LABEL = 'width'

@@ -11,7 +11,7 @@
         <UiTextInput
           v-model="flexCustom"
           mono
-          :label="CHILD_FLEX_CUSTOM_LABEL"
+          :label="CHILD_FLEX_LABEL"
           :placeholder="CHILD_FLEX_PLACEHOLDER"
           :error="flexError"
           :input-attrs="{ id, 'aria-describedby': describedBy }"
@@ -96,7 +96,6 @@ import UiNumberInput from '@/views/components/ui-number-input/UiNumberInput.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import {
   CHILD_COL_SPAN_LABEL,
-  CHILD_FLEX_CUSTOM_LABEL,
   CHILD_FLEX_LABEL,
   CHILD_FLEX_PLACEHOLDER,
   CHILD_FLEX_PRESETS_LABEL,

@@ -1,7 +1,6 @@
 /** Чистая логика секции «Как ребёнок»: подсказка в заголовке, нормализация размеров, правка `self` без мутации. Без Vue. */
-import type { Container, SelfProps } from '@shared'
+import { parseCssValue, type Container, type SelfProps } from '@shared'
 import type { UiChipOption } from '@/scripts/components/ui-chips/ui-chips.types'
-import { parseCssValue } from '@/scripts/globals/css-value'
 import {
   CHILD_AUTO_VALUE,
   CHILD_FLEX_NONE_LABEL,

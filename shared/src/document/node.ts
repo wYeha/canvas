@@ -1,7 +1,7 @@
 /** Zod-схемы и типы узлов дерева: блок (с детьми) и плашка связи, плюс их общие части. */
 import { z } from 'zod'
 import { LAYOUT_TAGS } from './constants'
-import { containerSchema } from './container'
+import { containerSchema, safeCssStringSchema } from './container'
 
 /** Идентификатор узла или документа: непустая строка. */
 export const nodeIdSchema = z.string().min(1)
@@ -11,10 +11,10 @@ export const layoutTagSchema = z.enum(LAYOUT_TAGS)
 
 /** Свойства «как ребёнок»: место и размер узла в родителе. Заданы только те, что выбрал пользователь. */
 export const selfPropsSchema = z.object({
-  flex: z.string().optional(),
-  width: z.string().optional(),
-  height: z.string().optional(),
-  minHeight: z.string().optional(),
+  flex: safeCssStringSchema.optional(),
+  width: safeCssStringSchema.optional(),
+  height: safeCssStringSchema.optional(),
+  minHeight: safeCssStringSchema.optional(),
   colSpan: z.int().min(1).optional(),
   rowSpan: z.int().min(1).optional(),
 })

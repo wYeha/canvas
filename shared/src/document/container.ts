@@ -1,9 +1,13 @@
 /** Zod-схемы и типы контейнера блока: flex или grid, различаются по полю `kind`. */
 import { z } from 'zod'
+import { isSafeCssValue, UNSAFE_CSS_MESSAGE } from './css-value'
 import { FLEX_ALIGN_VALUES, FLEX_DIRECTIONS, FLEX_JUSTIFY_VALUES, GRID_ALIGN_VALUES } from './constants'
 
 /** Отступ между элементами в px; `null` — не задан и в стили не попадает. */
 const gapSchema = z.number().nonnegative().nullable()
+
+/** Безопасная CSS-строка: без символов, разрывающих декларацию или разметку при экспорте. */
+export const safeCssStringSchema = z.string().refine(isSafeCssValue, { message: UNSAFE_CSS_MESSAGE })
 
 /** Flex-контейнер. */
 export const flexContainerSchema = z.object({
@@ -18,8 +22,8 @@ export const flexContainerSchema = z.object({
 /** Grid-контейнер: `columns` и `rows` — строки в синтаксисе `grid-template-*`. */
 export const gridContainerSchema = z.object({
   kind: z.literal('grid'),
-  columns: z.string(),
-  rows: z.string(),
+  columns: safeCssStringSchema,
+  rows: safeCssStringSchema,
   justifyItems: z.enum(GRID_ALIGN_VALUES),
   alignItems: z.enum(GRID_ALIGN_VALUES),
   columnGap: gapSchema,

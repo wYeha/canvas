@@ -49,6 +49,11 @@ describe('нормализация шаблонов', () => {
     expect(normalizeRows('a{b}')).toBeNull()
   })
 
+  it('rows: auto в любом регистре даёт пустое поле', () => {
+    expect(normalizeRows('AUTO')).toBe('')
+    expect(normalizeRows(' Auto ')).toBe('')
+  })
+
   it('поле строк и значение документа переводятся друг в друга', () => {
     expect(rowsToField('auto')).toBe('')
     expect(rowsToField('1fr 2fr')).toBe('1fr 2fr')

@@ -18,18 +18,17 @@ export interface PropsSectionView {
 export function useCanvasProps(registry: Partial<Record<PropsSectionId, Component>>) {
   const layoutStore = useLayoutStore()
 
-  /** Вид контейнера родителя выделенного узла; `null` у корня. */
-  const parentKind = computed(() => {
+  /** Родитель выделенного узла; `undefined` у корня или без выделения. */
+  const parent = computed(() => {
     const node = layoutStore.selectedNode
-    return node === undefined ? null : (findParent(layoutStore.document, node.id)?.container.kind ?? null)
+    return node === undefined ? undefined : findParent(layoutStore.document, node.id)
   })
 
+  /** Вид контейнера родителя выделенного узла; `null` у корня. */
+  const parentKind = computed(() => parent.value?.container.kind ?? null)
+
   /** Подсказка секции «Как ребёнок» по контейнеру родителя; `undefined` у корня. */
-  const hint = computed(() => {
-    const node = layoutStore.selectedNode
-    const parent = node === undefined ? undefined : findParent(layoutStore.document, node.id)
-    return parent === undefined ? undefined : childHint(parent.container)
-  })
+  const hint = computed(() => (parent.value === undefined ? undefined : childHint(parent.value.container)))
 
   /** Заголовок панели; `null`, если ничего не выделено. */
   const header = computed(() => {

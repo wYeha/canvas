@@ -17,16 +17,17 @@ import { useBlockTextDraft } from './use-block-text-draft'
 export function useCanvasPropsChild() {
   const layoutStore = useLayoutStore()
 
-  /** Выделенный узел с родителем (блок или связь); у корня — `null`. */
-  const node = computed<LayoutNode | null>(() => {
+  /** Родитель выделенного узла; `undefined` у корня или без выделения. */
+  const parent = computed(() => {
     const selected = layoutStore.selectedNode
-    return selected && findParent(layoutStore.document, selected.id) ? selected : null
+    return selected ? findParent(layoutStore.document, selected.id) : undefined
   })
 
+  /** Выделенный узел с родителем (блок или связь); у корня — `null`. */
+  const node = computed<LayoutNode | null>(() => (parent.value ? (layoutStore.selectedNode ?? null) : null))
+
   /** Вид контейнера родителя: определяет, какие поля показывать. */
-  const parentKind = computed<ContainerKind | null>(
-    () => (node.value ? findParent(layoutStore.document, node.value.id)?.container.kind : null) ?? null,
-  )
+  const parentKind = computed<ContainerKind | null>(() => parent.value?.container.kind ?? null)
 
   const flexParent = computed(() => parentKind.value === 'flex')
   const gridParent = computed(() => parentKind.value === 'grid')

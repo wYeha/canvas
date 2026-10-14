@@ -26,10 +26,12 @@ export function useBlockTextDraft(
   const error = ref(false)
   let ownerId: NodeId | null = null
 
-  // Любое внешнее изменение (смена выделения, undo, правка в другом месте) перезаписывает черновик
+  // Любое внешнее изменение (смена выделения, undo, правка в другом месте) перезаписывает черновик.
+  // Если сменился владелец, а черновик старого владельца изменён и ещё не сохранён, он применяется к старому id до сброса.
   watch(
     [() => source()?.id, () => source()?.value],
-    () => {
+    ([id], [oldId, oldValue]) => {
+      if (oldId !== undefined && id !== oldId) flushOldOwner(oldId, oldValue)
       const current = source()
       ownerId = current?.id ?? null
       draft.value = current?.value ?? ''
@@ -38,9 +40,20 @@ export function useBlockTextDraft(
     { immediate: true },
   )
 
-  /** Записывает черновик в документ; повторная запись того же текста стором отбрасывается. Недопустимое значение откатывается с ошибкой. */
+  /** Сохраняет несохранённый изменённый черновик прежнего владельца (смена выделения без blur); недопустимый — отбрасывается. */
+  function flushOldOwner(oldId: NodeId, oldValue: string | undefined): void {
+    if (draft.value === (oldValue ?? '')) return
+    const next = options.normalize ? options.normalize(draft.value) : draft.value
+    if (next !== null && next !== oldValue) commit(oldId, next)
+  }
+
+  /**
+   * Записывает черновик в документ, только если он отличается от текущего значения источника
+   * (blur без правки документ не трогает и ошибку не показывает). Недопустимое значение откатывается с ошибкой.
+   */
   function apply(): void {
     if (ownerId === null) return
+    if (draft.value === (source()?.value ?? '')) return
     const next = options.normalize ? options.normalize(draft.value) : draft.value
     if (next === null) {
       draft.value = source()?.value ?? ''

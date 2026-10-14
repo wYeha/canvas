@@ -123,6 +123,36 @@ describe('useCanvasPropsBlock', () => {
     expect(stop).toHaveBeenCalledOnce()
   })
 
+  it('смена выделения применяет несохранённый черновик к прежнему блоку', async () => {
+    const { layoutStore, rootId, childId, props } = setup()
+    props.label.value = 'Шапка'
+    layoutStore.select(childId)
+    await nextTick()
+    expect(rootBlock(layoutStore).label).toBe('Шапка')
+    expect(props.label.value).toBe('Вложенный')
+    const child = rootBlock(layoutStore).children[0]
+    expect(child?.type === 'block' ? child.label : '').toBe('Вложенный')
+    layoutStore.select(rootId)
+    await nextTick()
+    expect(props.label.value).toBe('Шапка')
+  })
+
+  it('смена выделения без правки документ не трогает', async () => {
+    const { layoutStore, childId, props } = setup()
+    const before = layoutStore.document
+    layoutStore.select(childId)
+    await nextTick()
+    expect(layoutStore.document).toBe(before)
+    expect(props.label.value).toBe('Вложенный')
+  })
+
+  it('blur без правки не трогает документ и не показывает ошибку', () => {
+    const { layoutStore, props } = setup()
+    const before = layoutStore.document
+    props.applyLabel()
+    expect(layoutStore.document).toBe(before)
+  })
+
   it('пустая подпись допустима и применяется на blur', () => {
     const { layoutStore, props } = setup()
     props.label.value = ''

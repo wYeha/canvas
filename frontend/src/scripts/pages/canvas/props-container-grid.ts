@@ -1,8 +1,7 @@
 /** Чистая логика grid-части секции «Контейнер»: пресеты колонок, нормализация шаблонов, связка отступов. Без Vue. */
-import { GRID_ALIGN_VALUES, type GridContainer } from '@shared'
+import { GRID_ALIGN_VALUES, normalizeCssSpaces, parseCssValue, type GridContainer } from '@shared'
 import type { UiChipOption } from '@/scripts/components/ui-chips/ui-chips.types'
 import type { UiSegmentedOption } from '@/scripts/components/ui-segmented/ui-segmented.types'
-import { normalizeCssSpaces, parseCssValue } from '@/scripts/globals/css-value'
 import { GRID_ROWS_DEFAULT } from './constants'
 
 /** Какой из двух отступов изменили. */
@@ -34,10 +33,10 @@ export function normalizeColumns(value: string): string | null {
   return parsed === '' ? null : parsed
 }
 
-/** Нормализует поле `grid-template-rows`: пусто и `auto` дают пустую строку (по умолчанию); небезопасное — `null`. */
+/** Нормализует поле `grid-template-rows`: пусто и `auto` (в любом регистре) дают пустую строку (по умолчанию); небезопасное — `null`. */
 export function normalizeRows(value: string): string | null {
   const parsed = parseCssValue(value, true)
-  return parsed === GRID_ROWS_DEFAULT ? '' : parsed
+  return parsed?.toLowerCase() === GRID_ROWS_DEFAULT ? '' : parsed
 }
 
 /** Значение для документа из поля строк: пустое поле — `auto`. */

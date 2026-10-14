@@ -144,3 +144,39 @@ describe('схемы узлов', () => {
     expect(blockNodeSchema.safeParse({ ...block('a'), self: { colSpan: 0 } }).success).toBe(false)
   })
 })
+
+describe('небезопасные CSS-строки', () => {
+  /** Grid-блок с заданными шаблонами. */
+  const grid = (columns: string, rows = 'auto'): BlockNode => ({
+    ...block('g'),
+    container: {
+      kind: 'grid',
+      columns,
+      rows,
+      justifyItems: 'stretch',
+      alignItems: 'stretch',
+      columnGap: null,
+      rowGap: null,
+    },
+  })
+
+  it('отклоняет импорт с инъекцией в columns и rows', () => {
+    const error = errorOf(documentOf(grid('1fr; color:red')))
+    expect(error).toContain('columns')
+    expect(error).toContain('Недопустимое CSS-значение')
+    expect(errorOf(documentOf(grid('1fr', '1fr}')))).toContain('rows')
+    expect(errorOf(documentOf(grid('calc(100%')))).toContain('columns')
+  })
+
+  it.each(['flex', 'width', 'height', 'minHeight'] as const)('отклоняет небезопасное self.%s', (key) => {
+    const error = errorOf(documentOf({ ...block('a'), self: { [key]: '1fr; color:red' } }))
+    expect(error).toContain(`self.${key}`)
+  })
+
+  it('принимает безопасные значения', () => {
+    expect(parseDocument(documentOf(grid('repeat(2, 1fr)'))).ok).toBe(true)
+    expect(
+      parseDocument(documentOf({ ...block('a'), self: { width: 'calc(100% - 8px)', flex: '0 0 280px' } })).ok,
+    ).toBe(true)
+  })
+})
