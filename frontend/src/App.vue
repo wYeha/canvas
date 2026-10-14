@@ -1,8 +1,10 @@
-<!-- Главный оркестратор приложения: подключает страницы -->
+<!-- Главный оркестратор приложения: подключает текущую страницу -->
 <template>
-  <CanvasPage />
+  <component :is="pageComponent" />
 </template>
 
 <script setup lang="ts">
-import CanvasPage from '@/views/pages/canvas/CanvasPage.vue'
+import { useAppPage } from '@/scripts/globals/use-app-page'
+
+const { pageComponent } = useAppPage()
 </script>

@@ -216,6 +216,7 @@ $canvas-grid-step: 16px; // шаг точек сетки поля
 $canvas-dot-radius: 1px;
 $min-screen-width: 1366px; // минимальная ширина экрана (ноутбук), адаптива нет
 $icon-size: 16px;
+$ui-kit-caption-width: 120px; // колонка подписей в dev-витрине компонентов
 $icon-stroke-width: 1.5px;
 $logo-size: 20px;
 $status-dot-size: 8px;
@@ -225,6 +226,9 @@ $empty-leaf-min-height: 48px; // редакторский min-height пусто�
 
 // Запас по высоте под нижние плашки: панели «Слои» и «Свойства» не заходят на них
 $floating-reserve: $panel-gap * 3 + $pill-height;
+
+// Прозрачность недоступных (disabled) контролов
+$disabled-opacity: 0.45;
 
 // Контур фокуса с клавиатуры
 $focus-ring-width: 2px;

@@ -14,5 +14,6 @@ export const ICON_PATHS = {
   redo: ['M10 3l3 3-3 3', 'M13 6H7a4 4 0 0 0 0 8h3'],
   minus: ['M3 8h10'],
   plus: ['M3 8h10M8 3v10'],
+  trash: ['M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 8.5h6l.5-8.5'],
   fit: ['M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4'],
 } as const

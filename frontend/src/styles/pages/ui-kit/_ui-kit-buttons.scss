@@ -1,0 +1,24 @@
+// Стили фрагмента ui-kit-buttons: ряды кнопок витрины с подписями
+@use 'variables' as v;
+
+.ui-kit-buttons {
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-8;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-8;
+    align-items: center;
+  }
+
+  &__caption {
+    width: v.$ui-kit-caption-width;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+}

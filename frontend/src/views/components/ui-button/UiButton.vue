@@ -1,6 +1,12 @@
 <!-- Общий компонент: текстовая кнопка с необязательными иконками и подсказкой горячей клавиши -->
 <template>
-  <button :class="classes" type="button" @mousedown="keepFocusOnMouseDown">
+  <button
+    :class="classes"
+    type="button"
+    :disabled="disabled"
+    :aria-keyshortcuts="hint"
+    @mousedown="keepFocusOnMouseDown"
+  >
     <UiIcon v-if="icon" :name="icon" class="ui-button__icon" />
     <span class="ui-button__text"><slot /></span>
     <kbd v-if="hint" class="ui-button__hint">{{ hint }}</kbd>
@@ -14,6 +20,6 @@ import type { UiButtonProps } from '@/scripts/components/ui-button/ui-button.typ
 import { useUiButton } from '@/scripts/components/ui-button/use-ui-button'
 import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 
-const props = withDefaults(defineProps<UiButtonProps>(), { variant: 'default', size: 'm' })
+const props = withDefaults(defineProps<UiButtonProps>(), { variant: 'default', size: 'm', disabled: false })
 const { classes } = useUiButton(props)
 </script>

@@ -1,0 +1,23 @@
+// Стили фрагмента ui-kit-section: секция витрины с заголовком
+@use 'variables' as v;
+
+.ui-kit-section {
+  &__title {
+    margin-bottom: v.$space-12;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: var(--color-muted);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-12;
+    align-items: flex-start;
+    padding: v.$space-16;
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: v.$radius-panel;
+  }
+}

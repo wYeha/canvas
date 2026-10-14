@@ -1,4 +1,4 @@
-// Стили общего компонента ui-icon-button: квадратная кнопка с иконкой
+// Стили общего компонента ui-icon-button: квадратная кнопка с иконкой (размеры m, l; disabled)
 @use 'variables' as v;
 @use 'mixins' as mx;
 
@@ -12,9 +12,14 @@
 
   @include mx.focus-ring;
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: var(--color-text);
     background: var(--color-hover);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
   }
 
   &--size-m {

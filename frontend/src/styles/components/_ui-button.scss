@@ -1,4 +1,4 @@
-// Стили общего компонента ui-button: текстовая кнопка (виды default, ghost, primary; размеры m, l)
+// Стили общего компонента ui-button: текстовая кнопка (виды default, ghost, primary, danger; размеры m, l; disabled)
 @use 'variables' as v;
 @use 'mixins' as mx;
 
@@ -18,6 +18,11 @@
 
   @include mx.focus-ring;
 
+  &:disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
+  }
+
   &__icon {
     color: var(--color-muted);
   }
@@ -34,7 +39,7 @@
 
   &--variant-default,
   &--variant-ghost {
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--color-hover);
     }
   }
@@ -47,8 +52,22 @@
     color: var(--color-on-accent);
     background: var(--color-accent);
 
-    &:hover {
+    &:hover:not(:disabled) {
       opacity: 0.9;
+    }
+
+    #{$b}__icon {
+      color: inherit;
+    }
+  }
+
+  // Разрушительное действие: текст и иконка цвета danger, при наведении мягкий красный фон
+  &--variant-danger {
+    color: var(--color-danger);
+    border: 1px solid var(--color-line);
+
+    &:hover:not(:disabled) {
+      background: var(--color-danger-soft);
     }
 
     #{$b}__icon {

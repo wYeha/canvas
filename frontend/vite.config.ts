@@ -33,10 +33,28 @@ export default defineConfig({
       },
     },
   },
-  // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4); DOM-окружение не нужно, пока тесты — чистые функции.
+  // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4). Два проекта: чистые функции идут в node,
+  // компоненты (*.dom.test.ts, @vue/test-utils) — в happy-dom. extends: true переносит алиасы и плагин Vue.
   // Тесты shared гоняет этот же Vitest: так их запускает `npm run check`, а алиас `@shared` уже настроен
   test: {
-    include: ['src/**/__tests__/**/*.test.ts', '../shared/src/**/__tests__/**/*.test.ts'],
-    environment: 'node',
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          include: ['src/**/__tests__/**/*.test.ts', '../shared/src/**/__tests__/**/*.test.ts'],
+          exclude: ['**/*.dom.test.ts', '**/node_modules/**'],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'dom',
+          include: ['src/**/__tests__/**/*.dom.test.ts'],
+          environment: 'happy-dom',
+        },
+      },
+    ],
   },
 })
