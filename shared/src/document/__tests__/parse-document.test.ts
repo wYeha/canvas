@@ -104,6 +104,8 @@ describe('parseDocument', () => {
     const [root] = doc.roots
     if (!root) throw new Error('нет корня')
     expect(errorOf({ ...doc, roots: [{ ...root, canvas: { ...root.canvas, width: 0 } }] })).toContain('canvas.width')
+    expect(errorOf({ ...doc, roots: [{ ...root, canvas: { ...root.canvas, height: 0 } }] })).toContain('canvas.height')
+    expect(errorOf({ ...doc, roots: [{ ...root, canvas: { ...root.canvas, height: -5 } }] })).toContain('canvas.height')
   })
 
   it('отклоняет дату не в формате ISO с русским сообщением', () => {

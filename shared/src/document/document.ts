@@ -8,7 +8,7 @@ export const canvasPlacementSchema = z.object({
   x: z.number(),
   y: z.number(),
   width: z.number().positive(),
-  height: z.number().nullable(),
+  height: z.number().positive().nullable(),
   exportMaxWidth: z.boolean(),
 })
 

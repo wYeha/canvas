@@ -7,7 +7,6 @@
   $b: &;
 
   position: relative;
-  min-width: 0;
   border-radius: v.$radius-block;
   outline: 1px solid color-mix(in srgb, var(--node-color) calc(var(--alpha-stroke) * 100%), transparent);
   outline-offset: -1px; // обводка внутрь: размеры блока не меняются

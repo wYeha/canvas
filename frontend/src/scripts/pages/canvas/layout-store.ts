@@ -7,6 +7,7 @@ import { defineStore } from 'pinia'
 import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
 import { createBlock, createDocument, createRootEntry, type CanvasPoint } from './factories'
+import { rootLabels } from './node-view'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
 
@@ -22,6 +23,9 @@ export const useLayoutStore = defineStore('layout', () => {
   const selectedNode = computed<LayoutNode | undefined>(() =>
     selectedId.value === null ? undefined : tree.findNode(document.value, selectedId.value),
   )
+
+  /** Подписи корней по id: общий кеш для плашек связей. */
+  const rootLabelMap = computed(() => rootLabels(document.value))
 
   /** Путь от корня до выделенного узла включительно; пусто без выделения. */
   const selectedPath = computed<LayoutNode[]>(() =>
@@ -117,6 +121,7 @@ export const useLayoutStore = defineStore('layout', () => {
     hoveredId,
     selectedNode,
     selectedPath,
+    rootLabelMap,
     rootOf,
     addRoot,
     addChild,

@@ -4,7 +4,7 @@ import type { BlockNode } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
 import { useLayoutStore } from './layout-store'
 import { styleEntries, toStyleObject } from './node-style'
-import { blockClasses, blockLabel, directionIcon, isLeafBlock, linkCaption } from './node-view'
+import { blockClasses, blockLabel, directionIcon, isLeafBlock, linkCaptionFromLabel } from './node-view'
 
 /** Вид плашки связи. */
 export interface LinkView {
@@ -36,7 +36,7 @@ export function useCanvasNode(props: CanvasNodeProps): { view: ComputedRef<NodeV
     const { node, depth, parentKind } = props
     const style = toStyleObject(styleEntries(node, parentKind))
     if (node.type === 'link') {
-      return { kind: 'link', style, text: linkCaption(store.document, node.sourceId) }
+      return { kind: 'link', style, text: linkCaptionFromLabel(store.rootLabelMap.get(node.sourceId)) }
     }
     return {
       kind: 'block',

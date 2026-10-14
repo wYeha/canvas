@@ -12,9 +12,9 @@ export function nodeIdFromTarget(target: EventTarget | null): string | null {
   return target.closest(NODE_SELECTOR)?.getAttribute(NODE_ID_ATTR) ?? null
 }
 
-/** Находит элемент узла по id; `null`, если он не отрисован. */
+/** Находит элемент узла по id внутри слоя мира; `null`, если он не отрисован. */
 export function findNodeElement(id: string): Element | null {
-  return document.querySelector(`[${NODE_ID_ATTR}="${CSS.escape(id)}"]`)
+  return document.querySelector(WORLD_SELECTOR)?.querySelector(`[${NODE_ID_ATTR}="${CSS.escape(id)}"]`) ?? null
 }
 
 /** Прямоугольник элемента в координатах страницы. */

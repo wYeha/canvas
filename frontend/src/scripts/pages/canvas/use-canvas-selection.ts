@@ -26,7 +26,7 @@ export function useCanvasSelection() {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
   const { document: doc, selectedId, hoveredId } = storeToRefs(layoutStore)
-  const { camera } = storeToRefs(cameraStore)
+  const { camera, rootHeights } = storeToRefs(cameraStore)
   /** Элемент оверлея: его положение на странице — начало экранных координат. */
   const overlayEl = ref<HTMLElement | null>(null)
   /** Рамки для отрисовки: наведение, затем выделение. */
@@ -87,7 +87,8 @@ export function useCanvasSelection() {
   }
 
   // Камера, документ, выделение и наведение: после обновления DOM и в том же кадре, чтобы рамка не отставала при пане.
-  watch([camera, doc, selectedId, hoveredId], recompute, { flush: 'post' })
+  // Замеры корней — размеры блоков могли поменяться без смены документа.
+  watch([camera, doc, selectedId, hoveredId, rootHeights], recompute, { flush: 'post' })
 
   onMounted(() => {
     window.addEventListener('resize', schedule)

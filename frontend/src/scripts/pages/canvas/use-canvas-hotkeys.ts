@@ -40,7 +40,7 @@ export function useCanvasHotkeys(): void {
     const id = layoutStore.selectedId
     if (command === null || id === null) return
     const target = e.target
-    // Enter на кнопке нажимает её; Esc же не нужен кнопкам, а фокус после клика по сегменту пути остаётся на кнопке.
+    // Enter на кнопке нажимает её; Esc кнопкам не нужен, поэтому работает и с фокусом на кнопке.
     if (command === 'select-child' && target instanceof HTMLElement && isInteractiveTarget(describeTarget(target)))
       return
     e.preventDefault()

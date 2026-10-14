@@ -72,9 +72,17 @@ export function rootCaption(block: BlockNode, canvas: CanvasPlacement): string {
 
 /** Подпись плашки связи: `→ <подпись источника>`. */
 export function linkCaption(doc: Pick<LayoutDocument, 'roots'>, sourceId: NodeId): string {
-  const source = doc.roots.find((root) => root.node.id === sourceId)?.node
-  const label = source === undefined ? '' : blockLabel(source)
-  return `${LINK_ICON} ${label === '' ? LINK_MISSING_LABEL : label}`
+  return linkCaptionFromLabel(rootLabels(doc).get(sourceId))
+}
+
+/** Карта «id корня → подпись» по документу: плашки связей берут подпись источника отсюда без поиска по корням. */
+export function rootLabels(doc: Pick<LayoutDocument, 'roots'>): Map<NodeId, string> {
+  return new Map(doc.roots.map((root) => [root.node.id, blockLabel(root.node)]))
+}
+
+/** Подпись плашки связи по подписи источника (`undefined` — источника нет). */
+export function linkCaptionFromLabel(label: string | undefined): string {
+  return `${LINK_ICON} ${label === undefined || label === '' ? LINK_MISSING_LABEL : label}`
 }
 
 /** Динамический стиль корня: позиция и ширина превью на поле; высота — только если задана. */
