@@ -1,10 +1,36 @@
-// Стили фрагмента canvas-props-container: поля секции «Контейнер» друг под другом, повороты иконок выравнивания
+// Стили фрагмента canvas-props-container: поля секции «Контейнер» друг под другом, повороты иконок выравнивания, grid: слова mono и пара отступов со связкой
 @use 'variables' as v;
 
 .canvas-props-container {
   display: flex;
   flex-direction: column;
   gap: v.$space-12;
+
+  // Значения выравнивания grid пишутся словами CSS: моноширинным шрифтом
+  &__mono .ui-segmented__item {
+    font-family: v.$font-mono;
+  }
+
+  // Column-gap и row-gap в одну строку, между ними кнопка-связка
+  &__gaps {
+    display: flex;
+    gap: v.$space-6;
+    align-items: center;
+  }
+
+  &__gap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__link {
+    flex: none;
+
+    &--on {
+      color: var(--color-accent-text);
+      background: var(--color-accent-soft);
+    }
+  }
 
   // Иконки нарисованы для row; под другое направление их зеркалим или поворачиваем
   &__icons {

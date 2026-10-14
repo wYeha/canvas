@@ -338,3 +338,39 @@ export const CONTAINER_GAP_LABEL = 'gap'
 
 /** Минимальное значение gap, px. */
 export const CONTAINER_GAP_MIN = 0
+
+/** Подпись поля `grid-template-columns`. */
+export const GRID_COLUMNS_LABEL = 'grid-template-columns'
+
+/** Подпись группы пресетов колонок для скринридера. */
+export const GRID_COLUMNS_PRESETS_LABEL = 'Пресеты колонок'
+
+/** Подпись поля `grid-template-rows`. */
+export const GRID_ROWS_LABEL = 'grid-template-rows'
+
+/** Подсказка пустого поля строк: пусто значит `auto`. */
+export const GRID_ROWS_PLACEHOLDER = 'auto'
+
+/** Сообщение под полем шаблона, когда значение отклонено. */
+export const GRID_TEMPLATE_ERROR = 'Недопустимое значение: пусто или есть ; " < > { }'
+
+/** Подпись поля `justify-items`. */
+export const GRID_JUSTIFY_ITEMS_LABEL = 'justify-items'
+
+/** Подпись поля `align-items` в grid. */
+export const GRID_ALIGN_ITEMS_LABEL = 'align-items'
+
+/** Подпись группы полей отступов grid. */
+export const GRID_GAP_LABEL = 'gap'
+
+/** Подпись поля `column-gap`. */
+export const GRID_COLUMN_GAP_LABEL = 'column-gap'
+
+/** Подпись поля `row-gap`. */
+export const GRID_ROW_GAP_LABEL = 'row-gap'
+
+/** Подпись кнопки-связки отступов («одинаковые»). */
+export const GRID_GAP_LINK_LABEL = 'Одинаковые отступы'
+
+/** Значение `grid-template-rows` по умолчанию. */
+export const GRID_ROWS_DEFAULT = 'auto'

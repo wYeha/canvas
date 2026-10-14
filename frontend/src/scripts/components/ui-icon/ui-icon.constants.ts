@@ -10,6 +10,7 @@ export const ICON_PATHS = {
   moon: ['M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z'],
   flex: ['M2 3h3v10H2zM6.5 3h3v10h-3zM11 3h3v10h-3z'],
   grid: ['M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z'],
+  link: ['M6.5 9.5l3-3', 'M7 4.5l1-1a2.5 2.5 0 0 1 3.5 3.5l-1 1', 'M9 11.5l-1 1A2.5 2.5 0 0 1 4.5 9l1-1'],
   undo: ['M6 3L3 6l3 3', 'M3 6h6a4 4 0 0 1 0 8H6'],
   redo: ['M10 3l3 3-3 3', 'M13 6H7a4 4 0 0 0 0 8h3'],
   minus: ['M3 8h10'],

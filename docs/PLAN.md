@@ -82,7 +82,8 @@
   > Фрагмент `CanvasPropsBlock.vue` (логика — `props-block.ts`, `use-canvas-props-block.ts`, `use-block-text-draft.ts`; тесты `props-block.test.ts`). Подпись и описание правятся в локальном черновике и пишутся на Enter/blur (описание — Ctrl+Enter), Esc откатывает. Добавлен общий `UiTextarea` (DOM-тест, витрина `?ui`). Режим «по сторонам» — локальное состояние, пересчитывается при смене выделения (включён, если стороны не равны). Многосимвольный typeahead в `UiSelect` не делался — остаётся поиск по первой букве.
 - [x] **3.3 Секция «Контейнер»: flex.** Тип flex↔grid (с переносом совместимых значений), direction, wrap, justify, align, gap.
   > Фрагмент `CanvasPropsContainer`; `convertContainer` (props-container.ts) переносит gap ↔ columnGap/rowGap и align ↔ alignItems. В набор UiIcon добавлены стрелки и иконки justify/align; для column/row-reverse иконки поворачиваются CSS-модификаторами `canvas-props-container__icons--*`. У grid пока только переключатель типа (поля — в 3.4).
-- [ ] **3.4 Секция «Контейнер»: grid.** `columns` / `rows` текстом + быстрые пресеты (`1fr ×2/×3/×4`, `250px 1fr`), justify/align items, column/row gap.
+- [x] **3.4 Секция «Контейнер»: grid.** `columns` / `rows` текстом + быстрые пресеты (`1fr ×2/×3/×4`, `250px 1fr`), justify/align items, column/row gap.
+  > Grid-часть в `CanvasPropsContainer` (логика — `props-container-grid.ts` + `use-canvas-props-container-grid.ts`, тесты `props-container-grid.test.ts`). Черновик `useBlockTextDraft` обобщён: принимает `{ multiline, normalize }` и отдаёт `error` (недопустимое значение → ошибка и откат); общий валидатор CSS-значений — `scripts/globals/css-value.ts` (для 3.5 и экспорта 4.1). Пустые rows и `auto` хранятся как `auto`. В UiIcon добавлена иконка `link` для связки отступов.
 - [ ] **3.5 Секция «Как ребёнок».** Во flex-родителе: `flex` (быстрые кнопки + своё значение текстом), `width`. В grid-родителе: `colSpan`, `rowSpan`. Всегда: `height` / `min-height`.
 
 ## Этап 4. Экспорт

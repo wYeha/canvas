@@ -1,4 +1,4 @@
-/** Composable секции «Контейнер»: тип и flex-поля выделенного блока; запись через экшен стора. */
+/** Composable секции «Контейнер»: тип, flex-поля и (через use-canvas-props-container-grid) grid-поля выделенного блока; запись через экшен стора. */
 import { computed, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { BlockNode, FlexContainer } from '@shared'
 import { useLayoutStore } from './layout-store'
@@ -11,6 +11,7 @@ import {
   iconOrientation,
   type AlignAxis,
 } from './props-container'
+import { useCanvasPropsContainerGrid } from './use-canvas-props-container-grid'
 
 /** Базовый BEM-класс группы иконок выравнивания (модификаторы поворота добавляются к нему). */
 const ICONS_CLASS = 'canvas-props-container__icons'
@@ -93,6 +94,7 @@ export function useCanvasPropsContainer() {
   }
 
   return {
+    ...useCanvasPropsContainerGrid(block),
     block,
     flex,
     kind,
