@@ -10,5 +10,6 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "../shared/src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "../shared/src/**/*.ts"],
+  "exclude": ["src/**/__tests__/**"]
 }

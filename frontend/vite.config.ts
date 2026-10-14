@@ -1,6 +1,6 @@
-/** Конфигурация Vite: плагин Vue и алиасы импортов `@/` и `@shared`. */
+/** Конфигурация Vite и Vitest: плагин Vue, алиасы импортов `@/` и `@shared`, запуск тестов только из `__tests__/`. */
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
@@ -24,5 +24,10 @@ export default defineConfig({
         replacement: fileURLToPath(new URL('./src', import.meta.url)) + '/',
       },
     ],
+  },
+  // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4); DOM-окружение не нужно, пока тесты — чистые функции
+  test: {
+    include: ['src/**/__tests__/**/*.test.ts'],
+    environment: 'node',
   },
 })

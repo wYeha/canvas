@@ -1,0 +1,6 @@
+# Файлы, которые Prettier не форматирует: lock-файл, документация (пишется вручную), служебное и сборка
+package-lock.json
+*.md
+.claude/
+dist/
+coverage/

@@ -15,6 +15,24 @@
     "dev": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
     "preview": "npm run preview -w frontend",
-    "typecheck": "npm run typecheck -w frontend"
+    "typecheck": "npm run typecheck -w frontend",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "stylelint": "npm run stylelint -w frontend",
+    "test": "npm run test -w frontend",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run format:check && npm run stylelint && npm run typecheck && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsdoc": "^63.3.3",
+    "eslint-plugin-vue": "^10.11.1",
+    "prettier": "^3.9.10",
+    "typescript-eslint": "^8.71.2",
+    "vue-eslint-parser": "^10.4.1"
   }
 }
