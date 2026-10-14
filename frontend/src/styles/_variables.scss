@@ -1,0 +1,227 @@
+// Переменные дизайн-системы: карты цветов двух тем, палитра блоков, шкалы и размеры. Значения берутся из docs/TOKENS.md. CSS не выводит.
+@use 'sass:map';
+
+// ---------- Темы: цвета и тени (ключи в обеих темах совпадают, правило 10.3) ----------
+// Цвета выводятся как --color-<ключ>, тени как --shadow-<ключ>.
+
+$theme-light: (
+  'colors': (
+    'canvas': #e9ebee,
+    'canvas-dot': #c3c8cf,
+    'paper': #fff,
+    'panel': #fff,
+    'line': #e2e4e8,
+    'hover': #f1f3f6,
+    'subtle': #eef0f3,
+    'input': #fff,
+    'code': #f6f7f9,
+    'scrim': rgb(20 24 31 / 32%),
+    'text': #1a1d21,
+    'muted': #5d6470,
+    'accent': #3358d4,
+    'on-accent': #fff,
+    'accent-soft': #e8edfc,
+    'accent-text': #2443a8,
+    'seg-on': #fff,
+    'ok': #1f8a4c,
+    'on-ok': #fff,
+    'danger': #c42b43,
+    'danger-soft': #fcecee,
+    'on-danger': #fff,
+    'link': #7a8597,
+    'toast': #1a1d21,
+    'on-toast': #f3f4f6,
+    'syntax-tag': #2443a8,
+    'syntax-attr': #8a3fcf,
+    'syntax-string': #1a7348,
+    'syntax-comment': #6b7280,
+    'syntax-prompt': #3d4450,
+  ),
+  'shadows': (
+    'panel': 0 8px 24px rgb(20 24 31 / 12%),
+    'popover': 0 12px 32px rgb(20 24 31 / 16%),
+    'modal': 0 24px 64px rgb(20 24 31 / 25%),
+    'pill': 0 4px 12px rgb(20 24 31 / 12%),
+    'root': 0 1px 3px rgb(20 24 31 / 12%),
+    'seg-on': 0 1px 2px rgb(20 24 31 / 14%),
+  ),
+);
+$theme-dark: (
+  'colors': (
+    'canvas': #0e0f11,
+    'canvas-dot': #22262b,
+    'paper': #16181b,
+    'panel': #1b1e22,
+    'line': #2a2e34,
+    'hover': #24282e,
+    'subtle': #24272d,
+    'input': #141619,
+    'code': #141619,
+    'scrim': rgb(0 0 0 / 55%),
+    'text': #e6e8eb,
+    'muted': #a3aab5,
+    'accent': #7b97f6,
+    'on-accent': #0d1222,
+    'accent-soft': #243056,
+    'accent-text': #b4c4fa,
+    'seg-on': #353a42,
+    'ok': #4cc27e,
+    'on-ok': #08160e,
+    'danger': #ff7a8c,
+    'danger-soft': #3a1f25,
+    'on-danger': #1a0b0e,
+    'link': #8a93a3,
+    'toast': #e6e8eb,
+    'on-toast': #141619,
+    'syntax-tag': #9db2ff,
+    'syntax-attr': #c9a8ff,
+    'syntax-string': #86d7a2,
+    'syntax-comment': #8b93a1,
+    'syntax-prompt': #c7ccd4,
+  ),
+  'shadows': (
+    'panel': 0 8px 24px rgb(0 0 0 / 60%),
+    'popover': 0 12px 32px rgb(0 0 0 / 60%),
+    'modal': 0 24px 64px rgb(0 0 0 / 70%),
+    'pill': 0 4px 12px rgb(0 0 0 / 60%),
+    'root': 0 1px 3px rgb(0 0 0 / 60%),
+    'seg-on': 0 0 0 1px #40464f,
+  ),
+);
+
+// Защита от рассинхронизации: ключ, которого нет в одной из карт, ломает сборку (правило 10.3)
+@each $group in ('colors', 'shadows') {
+  $light-keys: map.keys(map.get($theme-light, $group));
+  $dark-keys: map.keys(map.get($theme-dark, $group));
+
+  @if $light-keys != $dark-keys {
+    @error 'Ключи группы "#{$group}" в $theme-light и $theme-dark не совпадают';
+  }
+}
+
+// ---------- Палитра блоков (цвет по глубине: depth % 8), порядок важен ----------
+
+$block-palette-light: (
+  'blue': #4c7bf4,
+  'violet': #8b5cf6,
+  'teal': #14a3a3,
+  'green': #3fa45b,
+  'amber': #d99a00,
+  'orange': #e5702a,
+  'pink': #db4f93,
+  'slate': #6b7a90,
+);
+$block-palette-dark: (
+  'blue': #6f95ff,
+  'violet': #a68bff,
+  'teal': #33c4bf,
+  'green': #62c77f,
+  'amber': #e9b949,
+  'orange': #f28e57,
+  'pink': #f074b0,
+  'slate': #97a3b6,
+);
+
+// Прозрачности цвета блока (и акцента для штриховок), выводятся как --alpha-<ключ>
+$block-alpha-light: (
+  'fill': 0.1,
+  'stroke': 0.55,
+  'chip': 0.22,
+  'icon': 0.22,
+  'link-hatch': 0.18,
+  'spacing-hatch': 0.25,
+  'drop-fill': 0.12,
+);
+$block-alpha-dark: (
+  'fill': 0.11,
+  'stroke': 0.42,
+  'chip': 0.24,
+  'icon': 0.3,
+  'link-hatch': 0.26,
+  'spacing-hatch': 0.35,
+  'drop-fill': 0.12,
+);
+
+// ---------- Шрифты ----------
+// Временные: при замене на шрифты пользователя меняются только эти переменные и @font-face в _globals.scss
+
+$font-ui-name: 'IBM Plex Sans';
+$font-mono-name: 'JetBrains Mono';
+$font-ui:
+  $font-ui-name,
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  sans-serif;
+$font-mono: $font-mono-name, ui-monospace, 'Cascadia Mono', consolas, monospace;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-size-2xs: 10px; // чипы, мета
+$font-size-xs: 11px; // подписи полей, mono
+$font-size-sm: 12px; // контролы, строки
+$font-size-base: 13px; // базовый
+$font-size-md: 14px; // логотип
+$font-size-lg: 15px; // заголовок модалки
+
+$line-height-base: 1.4;
+
+// ---------- Шкалы ----------
+
+$space-2: 2px;
+$space-4: 4px;
+$space-6: 6px;
+$space-8: 8px;
+$space-10: 10px;
+$space-12: 12px;
+$space-16: 16px;
+$space-20: 20px;
+$space-24: 24px;
+$radius-block: 3px;
+$radius-segment: 4px;
+$radius-control: 6px;
+$radius-segment-group: 6px;
+$radius-panel: 10px;
+$radius-toolbar: 12px;
+$radius-modal: 12px;
+$radius-pill: 999px;
+
+// ---------- Размеры ----------
+
+$header-height: 44px;
+$layers-width: 248px;
+$props-width: 288px;
+$panel-gap: 12px; // отступ плавающих панелей от краёв
+$toolbar-button-size: 36px;
+$toolbar-padding: 6px;
+$pill-height: 32px; // плашки пути и зума
+$control-height: 28px; // поле, селект в панели
+$segment-height: 26px; // сегменты, кнопки в панели, строки слоёв
+$label-chip-height: 16px;
+$label-chip-offset: 4px; // отступ чипа от угла блока (4–5)
+$preset-chip-height: 22px;
+$selection-badge-height: 18px;
+$selection-badge-offset: 20px; // бейдж над блоком на 20–22
+$link-port-size: 10px;
+$link-port-border: 2px;
+$export-modal-width: 1040px;
+$export-modal-height: 700px;
+$documents-dropdown-width: 340px;
+$canvas-grid-step: 16px; // шаг точек сетки поля
+$canvas-dot-radius: 1px;
+
+// Контур фокуса с клавиатуры
+$focus-ring-width: 2px;
+$focus-ring-offset: 1px;
+
+// ---------- Слои (z-index) ----------
+
+$z-canvas: 0; // поле и блоки
+$z-chip: 2; // чипы подписей
+$z-badge: 3; // бейдж выделения
+$z-link: 4; // стрелки связей
+$z-port: 5; // порты, призрак перетаскивания
+$z-panel: 6; // плавающие панели
+$z-dropdown: 10;
+$z-modal: 20;
+$z-toast: 30;

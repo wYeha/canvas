@@ -25,6 +25,14 @@ export default defineConfig({
       },
     ],
   },
+  // Пути @use в SCSS пишутся от корня styles (правило 4.1.5)
+  css: {
+    preprocessorOptions: {
+      scss: {
+        loadPaths: [fileURLToPath(new URL('./src/styles', import.meta.url))],
+      },
+    },
+  },
   // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4); DOM-окружение не нужно, пока тесты — чистые функции
   test: {
     include: ['src/**/__tests__/**/*.test.ts'],

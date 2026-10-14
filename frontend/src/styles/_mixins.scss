@@ -1,0 +1,39 @@
+// Миксины: вывод карт в CSS-переменные и контур фокуса. Сами по себе CSS не выводят.
+@use 'sass:map';
+@use 'variables' as v;
+
+/// Выводит записи карты как CSS-переменные `--<prefix>-<ключ>: <значение>`.
+/// @param {Map} $map - карта «ключ: значение».
+/// @param {String} $prefix - префикс имени переменной (например, 'color').
+@mixin css-vars($map, $prefix) {
+  @each $key, $value in $map {
+    --#{$prefix}-#{$key}: #{$value};
+  }
+}
+
+/// Выводит все переменные одной темы: цвета (--color-*) и тени (--shadow-*).
+/// @param {Map} $theme - карта темы с группами 'colors' и 'shadows' (например, v.$theme-light).
+@mixin theme-vars($theme) {
+  @include css-vars(map.get($theme, 'colors'), 'color');
+  @include css-vars(map.get($theme, 'shadows'), 'shadow');
+}
+
+/// Выводит палитру блоков как --block-0 … --block-7 в порядке карты (цвет блока берётся по depth % 8).
+/// @param {Map} $palette - упорядоченная карта палитры (v.$block-palette-light или -dark).
+@mixin block-palette-vars($palette) {
+  $index: 0;
+
+  @each $name, $color in $palette {
+    --block-#{$index}: #{$color};
+
+    $index: $index + 1;
+  }
+}
+
+/// Контур фокуса для элементов, доступных с клавиатуры (только :focus-visible).
+@mixin focus-ring {
+  &:focus-visible {
+    outline: v.$focus-ring-width solid var(--color-accent);
+    outline-offset: v.$focus-ring-offset;
+  }
+}
