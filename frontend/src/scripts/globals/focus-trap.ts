@@ -23,9 +23,23 @@ export function nextFocusIndex(count: number, current: number, backwards: boolea
   return (current + step + count) % count
 }
 
-/** Проверяет, можно ли перейти на элемент по Tab: он не отключён и не исключён через tabindex=-1. */
+/** Проверяет, скрыт ли сам элемент или его предок: hidden, inert, display:none, visibility:hidden, отключённый fieldset. */
+function isHiddenOrInert(element: Element): boolean {
+  const style = getComputedStyle(element)
+  if (style.visibility === 'hidden' || style.visibility === 'collapse') return true
+  // Проверка по цепочке предков надёжнее getClientRects: работает и в браузере, и в happy-dom
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    if (node.hasAttribute('hidden') || node.hasAttribute('inert')) return true
+    if (getComputedStyle(node).display === 'none') return true
+    if (node !== element && node.tagName === 'FIELDSET' && node.hasAttribute('disabled')) return true
+  }
+  return false
+}
+
+/** Проверяет, можно ли перейти на элемент по Tab: он не отключён, не исключён через tabindex=-1 и видим. */
 export function isTabbable(element: Element): boolean {
-  return !element.hasAttribute('disabled') && element.getAttribute('tabindex') !== '-1'
+  if (element.hasAttribute('disabled') || element.getAttribute('tabindex') === '-1') return false
+  return !isHiddenOrInert(element)
 }
 
 /** Собирает элементы контейнера, доступные по Tab, в порядке документа. */

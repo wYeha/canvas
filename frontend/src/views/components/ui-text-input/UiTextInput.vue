@@ -3,14 +3,14 @@
   <label :class="classes">
     <span v-if="prefix" class="ui-text-input__prefix">{{ prefix }}</span>
     <input
+      v-bind="inputAttrs"
       v-model="model"
       class="ui-text-input__input"
       type="text"
       :disabled="disabled"
       :placeholder="placeholder"
-      :aria-label="label"
+      :aria-label="ariaLabel"
       :aria-invalid="error ? 'true' : undefined"
-      v-bind="inputAttrs"
       @keydown="emit('keydown', $event)"
       @blur="emit('blur', $event)"
     />
@@ -25,5 +25,5 @@ import { useUiTextInput } from '@/scripts/components/ui-text-input/use-ui-text-i
 const props = defineProps<UiTextInputProps>()
 const emit = defineEmits<UiTextInputEmits>()
 const model = defineModel<string>({ default: '' })
-const { classes } = useUiTextInput(props)
+const { classes, ariaLabel } = useUiTextInput(props)
 </script>

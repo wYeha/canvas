@@ -1,21 +1,24 @@
 <!-- Общий компонент: выпадающий список (listbox) с клавиатурой, typeahead и закрытием по клику мимо -->
 <template>
   <div ref="root" :class="classes">
+    <span v-if="!hasExternalLabel" :id="ownLabelId" class="ui-select__label">{{ label }}</span>
     <button
       ref="trigger"
+      v-bind="inputAttrs"
       class="ui-select__button"
       type="button"
       aria-haspopup="listbox"
       :aria-expanded="isOpen"
       :aria-controls="isOpen ? listId : undefined"
-      :aria-label="label"
+      :aria-labelledby="labelledBy"
       :aria-invalid="error ? 'true' : undefined"
       :disabled="disabled"
-      v-bind="inputAttrs"
       @click="toggle"
       @keydown="onTriggerKeydown"
     >
-      <span class="ui-select__value" :class="{ 'ui-select__value--placeholder': !hasValue }">{{ selectedLabel }}</span>
+      <span :id="valueId" class="ui-select__value" :class="{ 'ui-select__value--placeholder': !hasValue }">{{
+        selectedLabel
+      }}</span>
       <UiIcon name="chevron-down" class="ui-select__chevron" />
     </button>
     <ul
@@ -67,6 +70,10 @@ const {
   activeIndex,
   activeId,
   listId,
+  valueId,
+  ownLabelId,
+  hasExternalLabel,
+  labelledBy,
   listStyle,
   selectedIndex,
   selectedLabel,

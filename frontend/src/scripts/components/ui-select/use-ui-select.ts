@@ -1,49 +1,29 @@
 /** Логика компонента UiSelect: выбор значения поверх общего всплывающего списка (listbox-паттерн). */
 import { computed, useId, type ComputedRef, type Ref } from 'vue'
 import type { UiSelectProps } from '@/scripts/components/ui-select/ui-select.types'
-import { firstEnabledIndex } from '@/scripts/globals/list-nav'
+import { firstEnabledIndex, lastEnabledIndex } from '@/scripts/globals/list-nav'
 import { usePopupList, type PopupList } from '@/scripts/globals/use-popup-list'
-
-/** Клавиши, открывающие список на кнопке (Enter и Space открывают нативным click). */
-const OPEN_KEYS = ['ArrowDown', 'ArrowUp']
 
 /** Состояние селекта: общий всплывающий список плюс выбранное значение, id и обработчики. */
 export interface UiSelectState extends Omit<PopupList, 'anchor'> {
   trigger: PopupList['anchor']
   activeId: ComputedRef<string | undefined>
   listId: string
+  valueId: string
+  ownLabelId: string
+  hasExternalLabel: ComputedRef<boolean>
+  labelledBy: ComputedRef<string>
   selectedIndex: ComputedRef<number>
   selectedLabel: ComputedRef<string>
   hasValue: ComputedRef<boolean>
   optionId: (index: number) => string
   choose: (index: number) => void
-  onTriggerKeydown: (event: KeyboardEvent) => void
-  onListKeydown: (event: KeyboardEvent) => void
 }
 
 /** Возвращает состояние и обработчики селекта; ссылки root, trigger и list привязываются в шаблоне по имени. */
 export function useUiSelect(props: Readonly<UiSelectProps>, model: Ref<string | null>): UiSelectState {
-  const selectedIndex = computed(() => props.options.findIndex((option) => option.value === model.value))
-  const popup = usePopupList({
-    /** Варианты списка. */
-    items: () => props.options,
-    /** Недоступность открытия. */
-    disabled: () => props.disabled === true,
-    /** При открытии активен выбранный пункт, иначе первый доступный. */
-    initialIndex: () => (selectedIndex.value >= 0 ? selectedIndex.value : firstEnabledIndex(props.options)),
-    matchWidth: true,
-    wrap: false,
-  })
   const listId = ['ui-select', useId()].join('-')
-  const selectedLabel = computed(() => props.options[selectedIndex.value]?.label ?? props.placeholder ?? '')
-  const hasValue = computed(() => selectedIndex.value >= 0)
-
-  /** Возвращает id пункта списка для aria-activedescendant. */
-  function optionId(index: number): string {
-    return `${listId}-option-${String(index)}`
-  }
-
-  const activeId = computed(() => (popup.activeIndex.value >= 0 ? optionId(popup.activeIndex.value) : undefined))
+  const selectedIndex = computed(() => props.options.findIndex((option) => option.value === model.value))
 
   /** Выбирает пункт (если он доступен), обновляет модель и закрывает список. */
   function choose(index: number): void {
@@ -53,28 +33,37 @@ export function useUiSelect(props: Readonly<UiSelectProps>, model: Ref<string | 
     popup.close(true)
   }
 
-  /** Клавиатура на кнопке: стрелки открывают список. */
-  function onTriggerKeydown(event: KeyboardEvent): void {
-    if (!OPEN_KEYS.includes(event.key)) return
-    event.preventDefault()
-    popup.open()
+  const popup = usePopupList({
+    /** Варианты списка. */
+    items: () => props.options,
+    /** Недоступность открытия. */
+    disabled: () => props.disabled === true,
+    /** При открытии активен выбранный пункт, иначе первый доступный (при ↑ — последний). */
+    initialIndex: (fromEnd) => {
+      if (selectedIndex.value >= 0) return selectedIndex.value
+      return fromEnd ? lastEnabledIndex(props.options) : firstEnabledIndex(props.options)
+    },
+    choose,
+    matchWidth: true,
+    wrap: false,
+  })
+
+  const selectedLabel = computed(() => props.options[selectedIndex.value]?.label ?? props.placeholder ?? '')
+  const hasValue = computed(() => selectedIndex.value >= 0)
+  const valueId = `${listId}-value`
+  const ownLabelId = `${listId}-label`
+
+  // Имя триггера = подпись + выбранное значение: подпись берётся у UiField (aria-labelledby) или из скрытого span
+  const externalLabelId = computed(() => String(props.inputAttrs?.['aria-labelledby'] ?? ''))
+  const hasExternalLabel = computed(() => externalLabelId.value !== '')
+  const labelledBy = computed(() => `${hasExternalLabel.value ? externalLabelId.value : ownLabelId} ${valueId}`)
+
+  /** Возвращает id пункта списка для aria-activedescendant. */
+  function optionId(index: number): string {
+    return `${listId}-option-${String(index)}`
   }
 
-  /** Клавиатура в открытом списке: навигация, Enter/Space — выбрать, Esc — закрыть, Tab — закрыть и уйти дальше. */
-  function onListKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      choose(popup.activeIndex.value)
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      event.stopPropagation()
-      popup.close(true)
-    } else if (event.key === 'Tab') {
-      popup.close(true)
-    } else if (popup.navigate(event)) {
-      event.preventDefault()
-    }
-  }
+  const activeId = computed(() => (popup.activeIndex.value >= 0 ? optionId(popup.activeIndex.value) : undefined))
 
   const { anchor: trigger, ...rest } = popup
   return {
@@ -82,13 +71,15 @@ export function useUiSelect(props: Readonly<UiSelectProps>, model: Ref<string | 
     trigger,
     activeId,
     listId,
+    valueId,
+    ownLabelId,
+    hasExternalLabel,
+    labelledBy,
     selectedIndex,
     selectedLabel,
     hasValue,
     optionId,
     choose,
-    onTriggerKeydown,
-    onListKeydown,
   }
 }
 

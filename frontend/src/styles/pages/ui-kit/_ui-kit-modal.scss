@@ -1,5 +1,6 @@
 // Стили фрагмента ui-kit-modal: ряд кнопок открытия и содержимое демонстрационной модалки
 @use 'variables' as v;
+@use 'ui-kit-variables' as kit;
 
 .ui-kit-modal {
   &__row {
@@ -11,6 +12,6 @@
     display: flex;
     flex-direction: column;
     gap: v.$space-12;
-    width: v.$ui-kit-field-width;
+    width: kit.$field-width;
   }
 }

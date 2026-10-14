@@ -54,6 +54,13 @@ describe('UiDropdown', () => {
     expect(wrapper.find('[role="menu"]').exists()).toBe(false)
   })
 
+  it('ArrowUp на триггере открывает меню на последнем доступном пункте', async () => {
+    const wrapper = setup()
+    await wrapper.find('button').trigger('keydown', { key: 'ArrowUp' })
+    const menu = wrapper.find('[role="menu"]')
+    expect(menu.attributes('aria-activedescendant')).toBe(wrapper.findAll('[role="menuitem"]')[3]?.attributes('id'))
+  })
+
   it('Esc закрывает без выбора и возвращает фокус на триггер; клик мимо закрывает', async () => {
     const wrapper = setup()
     await wrapper.find('button').trigger('click')

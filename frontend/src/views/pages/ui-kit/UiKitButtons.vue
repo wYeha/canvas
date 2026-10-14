@@ -7,7 +7,7 @@
         <UiButton :variant="variant" :size="size">Текст</UiButton>
         <UiButton :variant="variant" :size="size" icon="plus">С иконкой</UiButton>
         <UiButton :variant="variant" :size="size" icon-after="chevron-down">Иконка справа</UiButton>
-        <UiButton :variant="variant" :size="size" icon="flex" hint="F">С клавишей</UiButton>
+        <UiButton :variant="variant" :size="size" icon="flex" hint="F" keyshortcuts="F">С клавишей</UiButton>
         <UiButton :variant="variant" :size="size" disabled>Disabled</UiButton>
       </div>
     </div>

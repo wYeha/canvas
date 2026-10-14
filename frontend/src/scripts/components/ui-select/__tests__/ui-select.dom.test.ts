@@ -41,6 +41,25 @@ describe('UiSelect', () => {
     expect(selected.map((o) => o.text())).toEqual(['main'])
   })
 
+  it('имя триггера складывается из подписи и выбранного значения', () => {
+    const { wrapper } = setup('main')
+    const button = wrapper.find('button')
+    expect(button.attributes('aria-label')).toBeUndefined()
+    const ids = (button.attributes('aria-labelledby') ?? '').split(' ')
+    const names = ids.map((id) => wrapper.find(`#${id}`).text())
+    expect(names).toEqual(['Тег', 'main'])
+  })
+
+  it('внешняя подпись из UiField (aria-labelledby) заменяет скрытый span', () => {
+    const external = mount(UiSelect, {
+      props: { options: OPTIONS, label: 'Тег', modelValue: 'nav', inputAttrs: { 'aria-labelledby': 'outer-label' } },
+    })
+    const ids = (external.find('button').attributes('aria-labelledby') ?? '').split(' ')
+    expect(ids[0]).toBe('outer-label')
+    expect(external.find('.ui-select__label').exists()).toBe(false)
+    external.unmount()
+  })
+
   it('ArrowDown открывает, стрелки пропускают недоступные, Enter выбирает и закрывает', async () => {
     const { wrapper, emitted } = setup(null)
     await wrapper.find('button').trigger('keydown', { key: 'ArrowDown' })

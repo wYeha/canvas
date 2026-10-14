@@ -8,6 +8,10 @@
   position: relative;
   min-width: 0;
 
+  &__label {
+    @include mx.visually-hidden;
+  }
+
   &__button {
     display: flex;
     gap: v.$space-4;

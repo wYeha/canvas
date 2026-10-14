@@ -4,7 +4,7 @@
     :class="classes"
     type="button"
     :disabled="disabled"
-    :aria-keyshortcuts="hint"
+    :aria-keyshortcuts="keyshortcuts"
     @mousedown="keepFocusOnMouseDown"
   >
     <UiIcon v-if="icon" :name="icon" class="ui-button__icon" />

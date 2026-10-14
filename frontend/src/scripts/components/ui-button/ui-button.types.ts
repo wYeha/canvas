@@ -15,5 +15,8 @@ export interface UiButtonProps {
   disabled?: boolean
   icon?: UiIconName
   iconAfter?: UiIconName
+  /** Подсказка клавиши на кнопке (только отображение). */
   hint?: string
+  /** Значение aria-keyshortcuts в формате спецификации: `Control+E`, `F`. */
+  keyshortcuts?: string
 }

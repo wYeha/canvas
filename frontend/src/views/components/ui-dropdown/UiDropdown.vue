@@ -14,7 +14,7 @@
       :style="listStyle"
       :aria-label="label"
       :aria-activedescendant="activeId"
-      @keydown="onMenuKeydown"
+      @keydown="onListKeydown"
     >
       <li
         v-for="(item, index) in items"
@@ -58,7 +58,7 @@ const {
   choose,
   toggle,
   onTriggerKeydown,
-  onMenuKeydown,
+  onListKeydown,
 } = useUiDropdown(props, (event, value) => {
   emit(event, value)
 })

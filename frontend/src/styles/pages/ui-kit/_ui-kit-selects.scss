@@ -1,5 +1,6 @@
 // Стили фрагмента ui-kit-selects: ряд селектов и переключателей витрины и строка значений
 @use 'variables' as v;
+@use 'ui-kit-variables' as kit;
 
 .ui-kit-selects {
   &__row {
@@ -10,11 +11,11 @@
   }
 
   &__field {
-    width: v.$ui-kit-field-width;
+    width: kit.$field-width;
   }
 
   &__group {
-    width: v.$ui-kit-segmented-width;
+    width: kit.$segmented-width;
   }
 
   &__value {

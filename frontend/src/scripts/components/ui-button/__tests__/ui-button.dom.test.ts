@@ -18,10 +18,13 @@ describe('UiButton', () => {
     expect(wrapper.emitted('click')).toBeUndefined()
   })
 
-  it('вариант danger даёт BEM-модификатор, hint — aria-keyshortcuts и kbd', () => {
-    const wrapper = mount(UiButton, { props: { variant: 'danger', hint: 'F' }, slots: { default: 'Flex' } })
+  it('вариант danger даёт BEM-модификатор, hint — только kbd, keyshortcuts — aria-keyshortcuts', () => {
+    const wrapper = mount(UiButton, {
+      props: { variant: 'danger', hint: 'F', keyshortcuts: 'Control+F' },
+      slots: { default: 'Flex' },
+    })
     expect(wrapper.classes()).toContain('ui-button--variant-danger')
-    expect(wrapper.attributes('aria-keyshortcuts')).toBe('F')
+    expect(wrapper.attributes('aria-keyshortcuts')).toBe('Control+F')
     expect(wrapper.find('.ui-button__hint').text()).toBe('F')
   })
 })

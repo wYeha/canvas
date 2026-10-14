@@ -1,5 +1,6 @@
 // Стили фрагмента ui-kit-panel-parts: ряд полей, панель с секциями и строка значений витрины
 @use 'variables' as v;
+@use 'ui-kit-variables' as kit;
 
 .ui-kit-panel-parts {
   &__row {
@@ -9,7 +10,7 @@
   }
 
   &__field {
-    width: v.$ui-kit-field-width;
+    width: kit.$field-width;
   }
 
   &__panel {

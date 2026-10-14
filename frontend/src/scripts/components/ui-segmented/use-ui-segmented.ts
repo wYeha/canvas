@@ -1,5 +1,6 @@
 /** Логика компонента UiSegmented: roving tabindex, выбор по клику и стрелкам (radiogroup-паттерн). */
 import { computed, nextTick, ref, type ComputedRef, type Ref } from 'vue'
+import { ariaLabelUnlessLabelledBy } from '@/scripts/globals/aria'
 import type { UiSegmentedOption, UiSegmentedProps } from '@/scripts/components/ui-segmented/ui-segmented.types'
 import { findEnabledIndex, firstEnabledIndex, lastEnabledIndex } from '@/scripts/globals/list-nav'
 
@@ -17,11 +18,13 @@ export function useUiSegmented(
   model: Ref<string | null>,
 ): {
   root: Ref<HTMLElement | null>
+  ariaLabel: ComputedRef<string | undefined>
   tabbableIndex: ComputedRef<number>
   select: (index: number) => void
   onKeydown: (event: KeyboardEvent, index: number) => void
 } {
   const root = ref<HTMLElement | null>(null)
+  const ariaLabel = computed(() => ariaLabelUnlessLabelledBy(props.label, props.inputAttrs))
 
   // Единственный сегмент в порядке табуляции: выбранный, а если выбора нет — первый доступный
   const tabbableIndex = computed(() => {
@@ -61,5 +64,5 @@ export function useUiSegmented(
     selectAndFocus(target)
   }
 
-  return { root, tabbableIndex, select, onKeydown }
+  return { root, ariaLabel, tabbableIndex, select, onKeydown }
 }

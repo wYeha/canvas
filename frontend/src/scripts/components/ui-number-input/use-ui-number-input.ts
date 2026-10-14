@@ -55,6 +55,13 @@ export function useUiNumberInput(
     model.value = next
   }
 
+  /** Esc отменяет правку; если черновик был изменён, событие гасится, чтобы не закрыть внешнюю модалку. */
+  function cancelEdit(event: KeyboardEvent): void {
+    const restored = formatNumber(model.value)
+    if (draft.value !== restored) event.stopPropagation()
+    draft.value = restored
+  }
+
   /** Клавиатура: ↑/↓ — шаг (Shift ×10), Enter — зафиксировать, Esc — отменить правку. */
   function onKeydown(event: KeyboardEvent): void {
     const direction = ARROW_DIRECTIONS[event.key]
@@ -64,7 +71,7 @@ export function useUiNumberInput(
     } else if (event.key === 'Enter') {
       commit()
     } else if (event.key === 'Escape') {
-      draft.value = formatNumber(model.value)
+      cancelEdit(event)
     }
   }
 

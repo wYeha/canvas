@@ -2,11 +2,11 @@
 <template>
   <div
     ref="root"
+    v-bind="inputAttrs"
     class="ui-segmented"
     :class="{ 'ui-segmented--disabled': disabled }"
     role="radiogroup"
-    v-bind="inputAttrs"
-    :aria-label="label"
+    :aria-label="ariaLabel"
   >
     <button
       v-for="(option, index) in options"
@@ -43,5 +43,5 @@ import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 
 const props = defineProps<UiSegmentedProps>()
 const model = defineModel<string | null>({ default: null })
-const { root, tabbableIndex, select, onKeydown } = useUiSegmented(props, model)
+const { root, ariaLabel, tabbableIndex, select, onKeydown } = useUiSegmented(props, model)
 </script>

@@ -66,3 +66,21 @@ describe('UiNumberInput', () => {
     expect(input.attributes('aria-valuetext')).toBe('8 px')
   })
 })
+
+describe('UiNumberInput: Esc и всплытие', () => {
+  it('первый Esc с изменённым черновиком только отменяет правку и не всплывает; Esc без правки всплывает', async () => {
+    const { wrapper, input } = setup(7)
+    const outer: string[] = []
+    /** Запоминает клавиши, дошедшие до внешнего элемента. */
+    const record = (event: Event): void => {
+      outer.push((event as KeyboardEvent).key)
+    }
+    ;(wrapper.element as HTMLElement).addEventListener('keydown', record)
+    await input.setValue('999')
+    await input.trigger('keydown', { key: 'Escape' })
+    expect(outer).toEqual([])
+    expect((input.element as HTMLInputElement).value).toBe('7')
+    await input.trigger('keydown', { key: 'Escape' })
+    expect(outer).toEqual(['Escape'])
+  })
+})

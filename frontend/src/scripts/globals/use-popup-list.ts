@@ -10,6 +10,9 @@ import {
 import { popupStyle } from '@/scripts/globals/popup'
 import { usePopupDismiss } from '@/scripts/globals/use-popup-dismiss'
 
+/** Клавиши, открывающие список с кнопки (Enter и Space открывают нативным click). */
+const OPEN_KEYS = ['ArrowDown', 'ArrowUp']
+
 /** Селектор элементов, которым можно вернуть фокус после закрытия списка. */
 const FOCUSABLE_SELECTOR = 'button, [href], input, [tabindex]'
 
@@ -17,8 +20,10 @@ const FOCUSABLE_SELECTOR = 'button, [href], input, [tabindex]'
 export interface PopupListOptions {
   items: () => readonly LabeledNavItem[]
   disabled: () => boolean
-  /** Индекс пункта, активного при открытии (-1, если подходящего нет). */
-  initialIndex: () => number
+  /** Индекс пункта, активного при открытии (-1, если подходящего нет); fromEnd — открыто стрелкой вверх. */
+  initialIndex: (fromEnd: boolean) => number
+  /** Выбор пункта по индексу (Enter/Space в списке): компонент сам решает, что делать со значением. */
+  choose: (index: number) => void
   /** true — список той же ширины, что кнопка (селект); false — ширину задаёт CSS (меню). */
   matchWidth: boolean
   /** true — стрелки идут по кругу (меню), false — упираются в край (селект). */
@@ -34,10 +39,12 @@ export interface PopupList {
   activeIndex: Ref<number>
   listStyle: Ref<Record<string, string>>
   setActive: (index: number) => void
-  open: () => void
+  open: (fromEnd?: boolean) => void
   close: (refocus: boolean) => void
   toggle: () => void
   navigate: (event: KeyboardEvent) => boolean
+  onTriggerKeydown: (event: KeyboardEvent) => void
+  onListKeydown: (event: KeyboardEvent) => void
 }
 
 /** Прокручивает список так, чтобы пункт был виден целиком (без scrollIntoView). */
@@ -73,12 +80,12 @@ export function usePopupList(options: PopupListOptions): PopupList {
   }
 
   /** Открывает список: считает позицию, активирует начальный пункт и переносит фокус на список. */
-  function open(): void {
+  function open(fromEnd = false): void {
     if (options.disabled() || !anchor.value) return
     const viewport = { width: window.innerWidth, height: window.innerHeight }
     listStyle.value = popupStyle(anchor.value.getBoundingClientRect(), viewport, options.matchWidth)
     isOpen.value = true
-    setActive(options.initialIndex())
+    setActive(options.initialIndex(fromEnd))
     void nextTick(() => list.value?.focus())
   }
 
@@ -110,7 +117,44 @@ export function usePopupList(options: PopupListOptions): PopupList {
     return true
   }
 
+  /** Клавиатура на кнопке: ↓ открывает с первого/выбранного пункта, ↑ — с последнего (APG). */
+  function onTriggerKeydown(event: KeyboardEvent): void {
+    if (!OPEN_KEYS.includes(event.key)) return
+    event.preventDefault()
+    open(event.key === 'ArrowUp')
+  }
+
+  /** Клавиатура в открытом списке: навигация, Enter/Space — выбрать, Esc — закрыть, Tab — закрыть и уйти дальше. */
+  function onListKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      options.choose(activeIndex.value)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      close(true)
+    } else if (event.key === 'Tab') {
+      close(true)
+    } else if (navigate(event)) {
+      event.preventDefault()
+    }
+  }
+
   usePopupDismiss(root, isOpen, close)
 
-  return { root, anchor, list, isOpen, activeIndex, listStyle, setActive, open, close, toggle, navigate }
+  return {
+    root,
+    anchor,
+    list,
+    isOpen,
+    activeIndex,
+    listStyle,
+    setActive,
+    open,
+    close,
+    toggle,
+    navigate,
+    onTriggerKeydown,
+    onListKeydown,
+  }
 }

@@ -1,5 +1,6 @@
 // Стили фрагмента ui-kit-buttons: ряды кнопок витрины с подписями
 @use 'variables' as v;
+@use 'ui-kit-variables' as kit;
 
 .ui-kit-buttons {
   &__group {
@@ -16,7 +17,7 @@
   }
 
   &__caption {
-    width: v.$ui-kit-caption-width;
+    width: kit.$caption-width;
     font-family: v.$font-mono;
     font-size: v.$font-size-xs;
     color: var(--color-muted);

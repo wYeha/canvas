@@ -9,7 +9,11 @@ import { APP_PAGES, resolveAppPage } from '@/scripts/globals/app-page'
  */
 export function useAppPage(): { pageComponent: Component } {
   if (import.meta.env.DEV && resolveAppPage(true, window.location.search) === APP_PAGES.UI_KIT) {
-    return { pageComponent: defineAsyncComponent(() => import('@/views/pages/ui-kit/UiKitPage.vue')) }
+    return {
+      pageComponent: defineAsyncComponent(() =>
+        import('@/scripts/pages/ui-kit/ui-kit-page-loader').then((module) => module.UiKitPage),
+      ),
+    }
   }
   return { pageComponent: CanvasPage }
 }

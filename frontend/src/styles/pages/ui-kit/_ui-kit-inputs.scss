@@ -1,5 +1,6 @@
 // Стили фрагмента ui-kit-inputs: ряд полей ввода витрины и строка текущих значений
 @use 'variables' as v;
+@use 'ui-kit-variables' as kit;
 
 .ui-kit-inputs {
   &__row {
@@ -9,7 +10,7 @@
   }
 
   &__field {
-    width: v.$ui-kit-field-width;
+    width: kit.$field-width;
   }
 
   &__value {
