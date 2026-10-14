@@ -18,3 +18,13 @@ export function setStorageItem(key: string, value: string): boolean {
     return false
   }
 }
+
+/** Удаляет значение по ключу; возвращает true, если операция прошла без ошибок. */
+export function removeStorageItem(key: string): boolean {
+  try {
+    localStorage.removeItem(key)
+    return true
+  } catch {
+    return false
+  }
+}

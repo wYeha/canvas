@@ -26,3 +26,6 @@ export const PREFERS_DARK_QUERY = '(prefers-color-scheme: dark)'
 
 /** Ключ localStorage для состояния сворачивания секций панели свойств (JSON `{ id секции: раскрыта }`). */
 export const PROPS_SECTIONS_STORAGE_KEY = 'layout-canvas:props-sections'
+
+/** Ключ localStorage для шаблона промпта экспорта (строка как есть; общий для всех документов). */
+export const EXPORT_PROMPT_STORAGE_KEY = 'layout-canvas:export-prompt'

@@ -1,6 +1,6 @@
 /** Тесты обёртки над localStorage: чтение, запись и устойчивость к ошибкам доступа. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getStorageItem, setStorageItem } from '@/scripts/globals/storage'
+import { getStorageItem, removeStorageItem, setStorageItem } from '@/scripts/globals/storage'
 
 const KEY = 'test-key'
 
@@ -11,7 +11,9 @@ function stubWorkingStorage(): Map<string, string> {
   const getItem = (key: string): string | null => data.get(key) ?? null
   /** Пишет значение в Map. */
   const setItem = (key: string, value: string): void => void data.set(key, value)
-  vi.stubGlobal('localStorage', { getItem, setItem })
+  /** Удаляет значение из Map. */
+  const removeItem = (key: string): void => void data.delete(key)
+  vi.stubGlobal('localStorage', { getItem, setItem, removeItem })
   return data
 }
 
@@ -21,7 +23,7 @@ function stubBrokenStorage(): void {
   const fail = (): never => {
     throw new Error('недоступно')
   }
-  vi.stubGlobal('localStorage', { getItem: fail, setItem: fail })
+  vi.stubGlobal('localStorage', { getItem: fail, setItem: fail, removeItem: fail })
 }
 
 afterEach(() => {
@@ -41,9 +43,17 @@ describe('storage', () => {
     expect(getStorageItem(KEY)).toBeNull()
   })
 
+  it('удаляет значение', () => {
+    const data = stubWorkingStorage()
+    setStorageItem(KEY, 'value')
+    expect(removeStorageItem(KEY)).toBe(true)
+    expect(data.has(KEY)).toBe(false)
+  })
+
   it('не бросает при недоступном хранилище', () => {
     stubBrokenStorage()
     expect(getStorageItem(KEY)).toBeNull()
     expect(setStorageItem(KEY, 'value')).toBe(false)
+    expect(removeStorageItem(KEY)).toBe(false)
   })
 })
