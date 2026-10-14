@@ -79,7 +79,7 @@ export function warningComments(dropped: readonly string[], tagReplaced: boolean
 }
 
 /** Описание размера корня: ширина (и фиксированная высота) превью или `max-width … по центру`. */
-function rootSizeText(entry: RootEntry): string {
+export function rootSizeText(entry: RootEntry): string {
   const { width, height, exportMaxWidth } = entry.canvas
   if (exportMaxWidth) return `${EXPORT_ROOT_MAX_WIDTH} ${pxText(width)} ${EXPORT_ROOT_CENTERED}`
   const widthText = `${EXPORT_ROOT_PREVIEW_WIDTH} ${pxText(width)}`

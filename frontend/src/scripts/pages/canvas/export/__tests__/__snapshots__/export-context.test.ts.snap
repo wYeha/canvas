@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`exportSelectedHtml > демо: «charts» с замером 1`] = `
+"<!-- Фрагмент корневого блока «Дашборд» (ширина превью 1440px)
+  Путь: Дашборд › body › main › charts
+  Родитель «main» (div): flex column, gap 24px, padding 24px
+  Место: 2-й ребёнок из 3; ширина — растягивается на всю ширину родителя (~1128px, ~100% ширины родителя); высота — по содержимому
+-->
+<!-- charts -->
+<div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px">
+  <div style="min-height:200px"><!-- chart-left --></div>
+  <div style="min-height:200px"><!-- chart-right --></div>
+</div>
+"
+`;
+
+exports[`exportSelectedHtml > демо: «kpi-row» без замера 1`] = `
+"<!-- Фрагмент корневого блока «Дашборд» (ширина превью 1440px)
+  Путь: Дашборд › body › main › kpi-row
+  Родитель «main» (div): flex column, gap 24px, padding 24px
+  Место: 1-й ребёнок из 3; ширина — растягивается на всю ширину родителя; высота — по содержимому
+-->
+<!-- kpi-row -->
+<div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
+  <div><!-- компонент «KPI-плашка» --></div>
+  <div><!-- компонент «KPI-плашка» --></div>
+  <div><!-- компонент «KPI-плашка» --></div>
+  <div><!-- компонент «KPI-плашка» --></div>
+</div>
+"
+`;

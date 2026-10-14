@@ -12,7 +12,7 @@ import { closeTag, openTag, safeStyle } from './export-style'
 import { EXPORT_INDENT, EXPORT_LINK_COMPONENT, EXPORT_LINK_TAG, EXPORT_WORD_SEPARATOR } from './export-constants'
 
 /** Подпись источника связи: нет корня → «без источника», пустая подпись → «Без подписи». */
-function sourceLabel(doc: LayoutDocument, link: LinkNode): string {
+export function sourceLabel(doc: LayoutDocument, link: LinkNode): string {
   const entry = findRootEntry(doc, link.sourceId)
   if (!entry) return LINK_MISSING_LABEL
   const label = toSingleLine(entry.node.label)

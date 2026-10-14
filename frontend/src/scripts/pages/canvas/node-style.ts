@@ -67,7 +67,7 @@ function gridEntries(container: GridContainer): StyleEntry[] {
 }
 
 /** Сокращённая запись padding: 1, 2 или 4 значения; `null` для отсутствующих и нулевых отступов. */
-function paddingValue(padding: Padding | null): string | null {
+export function paddingValue(padding: Padding | null): string | null {
   if (padding === null) return null
   const { top, right, bottom, left } = padding
   if (top === 0 && right === 0 && bottom === 0 && left === 0) return null
