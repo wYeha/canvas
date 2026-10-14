@@ -25,6 +25,10 @@ describe('isSafeCssValue', () => {
     expect(isSafeCssValue('1fr */ 2fr')).toBe(false)
   })
 
+  it.each(['url(x)', 'URL(x)', 'calc(1px + Url(a))'])('отклоняет функцию url() в любом регистре: %s', (value) => {
+    expect(isSafeCssValue(value)).toBe(false)
+  })
+
   it('одиночные / и * допустимы (grid-area, calc)', () => {
     expect(isSafeCssValue('1 / 3')).toBe(true)
     expect(isSafeCssValue('calc(2 * 10px)')).toBe(true)

@@ -1,5 +1,5 @@
 /** Единственный источник раскладочных стилей узла: чистые функции для превью и экспорта, только отличия от CSS по умолчанию. */
-import type { ContainerKind, FlexContainer, GridContainer, LayoutNode, Padding, SelfProps } from '@shared'
+import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, Padding, SelfProps } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
   CSS_DEFAULT_FLEX_DIRECTION,
@@ -96,10 +96,15 @@ function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEn
   return entries
 }
 
+/** Контейнерная часть стилей блока (display, flex/grid-свойства, gap); в `styleEntries` она всегда идёт первой. */
+export function containerEntries(container: Container): StyleEntry[] {
+  return container.kind === 'flex' ? flexEntries(container) : gridEntries(container)
+}
+
 /** Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня). */
 export function styleEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
   if (node.type === 'link') return selfEntries(node.self, parentKind)
-  const entries = node.container.kind === 'flex' ? flexEntries(node.container) : gridEntries(node.container)
+  const entries = containerEntries(node.container)
   push(entries, 'padding', paddingValue(node.padding))
   entries.push(...selfEntries(node.self, parentKind))
   return entries
