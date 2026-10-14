@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import CanvasPropsBlock from '@/views/pages/canvas/CanvasPropsBlock.vue'
+import CanvasPropsContainer from '@/views/pages/canvas/CanvasPropsContainer.vue'
 import CanvasPropsPreview from '@/views/pages/canvas/CanvasPropsPreview.vue'
 import UiEmptyState from '@/views/components/ui-empty-state/UiEmptyState.vue'
 import UiPanel from '@/views/components/ui-panel/UiPanel.vue'
@@ -38,8 +39,12 @@ import type { PropsSectionId } from '@/scripts/pages/canvas/props-sections'
 import { useCanvasProps } from '@/scripts/pages/canvas/use-canvas-props'
 import { useCanvasPropsSections } from '@/scripts/pages/canvas/use-canvas-props-sections'
 
-// Реестр готовых секций: остальные фрагменты добавляются по мере итераций 3.2–3.5
-const registry: Partial<Record<PropsSectionId, Component>> = { preview: CanvasPropsPreview, block: CanvasPropsBlock }
+// Реестр готовых секций: остальные фрагменты добавляются по мере итераций 3.4–3.5
+const registry: Partial<Record<PropsSectionId, Component>> = {
+  preview: CanvasPropsPreview,
+  block: CanvasPropsBlock,
+  container: CanvasPropsContainer,
+}
 const { header, sections } = useCanvasProps(registry)
 const { isOpen, setOpen } = useCanvasPropsSections()
 </script>

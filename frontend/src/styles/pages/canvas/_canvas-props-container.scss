@@ -1,0 +1,27 @@
+// Стили фрагмента canvas-props-container: поля секции «Контейнер» друг под другом, повороты иконок выравнивания
+@use 'variables' as v;
+
+.canvas-props-container {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-12;
+
+  // Иконки нарисованы для row; под другое направление их зеркалим или поворачиваем
+  &__icons {
+    &--mirror .ui-icon {
+      transform: scaleX(-1);
+    }
+
+    &--column .ui-icon {
+      transform: rotate(90deg);
+    }
+
+    &--column-reverse .ui-icon {
+      transform: rotate(-90deg);
+    }
+
+    &--cross .ui-icon {
+      transform: rotate(-90deg);
+    }
+  }
+}

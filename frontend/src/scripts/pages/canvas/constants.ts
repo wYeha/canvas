@@ -314,3 +314,27 @@ export const BLOCK_PADDING_SIDES = [
   { key: 'bottom', arrow: '↓', label: 'padding снизу' },
   { key: 'left', arrow: '←', label: 'padding слева' },
 ] as const
+
+/** Подпись переключателя типа контейнера. */
+export const CONTAINER_KIND_LABEL = 'Тип'
+
+/** Подпись поля `flex-direction`. */
+export const CONTAINER_DIRECTION_LABEL = 'flex-direction'
+
+/** Подпись поля `flex-wrap`. */
+export const CONTAINER_WRAP_LABEL = 'flex-wrap'
+
+/** Текст рядом с переключателем переноса. */
+export const CONTAINER_WRAP_TEXT = 'перенос'
+
+/** Подпись поля `justify-content`. */
+export const CONTAINER_JUSTIFY_LABEL = 'justify-content'
+
+/** Подпись поля `align-items`. */
+export const CONTAINER_ALIGN_LABEL = 'align-items'
+
+/** Подпись поля gap. */
+export const CONTAINER_GAP_LABEL = 'gap'
+
+/** Минимальное значение gap, px. */
+export const CONTAINER_GAP_MIN = 0

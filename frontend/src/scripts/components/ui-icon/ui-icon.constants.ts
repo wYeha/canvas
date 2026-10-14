@@ -17,4 +17,21 @@ export const ICON_PATHS = {
   close: ['M4 4l8 8M12 4l-8 8'],
   trash: ['M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 8.5h6l.5-8.5'],
   fit: ['M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4'],
+  'arrow-right': ['M3 8h10M9 4l4 4-4 4'],
+  'arrow-down': ['M8 3v10M4 9l4 4 4-4'],
+  'arrow-left': ['M13 8H3M7 4L3 8l4 4'],
+  'arrow-up': ['M8 13V3M4 7l4-4 4 4'],
+  // Выравнивание вдоль главной оси (для row): рамка и полоски; для column иконку поворачивает CSS родителя
+  'justify-start': ['M2 2h12v12H2z', 'M4.5 5v6M7.5 5v6'],
+  'justify-center': ['M2 2h12v12H2z', 'M6.5 5v6M9.5 5v6'],
+  'justify-end': ['M2 2h12v12H2z', 'M8.5 5v6M11.5 5v6'],
+  'justify-between': ['M2 2h12v12H2z', 'M4.5 5v6M8 5v6M11.5 5v6'],
+  'justify-around': ['M2 2h12v12H2z', 'M5 5v6M8 5v6M11 5v6'],
+  'justify-evenly': ['M2 2h12v12H2z', 'M5.5 5v6M8 5v6M10.5 5v6'],
+  // Выравнивание по поперечной оси (для row): полоски разной длины
+  'align-start': ['M2 2h12v12H2z', 'M5.5 4.5v6M10.5 4.5v3.5'],
+  'align-center': ['M2 2h12v12H2z', 'M5.5 5v6M10.5 6.5v3'],
+  'align-end': ['M2 2h12v12H2z', 'M5.5 5.5v6M10.5 8v3.5'],
+  'align-stretch': ['M2 2h12v12H2z', 'M5.5 4.5v7M10.5 4.5v7'],
+  'align-baseline': ['M2 2h12v12H2z', 'M5.5 4.5v5M10.5 6.5v3'],
 } as const
