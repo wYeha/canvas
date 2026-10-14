@@ -1,4 +1,41 @@
 // Стили фрагмента canvas-props: панель «Свойства» (геометрию задаёт страница)
+@use 'variables' as v;
+
 .canvas-props {
   user-select: none;
+
+  &__header {
+    display: flex;
+    gap: v.$space-8;
+    align-items: baseline;
+    padding: v.$space-10 v.$space-12;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  &__icon {
+    flex: none;
+    font-family: v.$font-mono;
+    color: var(--color-muted);
+  }
+
+  &__title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    flex: none;
+    margin-left: auto;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-2xs;
+    color: var(--color-muted);
+  }
+
+  &__hint {
+    padding-top: 0;
+  }
 }

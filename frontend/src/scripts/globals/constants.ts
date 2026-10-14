@@ -23,3 +23,6 @@ export const THEME_STORAGE_KEY = 'layout-canvas:theme'
 
 /** Медиазапрос системной тёмной темы. */
 export const PREFERS_DARK_QUERY = '(prefers-color-scheme: dark)'
+
+/** Ключ localStorage для состояния сворачивания секций панели свойств (JSON `{ id секции: раскрыта }`). */
+export const PROPS_SECTIONS_STORAGE_KEY = 'layout-canvas:props-sections'

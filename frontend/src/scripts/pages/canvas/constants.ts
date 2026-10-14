@@ -210,3 +210,33 @@ export const ENTER_CODE = 'Enter'
 
 /** `KeyboardEvent.code` Enter на цифровой клавиатуре. */
 export const NUMPAD_ENTER_CODE = 'NumpadEnter'
+
+/** Подписи секций панели свойств по id. */
+export const PROPS_SECTION_TITLES = {
+  preview: 'Ширина превью',
+  block: 'Блок',
+  container: 'Контейнер',
+  child: 'Как ребёнок',
+  link: 'Связь',
+} as const
+
+/** Разделитель частей меты в заголовке панели свойств. */
+export const PROPS_META_SEPARATOR = ' · '
+
+/** Мета корневого блока в заголовке панели свойств. */
+export const PROPS_META_ROOT = 'корневой'
+
+/** Приставка меты вложенного блока: `ребёнок grid`. */
+export const PROPS_META_CHILD = 'ребёнок'
+
+/** Заголовок панели для выделенной плашки связи. */
+export const PROPS_LINK_TITLE = 'Связь'
+
+/** Приставка меты плашки связи: `связь → цель`. */
+export const PROPS_META_LINK = 'связь'
+
+/** Текст пустого состояния панели свойств. */
+export const PROPS_EMPTY_TEXT = 'Ничего не выделено'
+
+/** Подсказка пустого состояния панели свойств. */
+export const PROPS_EMPTY_HINT = 'Кликните по блоку'
