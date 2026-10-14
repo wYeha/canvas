@@ -9,6 +9,8 @@
 @use 'components/ui-field';
 @use 'components/ui-chips';
 @use 'components/ui-text-input';
+@use 'components/ui-textarea';
+@use 'components/ui-select';
 @use 'components/ui-number-input';
 @use 'components/ui-segmented';
 @use 'components/ui-switch';
@@ -21,6 +23,7 @@
 @use 'canvas-layers';
 @use 'canvas-props';
 @use 'canvas-props-preview';
+@use 'canvas-props-block';
 @use 'canvas-toolbar';
 @use 'canvas-breadcrumbs';
 @use 'canvas-zoom';

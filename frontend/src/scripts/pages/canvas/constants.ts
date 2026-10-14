@@ -279,3 +279,38 @@ export const PREVIEW_HINT_OFF = 'Ширина превью в код не поп
 
 /** Подсказка под переключателем, когда max-width включён. */
 export const PREVIEW_HINT_ON = 'Ширина превью в код уйдёт как max-width + margin: 0 auto'
+
+/** Подпись поля «Подпись» секции «Блок». */
+export const BLOCK_LABEL_LABEL = 'Подпись'
+
+/** Подпись поля описания для ИИ. */
+export const BLOCK_DESCRIPTION_LABEL = 'Описание для ИИ'
+
+/** Подсказка пустого поля описания. */
+export const BLOCK_DESCRIPTION_PLACEHOLDER = 'Что будет внутри: «график выручки по месяцам, легенда справа»'
+
+/** Число видимых строк поля описания. */
+export const BLOCK_DESCRIPTION_ROWS = 3
+
+/** Подпись селекта семантического тега. */
+export const BLOCK_TAG_LABEL = 'Тег'
+
+/** Подпись поля padding. */
+export const BLOCK_PADDING_LABEL = 'padding'
+
+/** Подпись кнопки-переключателя режима «по сторонам». */
+export const BLOCK_PADDING_TOGGLE_LABEL = 'по сторонам'
+
+/** Подсказка единого поля padding, когда стороны различаются. */
+export const BLOCK_PADDING_MIXED_PLACEHOLDER = 'разные'
+
+/** Минимальное значение padding, px. */
+export const BLOCK_PADDING_MIN = 0
+
+/** Стороны padding в порядке показа (↑ → ↓ ←): ключ, стрелка-префикс и подпись для скринридера. */
+export const BLOCK_PADDING_SIDES = [
+  { key: 'top', arrow: '↑', label: 'padding сверху' },
+  { key: 'right', arrow: '→', label: 'padding справа' },
+  { key: 'bottom', arrow: '↓', label: 'padding снизу' },
+  { key: 'left', arrow: '←', label: 'padding слева' },
+] as const

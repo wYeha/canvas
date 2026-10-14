@@ -1,0 +1,35 @@
+// Стили общего компонента ui-textarea: многострочное поле (ресайз по вертикали, ошибка, disabled)
+@use 'variables' as v;
+
+.ui-textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: v.$space-6 v.$space-8;
+  font-family: inherit;
+  font-size: v.$font-size-sm;
+  line-height: v.$line-height-base;
+  color: var(--color-text);
+  resize: vertical;
+  background: var(--color-input);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-control;
+
+  &::placeholder {
+    color: var(--color-muted);
+  }
+
+  &:focus-visible {
+    outline: v.$focus-ring-width solid var(--color-accent);
+    outline-offset: v.$focus-ring-offset;
+  }
+
+  &--error {
+    border-color: var(--color-danger);
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
+  }
+}

@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы ui-kit: UiTextInput, UiNumberInput и UiSwitch во всех вариантах и состояниях -->
+<!-- Фрагмент страницы ui-kit: UiTextInput, UiTextarea, UiNumberInput и UiSwitch во всех вариантах и состояниях -->
 <template>
   <UiKitSection title="UiTextInput">
     <div class="ui-kit-inputs__row">
@@ -10,6 +10,14 @@
       <UiTextInput class="ui-kit-inputs__field" label="Disabled" disabled model-value="Недоступно" />
     </div>
     <span class="ui-kit-inputs__value">значение: «{{ text }}»</span>
+  </UiKitSection>
+  <UiKitSection title="UiTextarea (многострочное, ресайз по вертикали)">
+    <div class="ui-kit-inputs__row">
+      <UiTextarea v-model="area" class="ui-kit-inputs__field" label="Обычное" placeholder="Что будет внутри" />
+      <UiTextarea class="ui-kit-inputs__field" label="Ошибка" error model-value="Слишком длинно" />
+      <UiTextarea class="ui-kit-inputs__field" label="Disabled" disabled model-value="Недоступно" />
+    </div>
+    <span class="ui-kit-inputs__value">значение: «{{ area }}»</span>
   </UiKitSection>
   <UiKitSection title="UiNumberInput (↑/↓ шаг, Shift ×10, Enter/blur — фиксация, Esc — отмена)">
     <div class="ui-kit-inputs__row">
@@ -50,9 +58,10 @@
 import UiKitSection from '@/views/pages/ui-kit/UiKitSection.vue'
 import UiNumberInput from '@/views/components/ui-number-input/UiNumberInput.vue'
 import UiSwitch from '@/views/components/ui-switch/UiSwitch.vue'
+import UiTextarea from '@/views/components/ui-textarea/UiTextarea.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import { UI_NUMBER_UNITS } from '@/scripts/components/ui-number-input/ui-number-input.constants'
 import { useUiKitInputs } from '@/scripts/pages/ui-kit/use-ui-kit-inputs'
 
-const { text, number, emptyNumber, enabled } = useUiKitInputs()
+const { text, area, number, emptyNumber, enabled } = useUiKitInputs()
 </script>
