@@ -24,14 +24,32 @@ const localPlugin = {
         schema: [],
         messages: { missing: 'Файл должен начинаться с комментария-шапки (правило 7.1)' },
       },
-      /** Создаёт обработчики правила: файл должен начинаться с шапки (`<!--` для .vue, `/**` для .ts/.js). */
+      /** Создаёт обработчики правила: файл должен начинаться с шапки (`<!--` для .vue, блок-комментарий для .ts/.js). */
       create(context) {
+        const isVue = context.filename.endsWith('.vue')
+        /** Сообщает об отсутствии шапки в начале файла. */
+        const report = () => context.report({ loc: { line: 1, column: 0 }, messageId: 'missing' })
         return {
-          /** Проверяет начало текста файла; для .vue vue-eslint-parser отдаёт весь текст SFC. */
-          Program() {
-            const expectedStart = context.filename.endsWith('.vue') ? '<!--' : '/**'
-            if (context.sourceCode.text.startsWith(expectedStart)) return
-            context.report({ loc: { line: 1, column: 0 }, messageId: 'missing' })
+          /** Для .vue проверяет начало текста SFC; для .ts/.js ищет первый комментарий, не прилегающий к первому statement. */
+          Program(program) {
+            const { sourceCode } = context
+            if (isVue) {
+              if (!sourceCode.text.startsWith('<!--')) report()
+              return
+            }
+            const [first] = sourceCode.getAllComments()
+            const startsFile = first !== undefined && sourceCode.text.slice(0, first.range[0]).trim() === ''
+            if (!first || !startsFile || first.type !== 'Block' || !first.value.startsWith('*')) {
+              report()
+              return
+            }
+            // Шапка отделена от кода пустой строкой, стоит перед import или перед другим комментарием;
+            // иначе это JSDoc первой функции или переменной
+            const next = sourceCode.getTokenAfter(first, { includeComments: true })
+            if (!next || next.loc.start.line - first.loc.end.line > 1) return
+            if (next.type === 'Block' || next.type === 'Line') return
+            if (program.body[0]?.type === 'ImportDeclaration') return
+            report()
           },
         }
       },

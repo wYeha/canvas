@@ -6,7 +6,7 @@ import { APP_MOUNT_SELECTOR } from '@/scripts/globals/constants'
 import { initTheme } from '@/scripts/globals/theme'
 import '@/styles/main.scss'
 
-// Тема применяется до монтирования, чтобы не было вспышки неверной темы
+// Синхронизирует ref темы с уже выставленным inline-скриптом из index.html атрибутом data-theme (против вспышки)
 initTheme()
 
 createApp(App).use(createPinia()).mount(APP_MOUNT_SELECTOR)

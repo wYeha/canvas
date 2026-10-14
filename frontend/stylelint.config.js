@@ -10,9 +10,14 @@ const BEM_CLASS_PATTERN =
 const BEM_MESSAGE =
   'BEM: block, block__element, block--modifier, block__element--modifier; kebab-case, без элемента элемента (правило 4.3)'
 
+const COLOR_FUNCTIONS = ['rgb', 'rgba', 'hsl', 'hsla', 'hwb', 'lab', 'lch', 'oklab', 'oklch', 'color']
+
 // Ссылка на корневой блок: правило 4.3.4 требует `$b: &;` на корне блока
 const ROOT_BLOCK_REF = '#{$b}'
 const CLASS_IN_SELECTOR = /\.(-?[_a-zA-Z][\w-]*)/g
+// Остаточная интерполяция (`&--#{$k}` в @each): значение неизвестно, подставляется заглушка
+const INTERPOLATION = /#\{[^}]*\}/g
+const INTERPOLATION_PLACEHOLDER = 'x'
 const ELEMENT_IN_SELECTOR = /\.-?[_a-zA-Z][\w-]*__/
 
 const fileHeaderMessages = stylelint.utils.ruleMessages(FILE_HEADER_RULE, {
@@ -95,11 +100,12 @@ function resolveSelectors(rule, cache) {
   return resolved
 }
 
-/** Возвращает множество имён классов из списка селекторов (без точки). */
+/** Возвращает множество имён классов из списка селекторов (без точки); остаточная интерполяция заменяется заглушкой. */
 function collectClasses(selectors) {
   const classes = new Set()
   for (const selector of selectors) {
-    for (const match of selector.matchAll(CLASS_IN_SELECTOR)) classes.add(match[1])
+    for (const match of selector.replaceAll(INTERPOLATION, INTERPOLATION_PLACEHOLDER).matchAll(CLASS_IN_SELECTOR))
+      classes.add(match[1])
   }
   return classes
 }
@@ -171,6 +177,8 @@ export default {
     'scss/at-use-no-unnamespaced': true,
     'color-no-hex': true,
     'color-named': 'never',
+    // Цветовые функции с сырыми значениями: цвета только из _variables.scss (правило 4.2)
+    'function-disallowed-list': COLOR_FUNCTIONS,
   },
   overrides: [
     {
@@ -187,6 +195,7 @@ export default {
       rules: {
         'color-no-hex': null,
         'color-named': null,
+        'function-disallowed-list': null,
       },
     },
   ],

@@ -1,5 +1,5 @@
 /** Тема оформления: чистые функции выбора и применения темы и composable useTheme для интерфейса. */
-import { ref, type Ref } from 'vue'
+import { readonly, ref, type Ref } from 'vue'
 import {
   DEFAULT_THEME,
   PREFERS_DARK_QUERY,
@@ -44,7 +44,7 @@ function systemPrefersDark(): boolean {
 // Состояние общее для всех вызовов useTheme: тема одна на приложение
 const currentTheme = ref<Theme>(DEFAULT_THEME)
 
-/** Определяет и применяет начальную тему; вызывается в main.ts до монтирования, чтобы не было вспышки. */
+/** Определяет и применяет начальную тему; вызывается в main.ts до монтирования; первичную `data-theme` до загрузки модулей ставит inline-скрипт в index.html. */
 export function initTheme(): Theme {
   currentTheme.value = resolveInitialTheme(getStorageItem(THEME_STORAGE_KEY), systemPrefersDark())
   applyTheme(currentTheme.value)
@@ -69,5 +69,5 @@ export function useTheme(): {
     setTheme(getOppositeTheme(currentTheme.value))
   }
 
-  return { theme: currentTheme, setTheme, toggleTheme }
+  return { theme: readonly(currentTheme), setTheme, toggleTheme }
 }

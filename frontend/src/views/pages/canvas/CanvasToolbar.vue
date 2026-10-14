@@ -1,6 +1,6 @@
 <!-- Фрагмент страницы canvas: тулбар с созданием блоков и отменой/повтором (пока без действий) -->
 <template>
-  <div class="canvas-toolbar" role="toolbar" aria-label="Инструменты">
+  <div class="canvas-toolbar" role="group" aria-label="Инструменты">
     <UiButton size="l" icon="flex" hint="F">Flex</UiButton>
     <UiButton size="l" icon="grid" hint="G">Grid</UiButton>
     <span class="canvas-toolbar__divider"></span>

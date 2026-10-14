@@ -11,12 +11,7 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.node.json && vue-tsc --noEmit -p tsconfig.vitest.json",
     "stylelint": "stylelint \"src/**/*.scss\" --allow-empty-input --max-warnings 0",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write . --ignore-path ../.gitignore --ignore-path ../.prettierignore",
-    "format:check": "prettier --check . --ignore-path ../.gitignore --ignore-path ../.prettierignore",
-    "check": "npm run format:check && npm run stylelint && npm run typecheck && npm run lint && npm run test"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

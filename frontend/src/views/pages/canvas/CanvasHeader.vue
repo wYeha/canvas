@@ -6,7 +6,7 @@
         <rect x="2" y="2" width="16" height="16" rx="4" />
         <path d="M2 9h16M9 9v9" />
       </svg>
-      <span class="canvas-header__name">Layout Canvas</span>
+      <h1 class="canvas-header__name">Layout Canvas</h1>
       <UiButton variant="ghost" icon-after="chevron-down">Без названия</UiButton>
     </div>
     <div class="canvas-header__group">

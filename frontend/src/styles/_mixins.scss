@@ -1,4 +1,4 @@
-// Миксины: вывод карт в CSS-переменные и контур фокуса. Сами по себе CSS не выводят.
+// Миксины: вывод карт в CSS-переменные, контур фокуса и контурная иконка. Сами по себе CSS не выводят.
 @use 'sass:map';
 @use 'variables' as v;
 
@@ -36,4 +36,13 @@
     outline: v.$focus-ring-width solid var(--color-accent);
     outline-offset: v.$focus-ring-offset;
   }
+}
+
+/// Контурная иконка: без заливки, штрих цвета текста (общее для .ui-icon и логотипа).
+@mixin outline-icon {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: v.$icon-stroke-width;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

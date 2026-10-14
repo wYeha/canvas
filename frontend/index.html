@@ -5,6 +5,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Layout Canvas</title>
+    <!-- Блокирующий скрипт: ставит data-theme до первой отрисовки, чтобы не было вспышки темы. Ключ и значения совпадают с constants.ts (проверяет тест) -->
+    <script>
+      try {
+        var saved = localStorage.getItem('layout-canvas:theme')
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        var theme = saved === 'light' || saved === 'dark' ? saved : dark ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', theme)
+      } catch (error) {
+        // localStorage или matchMedia недоступны: тему выставит initTheme()
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
