@@ -44,6 +44,22 @@ describe('имя файла', () => {
     expect(sanitizeFileName('  ..  ')).toBe('')
   })
 
+  it('обрезка по code points и повторное снятие пробелов и точек', () => {
+    const long = `${'a'.repeat(119)} .tail`
+    expect(sanitizeFileName(long)).toBe('a'.repeat(119))
+    expect(Array.from(sanitizeFileName('😀'.repeat(200)))).toHaveLength(120)
+    expect(exportFileName('x'.repeat(300), { kind: 'all' }, doc)).toBe(`${'x'.repeat(120)}.html`)
+  })
+
+  it('зарезервированные имена Windows получают суффикс', () => {
+    expect(sanitizeFileName('CON')).toBe('CON_')
+    expect(sanitizeFileName('com1')).toBe('com1_')
+    expect(sanitizeFileName('con.txt')).toBe('con_.txt')
+    expect(sanitizeFileName('Lpt9')).toBe('Lpt9_')
+    expect(sanitizeFileName('console')).toBe('console')
+    expect(exportFileName('nul', { kind: 'all' }, doc)).toBe('nul_.html')
+  })
+
   it('все и отмеченные — имя документа', () => {
     expect(exportFileName('Лендинг', { kind: 'all' }, doc)).toBe('Лендинг.html')
     expect(exportFileName('Лендинг', { kind: 'roots', rootIds: [id] }, doc)).toBe('Лендинг.html')

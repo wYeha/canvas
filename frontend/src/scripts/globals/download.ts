@@ -1,5 +1,8 @@
 /** Скачивание текста файлом: Blob и временная ссылка с атрибутом download. */
 
+/** Через сколько мс отзывается URL Blob: браузер должен успеть начать загрузку. */
+const REVOKE_DELAY_MS = 5000
+
 /** Сохраняет текст как файл `fileName` с типом `mime`; `true`, если браузер принял загрузку. */
 export function downloadText(fileName: string, text: string, mime: string): boolean {
   let url: string | null = null
@@ -15,7 +18,12 @@ export function downloadText(fileName: string, text: string, mime: string): bool
   } catch {
     return false
   } finally {
-    // Ссылку отзываем после клика: браузер уже забрал Blob
-    if (url !== null) URL.revokeObjectURL(url)
+    // Отзываем не сразу: часть браузеров читает Blob уже после клика
+    if (url !== null) {
+      const revoked = url
+      setTimeout(() => {
+        URL.revokeObjectURL(revoked)
+      }, REVOKE_DELAY_MS)
+    }
   }
 }

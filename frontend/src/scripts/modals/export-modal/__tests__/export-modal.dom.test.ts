@@ -49,6 +49,24 @@ function mountModal(open = true): VueWrapper {
   return wrapper
 }
 
+/** Промис, который завершается вручную через `resolve()`. */
+function deferredPromise(): { promise: Promise<void>; resolve: () => void } {
+  let done: () => void = noop
+  const promise = new Promise<void>((resolve) => {
+    done = resolve
+  })
+  return {
+    promise,
+    /** Завершает промис. */
+    resolve(): void {
+      done()
+    },
+  }
+}
+
+/** Пустая функция. */
+function noop(): void {}
+
 /** Заменитель execCommand, у которого копирование не удалось. */
 function failingExec(): boolean {
   return false
@@ -135,6 +153,21 @@ describe('ExportModal', () => {
     expect(page().find('.ui-modal__dialog').exists()).toBe(true)
     vi.advanceTimersByTime(EXPORT_COPIED_MS)
     await flushPromises()
+    expect(footerButton('Копировать').classes()).toContain('ui-button--variant-primary')
+    wrapper.unmount()
+  })
+
+  it('если окно закрыли во время копирования, «Скопировано» не включается', async () => {
+    const deferred = deferredPromise()
+    const writeText = vi.fn().mockReturnValue(deferred.promise)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    prepareStore(true)
+    const wrapper = mountModal()
+    await footerButton('Копировать').trigger('click')
+    await wrapper.setProps({ open: false })
+    deferred.resolve()
+    await flushPromises()
+    await wrapper.setProps({ open: true })
     expect(footerButton('Копировать').classes()).toContain('ui-button--variant-primary')
     wrapper.unmount()
   })

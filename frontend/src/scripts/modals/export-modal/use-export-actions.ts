@@ -30,6 +30,7 @@ export function useExportActions(
   const copied = ref(false)
   const actionError = ref('')
   let timer: ReturnType<typeof setTimeout> | null = null
+  let unmounted = false
 
   /** Останавливает таймер возврата кнопки и снимает «Скопировано». */
   function resetCopied(): void {
@@ -41,6 +42,8 @@ export function useExportActions(
   /** Копирует; успех включает «Скопировано» на 2 с (повторный клик перезапускает таймер), ошибка — сообщение. */
   async function copy(): Promise<void> {
     const ok = await copyText(text.value)
+    // Пока копировали, окно могли закрыть: не включаем «Скопировано» и не заводим таймер
+    if (unmounted || !open.value) return
     actionError.value = ok ? '' : EXPORT_COPY_FAILED
     resetCopied()
     if (!ok) return
@@ -59,7 +62,10 @@ export function useExportActions(
     resetCopied()
     actionError.value = ''
   })
-  onBeforeUnmount(resetCopied)
+  onBeforeUnmount(() => {
+    unmounted = true
+    resetCopied()
+  })
 
   return { copied, actionError, copy, download }
 }

@@ -31,6 +31,9 @@ export const EXPORT_SCOPE_ORDER: readonly ExportScopeKind[] = ['selected', 'chec
 /** Заголовок списка корневых блоков. */
 export const EXPORT_ROOTS_LABEL = 'Корневые блоки'
 
+/** Id заголовка списка корней: на него ссылается `aria-labelledby` списка. */
+export const EXPORT_ROOTS_LABEL_ID = 'export-modal-roots-label'
+
 /** Текст вместо списка, когда в документе нет корневых блоков. */
 export const EXPORT_ROOTS_EMPTY = 'В документе нет корневых блоков'
 

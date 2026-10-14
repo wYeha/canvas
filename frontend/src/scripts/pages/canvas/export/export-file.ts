@@ -8,6 +8,9 @@ import {
   EXPORT_FILE_EXTENSION,
   EXPORT_FILE_FALLBACK_NAME,
   EXPORT_FILE_FORBIDDEN_CHARS,
+  EXPORT_FILE_MAX_LENGTH,
+  EXPORT_FILE_RESERVED,
+  EXPORT_FILE_RESERVED_SUFFIX,
   EXPORT_FILE_PART_SEPARATOR,
   EXPORT_FILE_REPLACEMENT,
   EXPORT_HTML_CHARSET,
@@ -49,13 +52,22 @@ export function wrapHtmlDocument(text: string, title: string): string {
   return `${lines.join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
 }
 
-/** Убирает из имени файла недопустимые символы и пробелы по краям; точки по краям тоже (Windows их не терпит). */
-export function sanitizeFileName(name: string): string {
+/** Снимает пробелы и точки по краям (Windows их не терпит). */
+function trimEdges(name: string): string {
   return name
-    .replace(EXPORT_FILE_FORBIDDEN_CHARS, EXPORT_FILE_REPLACEMENT)
     .trim()
     .replace(/^\.+|\.+$/g, '')
     .trim()
+}
+
+/**
+ * Приводит имя к безопасному виду: недопустимые символы → дефис, длина не больше лимита (по code points),
+ * пробелы и точки по краям сняты (и после обрезки тоже), зарезервированное имя Windows получает суффикс.
+ */
+export function sanitizeFileName(name: string): string {
+  const cleaned = trimEdges(name.replace(EXPORT_FILE_FORBIDDEN_CHARS, EXPORT_FILE_REPLACEMENT))
+  const cut = trimEdges(Array.from(cleaned).slice(0, EXPORT_FILE_MAX_LENGTH).join(''))
+  return cut.replace(EXPORT_FILE_RESERVED, `$1${EXPORT_FILE_RESERVED_SUFFIX}`)
 }
 
 /** Подпись выделенного узла для имени файла: блок — его подпись, связь — подпись источника; нет узла — пусто. */

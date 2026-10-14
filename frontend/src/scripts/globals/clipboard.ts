@@ -2,6 +2,8 @@
 
 /** Копирует через временный `textarea` и `execCommand('copy')` (нет HTTPS, нет прав на Clipboard API). */
 function copyViaTextarea(text: string): boolean {
+  // Фокус возвращаем после копирования: select() уводит его из модалки, и ломаются Esc и ловушка Tab
+  const previous = document.activeElement
   const area = document.createElement('textarea')
   area.value = text
   area.setAttribute('readonly', '')
@@ -15,6 +17,7 @@ function copyViaTextarea(text: string): boolean {
     return document.execCommand('copy')
   } finally {
     area.remove()
+    if (previous instanceof HTMLElement) previous.focus({ preventScroll: true })
   }
 }
 

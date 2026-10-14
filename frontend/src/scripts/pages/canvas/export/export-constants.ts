@@ -276,3 +276,12 @@ export const EXPORT_BYTES_IN_KB = 1024
 
 /** Единицы размера: байты, килобайты, мегабайты. */
 export const EXPORT_SIZE_UNITS = { bytes: 'Б', kb: 'КБ', mb: 'МБ' } as const
+
+/** Максимум символов (code points) в основе имени файла, без расширения. */
+export const EXPORT_FILE_MAX_LENGTH = 120
+
+/** Зарезервированные имена устройств Windows (с любым «расширением» тоже): основа получает суффикс. */
+export const EXPORT_FILE_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?=\.|$)/i
+
+/** Суффикс, которым развязывается зарезервированное имя. */
+export const EXPORT_FILE_RESERVED_SUFFIX = '_'

@@ -16,9 +16,9 @@
           />
         </UiField>
         <div class="export-modal__roots">
-          <h3 class="export-modal__caption">{{ EXPORT_ROOTS_LABEL }}</h3>
+          <h3 :id="EXPORT_ROOTS_LABEL_ID" class="export-modal__caption">{{ EXPORT_ROOTS_LABEL }}</h3>
           <p v-if="rows.length === 0" class="export-modal__note">{{ EXPORT_ROOTS_EMPTY }}</p>
-          <ul v-else class="export-modal__root-list">
+          <ul v-else class="export-modal__root-list" :aria-labelledby="EXPORT_ROOTS_LABEL_ID">
             <li v-for="row in rows" :key="row.id">
               <UiCheckbox
                 :model-value="row.checked"
@@ -97,6 +97,7 @@ import {
   EXPORT_PROMPT_SAVE_FAILED,
   EXPORT_ROOTS_EMPTY,
   EXPORT_ROOTS_LABEL,
+  EXPORT_ROOTS_LABEL_ID,
   EXPORT_SCOPE_HINTS,
   EXPORT_SCOPE_LABEL,
 } from '@/scripts/modals/export-modal/export-modal.constants'
