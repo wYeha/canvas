@@ -216,6 +216,8 @@ $canvas-grid-step: 16px; // шаг точек сетки поля
 $canvas-dot-radius: 1px;
 $min-screen-width: 1366px; // минимальная ширина экрана (ноутбук), адаптива нет
 $icon-size: 16px;
+$select-list-max-height: 240px; // продублировано в POPUP_MAX_HEIGHT (select-popup.ts)
+$ui-kit-segmented-width: 240px; // ширина переключателей в dev-витрине компонентов
 $ui-kit-field-width: 160px; // ширина полей в dev-витрине компонентов
 $ui-kit-caption-width: 120px; // колонка подписей в dev-витрине компонентов
 $icon-stroke-width: 1.5px;

@@ -60,7 +60,9 @@
 - [x] **2.2** `UiTextInput`, `UiNumberInput` (стрелки, шаг, единицы px/%/fr).
 
 > `UiNumberInput` собран на `UiTextInput` (префикс/суффикс/ошибка общие); значение фиксируется на blur/Enter, стрелки меняют сразу, Esc отменяет правку, пусто → `null`. Единица — только суффикс. Витрина `?ui` расширена фрагментом `UiKitInputs`.
-- [ ] **2.3** `UiSelect`, `UiSegmented` (переключатель вариантов в одну строку для direction, justify и т. п.).
+- [x] **2.3** `UiSelect`, `UiSegmented` (переключатель вариантов в одну строку для direction, justify и т. п.).
+
+> `UiSelect` — кастомный listbox (фокус уходит в список, `aria-activedescendant`, typeahead по первой букве); список `position: fixed` с координатами через `:style` (чтобы не обрезался `overflow` панели), закрывается по клику мимо, прокрутке и ресайзу. `UiSegmented` — radiogroup с roving tabindex; иконочный сегмент: подпись в `aria-label` и `title`; слот `option` для произвольного содержимого. Навигация — чистые функции `globals/list-nav.ts`.
 - [ ] **2.4** `UiField` (подпись + контрол), `UiPanelSection` (секция панели с заголовком), `UiDropdown` (меню).
 - [ ] **2.5** `UiModal` (оверлей, закрытие по Esc и клику мимо, фокус-ловушка).
 

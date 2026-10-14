@@ -1,0 +1,99 @@
+// Стили общего компонента ui-select: кнопка-поле 28px с шевроном и выпадающий список (listbox)
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-select {
+  $b: &;
+
+  position: relative;
+  min-width: 0;
+
+  &__button {
+    display: flex;
+    gap: v.$space-4;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: v.$control-height;
+    padding: 0 v.$space-8;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-sm;
+    color: var(--color-text);
+    text-align: left;
+    background: var(--color-input);
+    border: 1px solid var(--color-line);
+    border-radius: v.$radius-control;
+
+    @include mx.focus-ring;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  &__value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--placeholder {
+      color: var(--color-muted);
+    }
+  }
+
+  &__chevron {
+    color: var(--color-muted);
+  }
+
+  // Список показывается поверх панелей: position fixed, координаты считает composable (:style)
+  &__list {
+    position: fixed;
+    z-index: v.$z-dropdown;
+    max-height: v.$select-list-max-height;
+    padding: v.$space-4;
+    overflow-y: auto;
+    outline: none;
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: v.$radius-control;
+    box-shadow: var(--shadow-popover);
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    height: v.$segment-height;
+    padding: 0 v.$space-8;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-sm;
+    cursor: pointer;
+    border-radius: v.$radius-segment;
+
+    &--active {
+      background: var(--color-hover);
+    }
+
+    &--selected {
+      color: var(--color-accent-text);
+      background: var(--color-accent-soft);
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: v.$disabled-opacity;
+    }
+  }
+
+  &--open #{$b}__button {
+    border-color: var(--color-accent);
+  }
+
+  &--error #{$b}__button {
+    border-color: var(--color-danger);
+  }
+
+  &--disabled {
+    opacity: v.$disabled-opacity;
+  }
+}

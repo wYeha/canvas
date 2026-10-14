@@ -1,0 +1,54 @@
+// Стили общего компонента ui-segmented: группа сегментов на фоне subtle, активный сегмент seg-on с тенью
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-segmented {
+  display: flex;
+  gap: v.$space-2;
+  align-items: center;
+  height: v.$control-height;
+  padding: 1px;
+  background: var(--color-subtle);
+  border-radius: v.$radius-segment-group;
+
+  &__item {
+    display: inline-flex;
+    flex: 1;
+    gap: v.$space-4;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: v.$segment-height;
+    padding: 0 v.$space-8;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: var(--color-muted);
+    white-space: nowrap;
+    border-radius: v.$radius-segment;
+
+    @include mx.focus-ring;
+
+    &:hover:not(:disabled) {
+      color: var(--color-text);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: v.$disabled-opacity;
+    }
+
+    &--selected {
+      color: var(--color-text);
+      background: var(--color-seg-on);
+      box-shadow: var(--shadow-seg-on);
+    }
+
+    &--icon {
+      padding: 0;
+    }
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+  }
+}

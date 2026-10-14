@@ -1,0 +1,25 @@
+// Стили фрагмента ui-kit-selects: ряд селектов и переключателей витрины и строка значений
+@use 'variables' as v;
+
+.ui-kit-selects {
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-12;
+    align-items: center;
+  }
+
+  &__field {
+    width: v.$ui-kit-field-width;
+  }
+
+  &__group {
+    width: v.$ui-kit-segmented-width;
+  }
+
+  &__value {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+}
