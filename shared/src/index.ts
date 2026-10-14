@@ -1,3 +1,7 @@
-/** Точка входа пакета shared: реэкспорт общих типов и схем документа (появятся в итерации 1.1). */
+/** Точка входа пакета shared: общие для фронтенда и бэкенда типы документа, zod-схемы и их разбор. */
 
-export {}
+export * from './document/constants'
+export * from './document/container'
+export * from './document/node'
+export * from './document/document'
+export * from './document/parse-document'

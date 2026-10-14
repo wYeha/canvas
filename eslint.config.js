@@ -161,12 +161,12 @@ export default defineConfigWithVueTs(
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    // shared/src не лежит под своим tsconfig (появится в 1.1); его включает tsconfig.app.json фронтенда
+    // shared линтится по своему tsconfig (без DOM), а не по tsconfig фронтенда
     files: ['shared/**/*.ts'],
     languageOptions: {
       parserOptions: {
         projectService: false,
-        project: ['./frontend/tsconfig.app.json'],
+        project: ['./shared/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

@@ -33,9 +33,10 @@ export default defineConfig({
       },
     },
   },
-  // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4); DOM-окружение не нужно, пока тесты — чистые функции
+  // Тесты лежат только в __tests__/ рядом с кодом (правило 6.4); DOM-окружение не нужно, пока тесты — чистые функции.
+  // Тесты shared гоняет этот же Vitest: так их запускает `npm run check`, а алиас `@shared` уже настроен
   test: {
-    include: ['src/**/__tests__/**/*.test.ts'],
+    include: ['src/**/__tests__/**/*.test.ts', '../shared/src/**/__tests__/**/*.test.ts'],
     environment: 'node',
   },
 })

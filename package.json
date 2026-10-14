@@ -15,7 +15,7 @@
     "dev": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
     "preview": "npm run preview -w frontend",
-    "typecheck": "npm run typecheck -w frontend",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w frontend",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "stylelint": "npm run stylelint -w frontend",
