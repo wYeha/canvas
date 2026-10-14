@@ -1,0 +1,14 @@
+{
+  "name": "layout-canvas",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Корень монорепозитория Layout Canvas: npm workspaces и общие скрипты.",
+  "type": "module",
+  "workspaces": [
+    "shared"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {}
+}

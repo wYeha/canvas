@@ -1,0 +1,28 @@
+# Игнорируемые файлы: зависимости, сборки, секреты, логи, мусор ОС и редакторов
+
+# зависимости
+node_modules/
+
+# сборки и отчёты
+dist/
+coverage/
+*.tsbuildinfo
+
+# секреты и локальные настройки
+.env
+.env.*
+!.env.example
+
+# база данных бэкенда (этап 10)
+backend/data/
+
+# логи
+*.log
+npm-debug.log*
+
+# ОС и редакторы
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
