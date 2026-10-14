@@ -5,10 +5,16 @@
   "description": "Корень монорепозитория Layout Canvas: npm workspaces и общие скрипты.",
   "type": "module",
   "workspaces": [
+    "frontend",
     "shared"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
-  "scripts": {}
+  "scripts": {
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "preview": "npm run preview -w frontend",
+    "typecheck": "npm run typecheck -w frontend"
+  }
 }

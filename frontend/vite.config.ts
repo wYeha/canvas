@@ -1,0 +1,28 @@
+/** Конфигурация Vite: плагин Vue и алиасы импортов `@/` и `@shared`. */
+import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    // От перехвата `@shared` и scoped-пакетов вроде `@vue/...` защищают якорь `^` и обязательный `/` после `@`;
+    // `@shared` стоит первым для наглядности и на случай, если find когда-нибудь станет строкой.
+    // Пути строятся через fileURLToPath, чтобы на Windows не смешивались разделители;
+    // к префиксным заменам добавляется `/`, иначе остаток импорта приклеится к имени папки.
+    alias: [
+      {
+        find: /^@shared$/,
+        replacement: fileURLToPath(new URL('../shared/src/index.ts', import.meta.url)),
+      },
+      {
+        find: /^@shared\//,
+        replacement: fileURLToPath(new URL('../shared/src', import.meta.url)) + '/',
+      },
+      {
+        find: /^@\//,
+        replacement: fileURLToPath(new URL('./src', import.meta.url)) + '/',
+      },
+    ],
+  },
+})
