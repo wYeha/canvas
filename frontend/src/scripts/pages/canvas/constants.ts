@@ -374,3 +374,62 @@ export const GRID_GAP_LINK_LABEL = 'Одинаковые отступы'
 
 /** Значение `grid-template-rows` по умолчанию. */
 export const GRID_ROWS_DEFAULT = 'auto'
+
+/** Подпись поля `flex` секции «Как ребёнок». */
+export const CHILD_FLEX_LABEL = 'flex'
+
+/** Подпись группы быстрых значений `flex` для скринридера. */
+export const CHILD_FLEX_PRESETS_LABEL = 'Быстрые значения flex'
+
+/** Подпись текстового поля своего значения `flex`. */
+export const CHILD_FLEX_CUSTOM_LABEL = 'Своё значение flex'
+
+/** Подсказка поля своего значения `flex`. */
+export const CHILD_FLEX_PLACEHOLDER = 'напр. 0 0 280px'
+
+/** Подпись поля `width`. */
+export const CHILD_WIDTH_LABEL = 'width'
+
+/** Подпись поля `height`. */
+export const CHILD_HEIGHT_LABEL = 'height'
+
+/** Подпись поля `min-height`. */
+export const CHILD_MIN_HEIGHT_LABEL = 'min-height'
+
+/** Подсказка пустых полей размеров: пусто значит `auto`. */
+export const CHILD_SIZE_PLACEHOLDER = 'auto'
+
+/** Подпись поля `colSpan` (на сколько колонок растянут блок). */
+export const CHILD_COL_SPAN_LABEL = 'col span'
+
+/** Подпись поля `rowSpan` (на сколько строк растянут блок). */
+export const CHILD_ROW_SPAN_LABEL = 'row span'
+
+/** Минимальный span (1 = не задан). */
+export const CHILD_SPAN_MIN = 1
+
+/** Сообщение под полем «как ребёнок», когда значение отклонено. */
+export const CHILD_VALUE_ERROR = 'Недопустимое значение: есть ; " < > { }'
+
+/** Значение `auto` в полях размеров: равно «не задано». */
+export const CHILD_AUTO_VALUE = 'auto'
+
+/** Быстрые значения `flex`: пустое значение (чип «—») значит «не задано». */
+export const CHILD_FLEX_QUICK_VALUES = ['1', 'auto', 'none'] as const
+
+/** Подпись чипа «не задано» у `flex`. */
+export const CHILD_FLEX_NONE_LABEL = '—'
+
+/** Префикс подсказки секции «Как ребёнок»: «в flex →», «в grid ×N». */
+export const CHILD_HINT_PREFIX = 'в'
+
+/** Знак числа колонок в подсказке «в grid ×N». */
+export const CHILD_HINT_TIMES = '×'
+
+/** Стрелки направления flex-родителя в подсказке секции. */
+export const CHILD_HINT_ARROWS = {
+  row: '→',
+  'row-reverse': '←',
+  column: '↓',
+  'column-reverse': '↑',
+} as const

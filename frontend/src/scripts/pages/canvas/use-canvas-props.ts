@@ -3,12 +3,14 @@ import { computed, type Component } from 'vue'
 import { PROPS_SECTION_TITLES } from './constants'
 import { useLayoutStore } from './layout-store'
 import { propsHeader, propsSectionIds, type PropsSectionId } from './props-sections'
+import { childHint } from './props-child'
 import { findParent } from './tree-query'
 
 /** Секция для шаблона: id, заголовок и компонент-фрагмент. */
 export interface PropsSectionView {
   id: PropsSectionId
   title: string
+  hint?: string
   component: Component
 }
 
@@ -20,6 +22,13 @@ export function useCanvasProps(registry: Partial<Record<PropsSectionId, Componen
   const parentKind = computed(() => {
     const node = layoutStore.selectedNode
     return node === undefined ? null : (findParent(layoutStore.document, node.id)?.container.kind ?? null)
+  })
+
+  /** Подсказка секции «Как ребёнок» по контейнеру родителя; `undefined` у корня. */
+  const hint = computed(() => {
+    const node = layoutStore.selectedNode
+    const parent = node === undefined ? undefined : findParent(layoutStore.document, node.id)
+    return parent === undefined ? undefined : childHint(parent.container)
   })
 
   /** Заголовок панели; `null`, если ничего не выделено. */
@@ -34,7 +43,8 @@ export function useCanvasProps(registry: Partial<Record<PropsSectionId, Componen
     if (node === undefined) return []
     return propsSectionIds(node.type, parentKind.value).flatMap((id) => {
       const component = registry[id]
-      return component === undefined ? [] : [{ id, title: PROPS_SECTION_TITLES[id], component }]
+      if (component === undefined) return []
+      return [{ id, title: PROPS_SECTION_TITLES[id], component, hint: id === 'child' ? hint.value : undefined }]
     })
   })
 

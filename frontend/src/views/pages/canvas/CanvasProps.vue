@@ -13,6 +13,7 @@
         v-for="section in sections"
         :key="section.id"
         :title="section.title"
+        :hint="section.hint"
         :open="isOpen(section.id)"
         @update:open="setOpen(section.id, $event)"
       >
@@ -29,6 +30,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import CanvasPropsBlock from '@/views/pages/canvas/CanvasPropsBlock.vue'
+import CanvasPropsChild from '@/views/pages/canvas/CanvasPropsChild.vue'
 import CanvasPropsContainer from '@/views/pages/canvas/CanvasPropsContainer.vue'
 import CanvasPropsPreview from '@/views/pages/canvas/CanvasPropsPreview.vue'
 import UiEmptyState from '@/views/components/ui-empty-state/UiEmptyState.vue'
@@ -39,11 +41,12 @@ import type { PropsSectionId } from '@/scripts/pages/canvas/props-sections'
 import { useCanvasProps } from '@/scripts/pages/canvas/use-canvas-props'
 import { useCanvasPropsSections } from '@/scripts/pages/canvas/use-canvas-props-sections'
 
-// Реестр готовых секций: остальные фрагменты добавляются по мере итераций 3.4–3.5
+// Реестр готовых секций: секция связи добавится в этапе 8
 const registry: Partial<Record<PropsSectionId, Component>> = {
   preview: CanvasPropsPreview,
   block: CanvasPropsBlock,
   container: CanvasPropsContainer,
+  child: CanvasPropsChild,
 }
 const { header, sections } = useCanvasProps(registry)
 const { isOpen, setOpen } = useCanvasPropsSections()

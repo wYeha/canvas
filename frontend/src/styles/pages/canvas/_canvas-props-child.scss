@@ -1,0 +1,8 @@
+// Стили фрагмента canvas-props-child: поля секции «Как ребёнок» друг под другом
+@use 'variables' as v;
+
+.canvas-props-child {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-12;
+}

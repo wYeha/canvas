@@ -30,8 +30,8 @@ describe('propsSectionIds', () => {
     expect(propsSectionIds('block', 'grid')).toEqual(['block', 'container', 'child'])
   })
 
-  it('связь: только секция связи', () => {
-    expect(propsSectionIds('link', 'flex')).toEqual(['link'])
+  it('связь: секция связи и «как ребёнок»', () => {
+    expect(propsSectionIds('link', 'flex')).toEqual(['link', 'child'])
   })
 })
 

@@ -25,9 +25,9 @@ export interface PropsHeader {
   meta: string
 }
 
-/** Состав секций по типу узла и виду контейнера родителя (`null` — корень): «Ширина превью» только у корня, «Как ребёнок» не у корня. */
+/** Состав секций по типу узла и виду контейнера родителя (`null` — корень): «Ширина превью» только у корня, «Как ребёнок» не у корня (у связи — после секции связи). */
 export function propsSectionIds(type: LayoutNode['type'], parentKind: ContainerKind | null): PropsSectionId[] {
-  if (type === 'link') return ['link']
+  if (type === 'link') return ['link', 'child']
   return parentKind === null ? ['preview', 'block', 'container'] : ['block', 'container', 'child']
 }
 
