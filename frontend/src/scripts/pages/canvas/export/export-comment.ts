@@ -2,13 +2,16 @@
 import type { BlockNode, RootEntry } from '@shared'
 import { CSS_PX_UNIT, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
 import { escapeCommentText, toCommentLines, toSingleLine } from './export-escape'
-import type { CommentParts } from './export-types'
+import type { CommentParts, RootOrder } from './export-types'
 import {
   EXPORT_COMMENT_CLOSE,
   EXPORT_COMMENT_OPEN,
   EXPORT_DESCRIPTION_SEPARATOR,
+  EXPORT_DOCUMENT_ROOTS_COUNT,
+  EXPORT_DOCUMENT_TITLE,
   EXPORT_INDENT,
   EXPORT_LIST_SEPARATOR,
+  EXPORT_ORDER_FORMAT,
   EXPORT_QUOTE_CLOSE,
   EXPORT_QUOTE_OPEN,
   EXPORT_REPEAT_MARK,
@@ -89,9 +92,15 @@ export function rootSizeText(entry: RootEntry): string {
 
 /**
  * Заголовок корня: `Корневой блок «{подпись}» ×N, {размер}` и дополнительные пометки (`extraNotes`, в 8.7 —
- * «подставлен в …»); описание корня — следующими строками этого же комментария.
+ * «подставлен в …»); описание корня — следующими строками этого же комментария. `order` (несколько корней) —
+ * префикс `{i} из {n}. `.
  */
-export function rootHeaderComment(entry: RootEntry, extraNotes: readonly string[], indent: string): string[] {
+export function rootHeaderComment(
+  entry: RootEntry,
+  extraNotes: readonly string[],
+  indent: string,
+  order?: RootOrder,
+): string[] {
   const label = toSingleLine(entry.node.label)
   const title = joinParts(
     [EXPORT_ROOT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label), repeatMark(entry.node)],
@@ -101,5 +110,17 @@ export function rootHeaderComment(entry: RootEntry, extraNotes: readonly string[
     [`${title}${EXPORT_LIST_SEPARATOR}${rootSizeText(entry)}`, ...extraNotes.map(toSingleLine)],
     EXPORT_WORD_SEPARATOR,
   )
-  return formatComment(head, toCommentLines(entry.node.description), indent)
+  return formatComment(`${orderPrefix(order)}${head}`, toCommentLines(entry.node.description), indent)
+}
+
+/** Префикс нумерации корня `1 из 3. ` или пустая строка. */
+function orderPrefix(order: RootOrder | undefined): string {
+  if (!order) return ''
+  return EXPORT_ORDER_FORMAT.replace('{i}', String(order.index)).replace('{n}', String(order.total))
+}
+
+/** Шапка экспорта нескольких корней: `Документ «{имя}»: корневых блоков {n}`. */
+export function documentHeaderComment(docName: string, rootsCount: number): string[] {
+  const head = `${EXPORT_DOCUMENT_TITLE} ${quoted(toSingleLine(docName))}${EXPORT_DOCUMENT_ROOTS_COUNT} ${String(rootsCount)}`
+  return formatComment(head, [], '')
 }

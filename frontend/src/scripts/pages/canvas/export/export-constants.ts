@@ -42,6 +42,15 @@ export const EXPORT_ROOT_MAX_WIDTH = 'max-width'
 /** Хвост подписи ограничения ширины в заголовке корня. */
 export const EXPORT_ROOT_CENTERED = 'по центру'
 
+/** Формат нумерации корня при экспорте нескольких: `1 из 3. `; `{i}` и `{n}` подставляются. */
+export const EXPORT_ORDER_FORMAT = '{i} из {n}. '
+
+/** Начало шапки экспорта нескольких корней: `Документ «Лендинг»`. */
+export const EXPORT_DOCUMENT_TITLE = 'Документ'
+
+/** Хвост шапки экспорта нескольких корней: `: корневых блоков 3`. */
+export const EXPORT_DOCUMENT_ROOTS_COUNT = ': корневых блоков'
+
 /** Значение `margin` корня с `exportMaxWidth`: центрирование по горизонтали. */
 export const EXPORT_ROOT_MARGIN = '0 auto'
 

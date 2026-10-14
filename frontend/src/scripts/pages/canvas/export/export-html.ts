@@ -7,7 +7,7 @@ import type { StyleEntry } from '@/scripts/pages/canvas/node-style'
 import { formatComment, nodeCommentParts, rootHeaderComment, warningComments } from './export-comment'
 import { exportLinkLines } from './export-link'
 import { closeTag, exportStyleEntries, openTag, rootExportEntries, safeStyle, safeTag } from './export-style'
-import type { CommentParts } from './export-types'
+import type { CommentParts, RootOrder } from './export-types'
 import { EXPORT_INDENT, EXPORT_NEWLINE } from './export-constants'
 
 /** Всё, что нужно для вывода одного блока. */
@@ -75,13 +75,13 @@ export function exportNodeLines(
 }
 
 /**
- * HTML корневого блока: заголовок с подписью, размером превью и описанием, затем элемент со стилями
- * `exportStyleEntries(node, null)` + `max-width`/`margin` при `exportMaxWidth`. Своего комментария подписи у корня нет —
- * всё уже в заголовке. Текст заканчивается ровно одним переводом строки.
+ * Строки корневого блока: заголовок с подписью, размером превью и описанием (с нумерацией `order`, если корней
+ * несколько), затем элемент со стилями `exportStyleEntries(node, null)` + `max-width`/`margin` при `exportMaxWidth`.
+ * Своего комментария подписи у корня нет — всё уже в заголовке.
  */
-export function exportRootHtml(doc: LayoutDocument, entry: RootEntry): string {
-  const lines = [
-    ...rootHeaderComment(entry, [], ''),
+export function exportRootLines(doc: LayoutDocument, entry: RootEntry, order?: RootOrder): string[] {
+  return [
+    ...rootHeaderComment(entry, [], '', order),
     ...renderBlock(doc, {
       block: entry.node,
       parentKind: null,
@@ -90,5 +90,9 @@ export function exportRootHtml(doc: LayoutDocument, entry: RootEntry): string {
       extraEntries: rootExportEntries(entry.canvas),
     }),
   ]
-  return `${lines.join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
+}
+
+/** HTML корневого блока (см. `exportRootLines`). Текст заканчивается ровно одним переводом строки. */
+export function exportRootHtml(doc: LayoutDocument, entry: RootEntry): string {
+  return `${exportRootLines(doc, entry).join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
 }
