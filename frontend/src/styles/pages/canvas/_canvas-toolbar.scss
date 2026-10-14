@@ -1,0 +1,22 @@
+// Стили фрагмента canvas-toolbar: плавающий тулбар снизу по центру
+@use 'variables' as v;
+
+.canvas-toolbar {
+  display: flex;
+  gap: v.$space-4;
+  align-items: center;
+  padding: v.$toolbar-padding;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-toolbar;
+  box-shadow: var(--shadow-pill);
+
+  &__divider {
+    flex: none;
+    align-self: center;
+    width: 1px;
+    height: v.$toolbar-divider-height;
+    margin: 0 v.$space-4;
+    background: var(--color-line);
+  }
+}

@@ -1,0 +1,6 @@
+// Стили фрагмента canvas-breadcrumbs: плашка пути слева снизу
+.canvas-breadcrumbs {
+  &__empty {
+    color: var(--color-muted);
+  }
+}

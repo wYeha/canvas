@@ -1,0 +1,26 @@
+// Стили общего компонента ui-panel: плавающая панель с заголовком и прокруткой внутри
+@use 'variables' as v;
+
+.ui-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-panel;
+  box-shadow: var(--shadow-panel);
+
+  &__title {
+    flex: none;
+    padding: v.$space-10 v.$space-12;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

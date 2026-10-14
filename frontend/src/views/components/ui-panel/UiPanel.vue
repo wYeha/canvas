@@ -1,0 +1,15 @@
+<!-- Общий компонент: плавающая панель с заголовком и прокручиваемым содержимым -->
+<template>
+  <section class="ui-panel">
+    <h2 class="ui-panel__title">{{ title }}</h2>
+    <div class="ui-panel__body">
+      <slot />
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import type { UiPanelProps } from '@/scripts/components/ui-panel/ui-panel.types'
+
+defineProps<UiPanelProps>()
+</script>

@@ -1,0 +1,15 @@
+// Стили общего компонента ui-pill: плашка-капсула поверх поля
+@use 'variables' as v;
+
+.ui-pill {
+  display: inline-flex;
+  gap: v.$space-4;
+  align-items: center;
+  height: v.$pill-height;
+  padding: 0 v.$space-12;
+  font-size: v.$font-size-sm;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-pill;
+  box-shadow: var(--shadow-pill);
+}

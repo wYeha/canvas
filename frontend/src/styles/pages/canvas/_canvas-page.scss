@@ -1,0 +1,49 @@
+// Стили страницы canvas: высота на весь экран, хедер сверху и позиции плавающих фрагментов поверх поля
+@use 'variables' as v;
+
+.canvas-page {
+  display: grid;
+  grid-template-rows: v.$header-height minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  min-width: v.$min-screen-width;
+
+  &__layers,
+  &__props,
+  &__toolbar,
+  &__breadcrumbs,
+  &__zoom {
+    position: absolute;
+    z-index: v.$z-panel;
+  }
+
+  &__layers {
+    top: v.$panel-gap;
+    left: v.$panel-gap;
+    width: v.$layers-width;
+    max-height: calc(100% - #{v.$floating-reserve});
+  }
+
+  &__props {
+    top: v.$panel-gap;
+    right: v.$panel-gap;
+    width: v.$props-width;
+    max-height: calc(100% - #{v.$floating-reserve});
+  }
+
+  &__toolbar {
+    bottom: v.$panel-gap;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &__breadcrumbs {
+    bottom: v.$panel-gap;
+    left: v.$panel-gap;
+  }
+
+  &__zoom {
+    right: v.$panel-gap;
+    bottom: v.$panel-gap;
+  }
+}

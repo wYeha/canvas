@@ -1,0 +1,48 @@
+// Стили фрагмента canvas-header: верхняя полоса с логотипом, документом, статусом, темой и экспортом
+@use 'variables' as v;
+
+.canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 v.$space-12;
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-line);
+
+  &__group {
+    display: flex;
+    gap: v.$space-8;
+    align-items: center;
+  }
+
+  &__logo {
+    width: v.$logo-size;
+    height: v.$logo-size;
+    color: var(--color-accent);
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: v.$icon-stroke-width;
+    stroke-linecap: round;
+  }
+
+  &__name {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-semibold;
+  }
+
+  &__status {
+    display: inline-flex;
+    gap: v.$space-6;
+    align-items: center;
+    margin-right: v.$space-4;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__status-dot {
+    width: v.$status-dot-size;
+    height: v.$status-dot-size;
+    background: var(--color-ok);
+    border-radius: v.$radius-pill;
+  }
+}

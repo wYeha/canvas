@@ -1,0 +1,13 @@
+// Стили фрагмента canvas-zoom: плашка зума справа снизу
+@use 'variables' as v;
+
+.canvas-zoom {
+  padding: 0 v.$space-4;
+
+  &__value {
+    min-width: v.$zoom-value-width;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    text-align: center;
+  }
+}

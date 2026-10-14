@@ -1,0 +1,66 @@
+// Стили общего компонента ui-button: текстовая кнопка (виды default, ghost, primary; размеры m, l)
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-button {
+  $b: &;
+
+  display: inline-flex;
+  flex: none;
+  gap: v.$space-6;
+  align-items: center;
+  padding: 0 v.$space-10;
+  font-size: v.$font-size-sm;
+  font-weight: v.$font-weight-medium;
+  color: var(--color-text);
+  white-space: nowrap;
+  border-radius: v.$radius-control;
+
+  @include mx.focus-ring;
+
+  &__icon {
+    color: var(--color-muted);
+  }
+
+  &__hint {
+    padding: 0 v.$space-4;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-regular;
+    color: var(--color-muted);
+    background: var(--color-subtle);
+    border-radius: v.$radius-segment;
+  }
+
+  &--variant-default,
+  &--variant-ghost {
+    &:hover {
+      background: var(--color-hover);
+    }
+  }
+
+  &--variant-default {
+    border: 1px solid var(--color-line);
+  }
+
+  &--variant-primary {
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    #{$b}__icon {
+      color: inherit;
+    }
+  }
+
+  &--size-m {
+    height: v.$control-height;
+  }
+
+  &--size-l {
+    height: v.$toolbar-button-size;
+  }
+}

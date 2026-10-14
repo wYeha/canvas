@@ -1,0 +1,29 @@
+// Стили общего компонента ui-icon-button: квадратная кнопка с иконкой
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  border-radius: v.$radius-control;
+
+  @include mx.focus-ring;
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-hover);
+  }
+
+  &--size-m {
+    width: v.$control-height;
+    height: v.$control-height;
+  }
+
+  &--size-l {
+    width: v.$toolbar-button-size;
+    height: v.$toolbar-button-size;
+  }
+}

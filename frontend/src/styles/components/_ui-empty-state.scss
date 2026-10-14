@@ -1,0 +1,9 @@
+// Стили общего компонента ui-empty-state: приглушённый текст пустого состояния
+@use 'variables' as v;
+
+.ui-empty-state {
+  padding: v.$space-20 v.$space-12;
+  font-size: v.$font-size-sm;
+  color: var(--color-muted);
+  text-align: center;
+}

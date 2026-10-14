@@ -1,0 +1,13 @@
+// Стили общего компонента ui-icon: контурная иконка 16×16, цвет от родителя
+@use 'variables' as v;
+
+.ui-icon {
+  flex: none;
+  width: v.$icon-size;
+  height: v.$icon-size;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: v.$icon-stroke-width;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
