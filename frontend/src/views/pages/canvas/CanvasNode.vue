@@ -10,7 +10,7 @@
     </span>
     <span v-else class="canvas-node__chip">
       <span class="canvas-node__icon">{{ view.icon }}</span>
-      <span v-if="view.label !== ''">{{ view.label }}</span>
+      <span v-if="view.label !== ''" class="canvas-node__text">{{ view.label }}</span>
     </span>
     <CanvasNode v-for="child in view.children" :key="child.id" :node="child" :depth="depth + 1" :parent-kind="kind" />
   </div>

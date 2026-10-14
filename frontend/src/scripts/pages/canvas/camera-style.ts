@@ -5,6 +5,7 @@ import { CANVAS_GRID_STEP, GRID_MAX_SCREEN_STEP, GRID_MIN_SCREEN_STEP } from './
 /** Стиль слоя мира (type, а не interface: так совместим с `StyleValue` Vue). */
 export type WorldLayerStyle = {
   transform: string
+  '--camera-zoom': string
 }
 
 /** Стиль фона viewport (type, а не interface: так совместим с `StyleValue` Vue). */
@@ -27,10 +28,14 @@ export function gridScreenStep(zoom: number): number {
   return step
 }
 
-/** CSS-transform слоя мира: совпадает с моделью камеры при `transform-origin: 0 0`. */
+/**
+ * CSS-transform слоя мира: совпадает с моделью камеры при `transform-origin: 0 0`;
+ * переменная `--camera-zoom` нужна подписям, которым обратным масштабом `1 / zoom` возвращают постоянный экранный размер.
+ */
 export function worldLayerStyle(camera: Camera): WorldLayerStyle {
   return {
     transform: `translate(${String(camera.x)}px, ${String(camera.y)}px) scale(${String(camera.zoom)})`,
+    '--camera-zoom': String(camera.zoom),
   }
 }
 

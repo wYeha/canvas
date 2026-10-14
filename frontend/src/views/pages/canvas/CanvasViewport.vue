@@ -4,7 +4,7 @@
 -->
 <template>
   <main ref="viewportEl" :class="classes" :style="viewportStyle">
-    <div ref="worldEl" class="canvas-viewport__world" data-canvas-world :style="worldStyle">
+    <div ref="worldEl" :class="worldClasses" data-canvas-world :style="worldStyle">
       <CanvasRoot v-for="root in roots" :key="root.node.id" :root="root" />
     </div>
     <CanvasSelection />
@@ -19,6 +19,6 @@ import CanvasRoot from '@/views/pages/canvas/CanvasRoot.vue'
 import { useCanvasRoots } from '@/scripts/pages/canvas/use-canvas-roots'
 import { useCanvasViewport } from '@/scripts/pages/canvas/use-canvas-viewport'
 
-const { viewportEl, worldEl, classes, viewportStyle, worldStyle } = useCanvasViewport()
+const { viewportEl, worldEl, classes, worldClasses, viewportStyle, worldStyle } = useCanvasViewport()
 const { roots, isEmpty } = useCanvasRoots()
 </script>

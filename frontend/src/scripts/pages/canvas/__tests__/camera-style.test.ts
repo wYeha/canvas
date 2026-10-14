@@ -35,6 +35,7 @@ describe('worldLayerStyle / viewportBackgroundStyle', () => {
   it('transform слоя мира', () => {
     expect(worldLayerStyle({ x: 10, y: -20.5, zoom: 1.5 })).toEqual({
       transform: 'translate(10px, -20.5px) scale(1.5)',
+      '--camera-zoom': '1.5',
     })
   })
 

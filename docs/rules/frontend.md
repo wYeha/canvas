@@ -199,7 +199,7 @@ src/
 
 Раскладочные стили блоков в превью (`display`, `flex-*`, `grid-*`, `gap`, `padding`, `width`, `height`) задаются пользователем, поэтому идут через `:style`. Они формируются **только** функциями `styleEntries()` + `toStyleObject()` / `toInlineStyle()` из `scripts/pages/canvas/node-style.ts`. Ту же функцию использует экспорт. Оформление редактора (цвет по глубине вложенности, подпись, выделение, подсветка при перетаскивании) делается BEM-классами через `outline`, `box-shadow` и наложенные слои, **никогда не через `border`, `margin` или `padding`**: иначе превью разойдётся с экспортом.
 
-Динамические стили камеры канваса тоже идут через `:style`: `transform` слоя `canvas-viewport__world` и `background-position` / `background-size` у `.canvas-viewport`. Они формируются **только** функциями из `scripts/pages/canvas/camera-style.ts`. Так же через `:style` задаются позиция и ширина превью корня на поле (`rootPlacementStyle()` из `node-view.ts`) и прямоугольники оверлея выделения (`overlayRectStyle()` из `selection.ts`). Всё остальное оформление поля — BEM-классы.
+Динамические стили камеры канваса тоже идут через `:style`: `transform` и переменная `--camera-zoom` (для обратного масштаба подписей) слоя `canvas-viewport__world` и `background-position` / `background-size` у `.canvas-viewport`. Они формируются **только** функциями из `scripts/pages/canvas/camera-style.ts`. Так же через `:style` задаются позиция и ширина превью корня на поле (`rootPlacementStyle()` из `node-view.ts`) и прямоугольники оверлея выделения (`overlayRectStyle()` из `selection.ts`). Всё остальное оформление поля — BEM-классы.
 
 ---
 

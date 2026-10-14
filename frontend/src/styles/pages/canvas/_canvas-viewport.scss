@@ -25,7 +25,10 @@
     width: 0;
     height: 0;
     transform-origin: 0 0;
-    will-change: transform;
+
+    &--moving {
+      will-change: transform; // только во время жеста: постоянный will-change растрирует слой и мылит текст при зуме
+    }
   }
 
   &__hint {

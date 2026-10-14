@@ -9,9 +9,12 @@
 
   &__header {
     position: absolute;
-    right: 0;
-    bottom: calc(100% + #{v.$root-header-gap});
+    bottom: calc(100% + #{v.$root-header-gap} / var(--camera-zoom));
     left: 0;
+    width: calc(
+      100% * var(--camera-zoom)
+    ); // после обратного масштаба равна ширине корня на экране: ширина превью у правого края
+
     display: flex;
     gap: v.$space-8;
     align-items: baseline;
@@ -20,6 +23,11 @@
     line-height: v.$line-height-base;
     white-space: nowrap;
     user-select: none;
+    transform: scale(
+      calc(1 / var(--camera-zoom))
+    ); // постоянный экранный размер; абсолютный элемент, раскладку не трогает
+
+    transform-origin: left bottom;
   }
 
   &__title {

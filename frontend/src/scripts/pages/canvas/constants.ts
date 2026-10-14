@@ -79,6 +79,9 @@ export const GRID_MIN_SCREEN_STEP = 8
 /** Максимальный экранный шаг точек: крупнее — шаг делится пополам. */
 export const GRID_MAX_SCREEN_STEP = 32
 
+/** Пауза после последнего изменения камеры, мс: по её истечении жест считается законченным и слой мира перерисовывается чётко. */
+export const CAMERA_SETTLE_DELAY_MS = 150
+
 /** Высота «строки» колеса в px для `deltaMode = 1` (DOM_DELTA_LINE, Firefox). */
 export const WHEEL_LINE_HEIGHT = 16
 

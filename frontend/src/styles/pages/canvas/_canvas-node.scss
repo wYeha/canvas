@@ -29,12 +29,13 @@
 
   &__chip {
     position: absolute;
-    top: v.$label-chip-offset;
-    left: v.$label-chip-offset;
+    top: calc(#{v.$label-chip-offset} / var(--camera-zoom));
+    left: calc(#{v.$label-chip-offset} / var(--camera-zoom));
     z-index: v.$z-chip;
     display: inline-flex;
     gap: v.$space-4;
     align-items: center;
+    max-width: calc(100% * var(--camera-zoom)); // внутри обратного масштаба равно ширине блока на экране
     height: v.$label-chip-height;
     padding: 0 v.$space-6;
     font-size: v.$font-size-2xs;
@@ -45,12 +46,27 @@
     user-select: none;
     background: color-mix(in srgb, var(--node-color) calc(var(--alpha-chip) * 100%), transparent);
     border-radius: v.$radius-block;
+    transform: scale(
+      calc(1 / var(--camera-zoom))
+    ); // постоянный экранный размер; абсолютный элемент, раскладку не трогает
+
+    transform-origin: left top;
+    overflow: hidden;
+  }
+
+  &__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__caption {
     position: absolute;
-    inset: 0;
+    top: 50%;
+    left: 50%;
     z-index: v.$z-chip;
+    width: calc(100% * var(--camera-zoom)); // внутри обратного масштаба равно размеру блока на экране
+    height: calc(100% * var(--camera-zoom));
     display: flex;
     gap: v.$space-4;
     align-items: center;
@@ -61,6 +77,8 @@
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
+    transform: translate(-50%, -50%) scale(calc(1 / var(--camera-zoom))); // постоянный экранный размер, центр на месте
+    transform-origin: center;
   }
 
   &__icon {

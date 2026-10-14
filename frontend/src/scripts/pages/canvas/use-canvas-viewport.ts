@@ -1,10 +1,11 @@
 /**
  * Composable фрагмента CanvasViewport: template refs поля и слоя мира, колесо (пан и зум к курсору),
- * замер размера viewport, классы курсора и стили камеры для фона и слоя мира.
+ * замер размера viewport, признак движения камеры, классы курсора и стили камеры для фона и слоя мира.
  */
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCameraStore } from './camera-store'
+import { createCameraSettle } from './camera-settle'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { useCanvasPan } from './use-canvas-pan'
@@ -18,6 +19,12 @@ export function useCanvasViewport() {
   const viewportEl = ref<HTMLElement | null>(null)
   /** Слой мира, сдвигаемый и масштабируемый камерой. */
   const worldEl = ref<HTMLElement | null>(null)
+  /** Камера в движении: слою мира включается `will-change`, иначе он остаётся чётким. */
+  const moving = ref(false)
+  const settle = createCameraSettle((value) => {
+    moving.value = value
+  })
+  watch(camera, settle.touch)
   let resizeObserver: ResizeObserver | null = null
   /** Кеш положения viewport на странице: не зовём getBoundingClientRect на каждое событие колеса. */
   let originLeft = 0
@@ -77,6 +84,7 @@ export function useCanvasViewport() {
   })
 
   onBeforeUnmount(() => {
+    settle.dispose()
     viewportEl.value?.removeEventListener('wheel', onWheel)
     window.removeEventListener('resize', updateOrigin)
     resizeObserver?.disconnect()
@@ -90,11 +98,17 @@ export function useCanvasViewport() {
     'canvas-viewport--panning': panning.value,
   }))
 
+  /** BEM-классы слоя мира: `--moving` на время жеста камеры. */
+  const worldClasses = computed(() => ({
+    'canvas-viewport__world': true,
+    'canvas-viewport__world--moving': moving.value,
+  }))
+
   /** Фон с точками, движущийся вместе с полем. */
   const viewportStyle = computed(() => viewportBackgroundStyle(camera.value))
 
   /** Transform слоя мира. */
   const worldStyle = computed(() => worldLayerStyle(camera.value))
 
-  return { viewportEl, worldEl, classes, viewportStyle, worldStyle }
+  return { viewportEl, worldEl, classes, worldClasses, viewportStyle, worldStyle }
 }
