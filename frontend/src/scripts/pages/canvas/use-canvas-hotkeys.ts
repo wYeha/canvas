@@ -1,19 +1,56 @@
-/** Глобальные хоткеи страницы canvas; пока только камера (зум, вписывание). */
+/** Глобальные хоткеи страницы canvas: камера (зум, вписывание) и навигация по выделению (Esc, Enter). */
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useCameraStore } from './camera-store'
-import { isEditableTarget, matchCameraHotkey, type CameraCommand } from './camera-input'
+import {
+  isEditableTarget,
+  isInteractiveTarget,
+  matchCameraHotkey,
+  matchSelectionHotkey,
+  type CameraCommand,
+} from './camera-input'
+import { useLayoutStore } from './layout-store'
+import { measureNodeWorldRect } from './node-dom'
+import { firstChildSelection, parentSelection } from './selection'
 
-/** Подписывает страницу на хоткеи камеры; в полях ввода хоткеи не срабатывают. */
+/** Подписывает страницу на хоткеи камеры и выделения; в полях ввода хоткеи не срабатывают. */
 export function useCanvasHotkeys(): void {
   const cameraStore = useCameraStore()
+  const layoutStore = useLayoutStore()
 
-  /** Экшены стора по командам камеры. */
+  /** Вписывает выделенный блок: прямоугольник берётся из DOM в координатах поля. */
+  function fitSelection(): void {
+    const id = layoutStore.selectedId
+    if (id === null) return
+    const rect = measureNodeWorldRect(id, cameraStore.camera.zoom)
+    if (rect !== null) cameraStore.fitWorldRect(rect)
+  }
+
+  /** Экшены по командам камеры. */
   const actions: Record<CameraCommand, () => void> = {
     'zoom-in': cameraStore.zoomIn,
     'zoom-out': cameraStore.zoomOut,
     'zoom-reset': cameraStore.resetZoom,
     'fit-all': cameraStore.fitAll,
-    'fit-selection': cameraStore.fitSelection,
+    'fit-selection': fitSelection,
+  }
+
+  /** Esc и Enter: перемещают выделение; без выделения ничего не делают, Enter на кнопках и ссылках не забираем. */
+  function handleSelectionKey(e: KeyboardEvent): void {
+    const command = matchSelectionHotkey(e)
+    const id = layoutStore.selectedId
+    if (command === null || id === null) return
+    const target = e.target
+    // Enter на кнопке нажимает её; Esc же не нужен кнопкам, а фокус после клика по сегменту пути остаётся на кнопке.
+    if (command === 'select-child' && target instanceof HTMLElement && isInteractiveTarget(describeTarget(target)))
+      return
+    e.preventDefault()
+    const doc = layoutStore.document
+    layoutStore.select(command === 'select-parent' ? parentSelection(doc, id) : firstChildSelection(doc, id))
+  }
+
+  /** Сужает цель события до полей, нужных проверкам интерактивности. */
+  function describeTarget(t: HTMLElement) {
+    return { tagName: t.tagName, isContentEditable: t.isContentEditable, role: t.getAttribute('role') }
   }
 
   /** Сопоставляет клавишу команде; preventDefault блокирует браузерный зум на Ctrl+=/-/0. */
@@ -21,7 +58,10 @@ export function useCanvasHotkeys(): void {
     if (e.defaultPrevented) return
     if (e.target instanceof HTMLElement && isEditableTarget(e.target)) return
     const command = matchCameraHotkey(e)
-    if (command === null) return
+    if (command === null) {
+      handleSelectionKey(e)
+      return
+    }
     e.preventDefault()
     actions[command]()
   }

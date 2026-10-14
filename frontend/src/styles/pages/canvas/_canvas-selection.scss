@@ -1,0 +1,55 @@
+// Стили фрагмента canvas-selection: оверлей рамок и бейджей выделения и наведения (экранные координаты, от зума не зависят)
+@use 'variables' as v;
+
+.canvas-selection {
+  position: absolute;
+  inset: 0;
+  z-index: v.$z-badge;
+  overflow: hidden;
+  pointer-events: none;
+
+  &__box {
+    position: absolute;
+
+    &--hover {
+      outline: v.$hover-outline-width solid var(--color-accent);
+      outline-offset: -#{v.$hover-outline-width};
+    }
+
+    &--selected {
+      outline: v.$selection-outline-width solid var(--color-accent);
+      outline-offset: -#{v.$selection-outline-width};
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: -#{v.$selection-badge-offset};
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    height: v.$selection-badge-height;
+    padding: 0 v.$space-6;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    line-height: 1;
+    white-space: nowrap;
+    border-radius: v.$radius-block;
+
+    &--hover {
+      color: var(--color-accent-text);
+      background: var(--color-accent-soft);
+    }
+
+    &--selected {
+      color: var(--color-on-accent);
+      background: var(--color-accent);
+    }
+
+    // У верхнего края поля над блоком нет места: бейдж кладётся внутрь
+    &--inside {
+      top: v.$space-4;
+      left: v.$space-4;
+    }
+  }
+}

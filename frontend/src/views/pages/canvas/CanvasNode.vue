@@ -1,7 +1,9 @@
 <!-- Фрагмент страницы canvas: рекурсивный блок превью (раскладка из styleEntries, цвет по глубине, подпись) или заглушка связи -->
 <template>
-  <div v-if="view.kind === 'link'" class="canvas-node canvas-node--link" :style="view.style">{{ view.text }}</div>
-  <div v-else :class="view.classes" :style="view.style">
+  <div v-if="view.kind === 'link'" class="canvas-node canvas-node--link" :data-node-id="node.id" :style="view.style">
+    {{ view.text }}
+  </div>
+  <div v-else :class="view.classes" :data-node-id="node.id" :style="view.style">
     <span v-if="view.leaf" class="canvas-node__caption">
       <span class="canvas-node__icon">{{ view.icon }}</span>
       <span v-if="view.label !== ''">{{ view.label }}</span>

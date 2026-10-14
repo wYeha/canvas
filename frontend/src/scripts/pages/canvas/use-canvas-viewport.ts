@@ -8,6 +8,7 @@ import { useCameraStore } from './camera-store'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { useCanvasPan } from './use-canvas-pan'
+import { useCanvasSelect } from './use-canvas-select'
 
 /** Подключает камеру к viewport: возвращает refs для шаблона, классы и динамические стили. */
 export function useCanvasViewport() {
@@ -29,6 +30,7 @@ export function useCanvasViewport() {
   }
 
   const { spaceHeld, panning } = useCanvasPan(viewportEl, isSurface)
+  useCanvasSelect(viewportEl, isSurface, () => spaceHeld.value || panning.value)
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);

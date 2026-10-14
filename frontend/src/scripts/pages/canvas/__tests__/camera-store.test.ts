@@ -113,3 +113,14 @@ describe('camera-store', () => {
     expect(store.camera).toEqual(flat)
   })
 })
+
+describe('camera-store: fitWorldRect', () => {
+  it('вписывает прямоугольник поля в видимую область, зум не выше ZOOM_MAX', () => {
+    const store = measuredStore()
+    store.fitWorldRect({ x: 100, y: 100, width: 10, height: 10 })
+    expect(store.camera.zoom).toBe(ZOOM_MAX)
+    const center = worldToScreen(store.camera, { x: 105, y: 105 })
+    expect(center.x).toBeCloseTo(areaCenter(store.visibleArea).x)
+    expect(center.y).toBeCloseTo(areaCenter(store.visibleArea).y)
+  })
+})

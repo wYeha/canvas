@@ -3,6 +3,9 @@
  * Принимают минимальные интерфейсы вместо DOM-событий, чтобы тестироваться без браузера.
  */
 import {
+  ENTER_CODE,
+  ESCAPE_CODE,
+  NUMPAD_ENTER_CODE,
   SPACE_CODE,
   WHEEL_DELTA_LINE,
   WHEEL_DELTA_PAGE,
@@ -36,6 +39,9 @@ export interface KeyLike {
 
 /** Команда камеры по хоткею. */
 export type CameraCommand = 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'fit-all' | 'fit-selection'
+
+/** Команда навигации по выделению: к родителю (Esc) или к первому ребёнку (Enter). */
+export type SelectionCommand = 'select-parent' | 'select-child'
 
 /** Нужные поля цели события для проверки «это поле ввода». */
 export type EditableLike = { tagName: string; isContentEditable: boolean } | null
@@ -101,6 +107,14 @@ export function matchCameraHotkey(e: KeyLike): CameraCommand | null {
   if (e.altKey) return null
   if (e.ctrlKey || e.metaKey) return CTRL_HOTKEYS[e.code] ?? null
   if (e.shiftKey) return SHIFT_HOTKEYS[e.code] ?? null
+  return null
+}
+
+/** Сопоставляет Esc и Enter без модификаторов команде навигации по выделению. */
+export function matchSelectionHotkey(e: KeyLike): SelectionCommand | null {
+  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return null
+  if (e.code === ESCAPE_CODE) return 'select-parent'
+  if (e.code === ENTER_CODE || e.code === NUMPAD_ENTER_CODE) return 'select-child'
   return null
 }
 

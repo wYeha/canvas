@@ -165,3 +165,45 @@ export const ROOT_TITLE_SEPARATOR = ' · '
 
 /** Имя параметра URL, включающего демо-документ (только в dev). */
 export const DEMO_QUERY_PARAM = 'demo'
+
+/** Порог клика, экранные px: сдвиг указателя между нажатием и отпусканием больше порога — это перетаскивание. */
+export const CLICK_DRAG_THRESHOLD = 4
+
+/** Имя атрибута, которым помечены элементы блоков и плашек связей: по нему ищется цель клика. */
+export const NODE_ID_ATTR = 'data-node-id'
+
+/** CSS-селектор элемента, помеченного id узла. */
+export const NODE_SELECTOR = `[${NODE_ID_ATTR}]`
+
+/** CSS-селектор слоя мира: от его положения на экране считаются координаты поля. */
+export const WORLD_SELECTOR = '[data-canvas-world]'
+
+/** Разделитель частей бейджа выделения: `подпись · тип · Ш×В`. */
+export const BADGE_SEPARATOR = ' · '
+
+/** Разделитель ширины и высоты в бейдже. */
+export const SIZE_SEPARATOR = '×'
+
+/** Тип узла-плашки связи в бейдже. */
+export const LINK_TYPE_LABEL = 'связь'
+
+/** Разделитель сегментов плашки пути. */
+export const BREADCRUMB_SEPARATOR = '›'
+
+/** Текст плашки пути без выделения. */
+export const BREADCRUMB_EMPTY = '—'
+
+/**
+ * Высота зоны над блоком, где помещается бейдж, экранные px; ближе к верху поля бейдж уходит внутрь блока.
+ * Повторяет SCSS `$selection-badge-offset`.
+ */
+export const SELECTION_BADGE_OFFSET = 20
+
+/** `KeyboardEvent.code` Escape. */
+export const ESCAPE_CODE = 'Escape'
+
+/** `KeyboardEvent.code` Enter. */
+export const ENTER_CODE = 'Enter'
+
+/** `KeyboardEvent.code` Enter на цифровой клавиатуре. */
+export const NUMPAD_ENTER_CODE = 'NumpadEnter'

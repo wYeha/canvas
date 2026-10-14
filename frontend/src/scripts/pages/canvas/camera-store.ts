@@ -19,7 +19,7 @@ import {
   type Rect,
   type Size,
 } from './camera'
-import { CANVAS_SAFE_INSETS, DEFAULT_CAMERA, FIT_ALL_MAX_ZOOM, FIT_PADDING } from './constants'
+import { CANVAS_SAFE_INSETS, DEFAULT_CAMERA, FIT_ALL_MAX_ZOOM, FIT_PADDING, ZOOM_MAX } from './constants'
 import type { CanvasPoint } from './factories'
 import { useLayoutStore } from './layout-store'
 
@@ -91,9 +91,10 @@ export const useCameraStore = defineStore('camera', () => {
     if (next !== null) camera.value = next
   }
 
-  /** Вписывает выделенный блок; пока ничего не делает. */
-  function fitSelection(): void {
-    // TODO(1.10): вписать выделенный блок (fitRect с ZOOM_MAX), когда на канвасе появятся измерения блоков
+  /** Вписывает прямоугольник в координатах поля (например, выделенный блок) в видимую область; зум до `ZOOM_MAX`. */
+  function fitWorldRect(rect: Rect): void {
+    const next = fitRect(rect, visibleArea.value, FIT_PADDING, ZOOM_MAX)
+    if (next !== null) camera.value = next
   }
 
   return {
@@ -111,6 +112,6 @@ export const useCameraStore = defineStore('camera', () => {
     zoomOut,
     resetZoom,
     fitAll,
-    fitSelection,
+    fitWorldRect,
   }
 })
