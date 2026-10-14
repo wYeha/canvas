@@ -249,3 +249,30 @@ export const EXPORT_PLURAL_LOCALE = 'ru'
 
 /** Множитель доли в проценты. */
 export const EXPORT_PERCENT = 100
+
+/** Расширение скачиваемого файла экспорта. */
+export const EXPORT_FILE_EXTENSION = '.html'
+
+/** Имя файла, если из имени документа после санитизации ничего не осталось. */
+export const EXPORT_FILE_FALLBACK_NAME = 'layout'
+
+/** Разделитель имени документа и подписи блока в имени файла. */
+export const EXPORT_FILE_PART_SEPARATOR = ' — '
+
+/** Символы, недопустимые в имени файла (Windows и управляющие): заменяются дефисом. */
+export const EXPORT_FILE_FORBIDDEN_CHARS = /[\\/:*?"<>|\p{Cc}]/gu
+
+/** Замена недопустимого символа в имени файла. */
+export const EXPORT_FILE_REPLACEMENT = '-'
+
+/** Язык документа в скачиваемом HTML. */
+export const EXPORT_HTML_LANG = 'ru'
+
+/** Кодировка в `<meta charset>`: без неё кириллица в комментариях ломается при открытии файла. */
+export const EXPORT_HTML_CHARSET = 'utf-8'
+
+/** Размер килобайта в байтах (для подписи размера). */
+export const EXPORT_BYTES_IN_KB = 1024
+
+/** Единицы размера: байты, килобайты, мегабайты. */
+export const EXPORT_SIZE_UNITS = { bytes: 'Б', kb: 'КБ', mb: 'МБ' } as const

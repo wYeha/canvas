@@ -1,7 +1,7 @@
-<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы -->
+<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы и окно экспорта -->
 <template>
   <div class="canvas-page">
-    <CanvasHeader />
+    <CanvasHeader @export="openExport" />
     <CanvasViewport>
       <CanvasLayers class="canvas-page__layers" />
       <CanvasProps class="canvas-page__props" />
@@ -9,6 +9,7 @@
       <CanvasBreadcrumbs class="canvas-page__breadcrumbs" />
       <CanvasZoom class="canvas-page__zoom" />
     </CanvasViewport>
+    <ExportModal v-model:open="exportOpen" />
   </div>
 </template>
 
@@ -20,9 +21,13 @@ import CanvasProps from '@/views/pages/canvas/CanvasProps.vue'
 import CanvasToolbar from '@/views/pages/canvas/CanvasToolbar.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
+import ExportModal from '@/views/modals/export-modal/ExportModal.vue'
 import { useCanvasHotkeys } from '@/scripts/pages/canvas/use-canvas-hotkeys'
 import { useCanvasDemo } from '@/scripts/pages/canvas/use-canvas-demo'
+import { useCanvasPage } from '@/scripts/pages/canvas/use-canvas-page'
 
-useCanvasHotkeys()
+// Пока окно экспорта открыто, хоткеи канваса не срабатывают (Esc закрывает окно, а не поднимает выделение)
+const { exportOpen, openExport, isBlocked } = useCanvasPage()
+useCanvasHotkeys({ openExport, isBlocked })
 useCanvasDemo()
 </script>

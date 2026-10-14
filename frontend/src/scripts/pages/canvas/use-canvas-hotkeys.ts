@@ -5,6 +5,7 @@ import {
   isEditableTarget,
   isInteractiveTarget,
   matchCameraHotkey,
+  matchExportHotkey,
   matchSelectionHotkey,
   type CameraCommand,
 } from './camera-input'
@@ -12,8 +13,14 @@ import { useLayoutStore } from './layout-store'
 import { measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
 
-/** Подписывает страницу на хоткеи камеры и выделения; в полях ввода хоткеи не срабатывают. */
-export function useCanvasHotkeys(): void {
+/** Зависимости хоткеев страницы: открытие окна экспорта и признак «хоткеи сейчас заблокированы» (открыто окно). */
+export interface CanvasHotkeysOptions {
+  openExport: () => void
+  isBlocked: () => boolean
+}
+
+/** Подписывает страницу на хоткеи камеры, выделения и экспорта (Ctrl+E); в полях ввода и при открытом окне хоткеи не срабатывают. */
+export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions): void {
   const cameraStore = useCameraStore()
   const layoutStore = useLayoutStore()
 
@@ -55,8 +62,14 @@ export function useCanvasHotkeys(): void {
 
   /** Сопоставляет клавишу команде; preventDefault блокирует браузерный зум на Ctrl+=/-/0. */
   function onKeyDown(e: KeyboardEvent): void {
-    if (e.defaultPrevented) return
+    if (isBlocked() || e.defaultPrevented) return
     if (e.target instanceof HTMLElement && isEditableTarget(e.target)) return
+    if (matchExportHotkey(e)) {
+      // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска
+      e.preventDefault()
+      openExport()
+      return
+    }
     const command = matchCameraHotkey(e)
     if (command === null) {
       handleSelectionKey(e)

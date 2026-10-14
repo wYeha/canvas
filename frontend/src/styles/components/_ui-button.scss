@@ -1,4 +1,4 @@
-// Стили общего компонента ui-button: текстовая кнопка (виды default, ghost, primary, danger; размеры m, l; disabled)
+// Стили общего компонента ui-button: текстовая кнопка (виды default, ghost, primary, danger, success; размеры m, l; disabled)
 @use 'variables' as v;
 @use 'mixins' as mx;
 
@@ -69,6 +69,16 @@
     &:hover:not(:disabled) {
       background: var(--color-danger-soft);
     }
+
+    #{$b}__icon {
+      color: inherit;
+    }
+  }
+
+  // Подтверждение результата («Скопировано»): зелёный фон ok, текст on-ok
+  &--variant-success {
+    color: var(--color-on-ok);
+    background: var(--color-ok);
 
     #{$b}__icon {
       color: inherit;

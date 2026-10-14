@@ -5,6 +5,7 @@ import {
   isInteractiveTarget,
   shouldCaptureSpace,
   matchCameraHotkey,
+  matchExportHotkey,
   normalizeWheelDelta,
   wheelToAction,
   type KeyLike,
@@ -106,6 +107,20 @@ describe('matchCameraHotkey', () => {
     expect(matchCameraHotkey(key('Digit1'))).toBeNull()
     expect(matchCameraHotkey(key('Digit1', { ctrlKey: true }))).toBeNull()
     expect(matchCameraHotkey(key('Equal'))).toBeNull()
+  })
+})
+
+describe('matchExportHotkey', () => {
+  it('Ctrl/Cmd + E срабатывает по коду клавиши', () => {
+    expect(matchExportHotkey(key('KeyE', { ctrlKey: true }))).toBe(true)
+    expect(matchExportHotkey(key('KeyE', { metaKey: true }))).toBe(true)
+  })
+
+  it('без Ctrl, с Shift или Alt и другие клавиши не срабатывают', () => {
+    expect(matchExportHotkey(key('KeyE'))).toBe(false)
+    expect(matchExportHotkey(key('KeyE', { ctrlKey: true, shiftKey: true }))).toBe(false)
+    expect(matchExportHotkey(key('KeyE', { ctrlKey: true, altKey: true }))).toBe(false)
+    expect(matchExportHotkey(key('KeyD', { ctrlKey: true }))).toBe(false)
   })
 })
 

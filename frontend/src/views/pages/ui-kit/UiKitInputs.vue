@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы ui-kit: UiTextInput, UiTextarea, UiNumberInput и UiSwitch во всех вариантах и состояниях -->
+<!-- Фрагмент страницы ui-kit: UiTextInput, UiTextarea, UiNumberInput, UiSwitch и UiCheckbox во всех вариантах и состояниях -->
 <template>
   <UiKitSection title="UiTextInput">
     <div class="ui-kit-inputs__row">
@@ -52,9 +52,18 @@
     </div>
     <span class="ui-kit-inputs__value">значение: {{ enabled }}</span>
   </UiKitSection>
+  <UiKitSection title="UiCheckbox (клик по флажку или подписи, Space)">
+    <div class="ui-kit-inputs__row">
+      <UiCheckbox v-model="checked" label="Отмечен" />
+      <UiCheckbox label="Не отмечен" :model-value="false" />
+      <UiCheckbox label="Disabled" disabled :model-value="true" />
+    </div>
+    <span class="ui-kit-inputs__value">значение: {{ checked }}</span>
+  </UiKitSection>
 </template>
 
 <script setup lang="ts">
+import UiCheckbox from '@/views/components/ui-checkbox/UiCheckbox.vue'
 import UiKitSection from '@/views/pages/ui-kit/UiKitSection.vue'
 import UiNumberInput from '@/views/components/ui-number-input/UiNumberInput.vue'
 import UiSwitch from '@/views/components/ui-switch/UiSwitch.vue'
@@ -63,5 +72,5 @@ import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import { UI_NUMBER_UNITS } from '@/scripts/components/ui-number-input/ui-number-input.constants'
 import { useUiKitInputs } from '@/scripts/pages/ui-kit/use-ui-kit-inputs'
 
-const { text, area, number, emptyNumber, enabled } = useUiKitInputs()
+const { text, area, number, emptyNumber, enabled, checked } = useUiKitInputs()
 </script>

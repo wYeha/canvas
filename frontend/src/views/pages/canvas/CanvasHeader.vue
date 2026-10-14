@@ -15,7 +15,9 @@
         Сохранено
       </span>
       <UiIconButton :icon="themeIcon" :label="themeLabel" @click="toggleTheme" />
-      <UiButton variant="primary">Экспорт</UiButton>
+      <UiButton variant="primary" :keyshortcuts="EXPORT_KEYSHORTCUTS" :hint="EXPORT_HINT" @click="emit('export')">
+        Экспорт
+      </UiButton>
     </div>
   </header>
 </template>
@@ -23,7 +25,10 @@
 <script setup lang="ts">
 import UiButton from '@/views/components/ui-button/UiButton.vue'
 import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
+import type { CanvasHeaderEmits } from '@/scripts/pages/canvas/canvas-header.types'
+import { EXPORT_HINT, EXPORT_KEYSHORTCUTS } from '@/scripts/pages/canvas/constants'
 import { useCanvasHeader } from '@/scripts/pages/canvas/use-canvas-header'
 
+const emit = defineEmits<CanvasHeaderEmits>()
 const { themeIcon, themeLabel, toggleTheme } = useCanvasHeader()
 </script>

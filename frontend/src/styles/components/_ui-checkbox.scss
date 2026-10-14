@@ -1,0 +1,36 @@
+// Стили общего компонента ui-checkbox: нативный флажок цвета accent с подписью справа
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-checkbox {
+  display: flex;
+  gap: v.$space-8;
+  align-items: center;
+  min-width: 0;
+  font-size: v.$font-size-sm;
+  color: var(--color-text);
+  cursor: pointer;
+
+  &__input {
+    flex: none;
+    width: v.$checkbox-size;
+    height: v.$checkbox-size;
+    margin: 0;
+    cursor: inherit;
+    accent-color: var(--color-accent);
+
+    @include mx.focus-ring;
+  }
+
+  &__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: v.$disabled-opacity;
+  }
+}

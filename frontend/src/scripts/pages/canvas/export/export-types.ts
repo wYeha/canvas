@@ -28,3 +28,21 @@ export interface RootOrder {
   index: number
   total: number
 }
+
+/** Вид токена подсветки: тег, имя атрибута, строка, комментарий, промпт, пунктуация (`=`), обычный текст. */
+export type HighlightKind = 'tag' | 'attr' | 'string' | 'comment' | 'prompt' | 'punct' | 'text'
+
+/** Токен подсветки: вид и кусок исходного текста (склейка токенов даёт исходный текст). */
+export interface HighlightToken {
+  kind: HighlightKind
+  text: string
+}
+
+/** Строка предпросмотра: номер с 1 и токены (пустая строка — без токенов). */
+export interface HighlightLine {
+  number: number
+  tokens: HighlightToken[]
+}
+
+/** Что подсвечивается: код экспорта или промпт (целиком одним видом `prompt`). */
+export type HighlightTarget = 'code' | 'prompt'

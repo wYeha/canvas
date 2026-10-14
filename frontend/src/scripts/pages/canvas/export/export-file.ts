@@ -1,0 +1,94 @@
+/** Скачиваемый файл экспорта: полный HTML-документ, имя файла и статистика (строки, размер) для предпросмотра. */
+import type { LayoutDocument, NodeId } from '@shared'
+import { LINK_MISSING_LABEL, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
+import { findNode } from '@/scripts/pages/canvas/tree-query'
+import { escapeHtmlAttr, toSingleLine } from './export-escape'
+import {
+  EXPORT_BYTES_IN_KB,
+  EXPORT_FILE_EXTENSION,
+  EXPORT_FILE_FALLBACK_NAME,
+  EXPORT_FILE_FORBIDDEN_CHARS,
+  EXPORT_FILE_PART_SEPARATOR,
+  EXPORT_FILE_REPLACEMENT,
+  EXPORT_HTML_CHARSET,
+  EXPORT_HTML_LANG,
+  EXPORT_INDENT,
+  EXPORT_NEWLINE,
+  EXPORT_SIZE_UNITS,
+} from './export-constants'
+import { sourceLabel } from './export-link'
+import type { ExportScope } from './export-types'
+
+/** Статистика текста для строки меты предпросмотра. */
+export interface ExportStats {
+  lines: number
+  size: string
+}
+
+/**
+ * Оборачивает текст экспорта в полный HTML-документ: `meta charset` нужен, иначе кириллица в комментариях ломается
+ * при открытии файла. Текст идёт в `<body>` с отступом на уровень; пустые строки остаются пустыми.
+ */
+export function wrapHtmlDocument(text: string, title: string): string {
+  const body = text
+    .replace(/\n$/, '')
+    .split(EXPORT_NEWLINE)
+    .map((line) => (line === '' ? '' : `${EXPORT_INDENT}${line}`))
+  const lines = [
+    '<!DOCTYPE html>',
+    `<html lang="${EXPORT_HTML_LANG}">`,
+    '<head>',
+    `${EXPORT_INDENT}<meta charset="${EXPORT_HTML_CHARSET}">`,
+    `${EXPORT_INDENT}<title>${escapeHtmlAttr(toSingleLine(title))}</title>`,
+    '</head>',
+    '<body>',
+    ...body,
+    '</body>',
+    '</html>',
+  ]
+  return `${lines.join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
+}
+
+/** Убирает из имени файла недопустимые символы и пробелы по краям; точки по краям тоже (Windows их не терпит). */
+export function sanitizeFileName(name: string): string {
+  return name
+    .replace(EXPORT_FILE_FORBIDDEN_CHARS, EXPORT_FILE_REPLACEMENT)
+    .trim()
+    .replace(/^\.+|\.+$/g, '')
+    .trim()
+}
+
+/** Подпись выделенного узла для имени файла: блок — его подпись, связь — подпись источника; нет узла — пусто. */
+function selectedLabel(doc: LayoutDocument, nodeId: NodeId): string {
+  const node = findNode(doc, nodeId)
+  if (!node) return ''
+  const label = node.type === 'link' ? sourceLabel(doc, node) : toSingleLine(node.label)
+  if (label === LINK_MISSING_LABEL) return ''
+  return label === '' ? ROOT_UNTITLED_LABEL : label
+}
+
+/**
+ * Имя файла: `{документ}.html` для «отмеченных» и «всех», `{документ} — {подпись блока}.html` для выделенного.
+ * Пустое имя после очистки → `layout`.
+ */
+export function exportFileName(docName: string, scope: ExportScope, doc: LayoutDocument): string {
+  const parts = [docName]
+  if (scope.kind === 'selected') parts.push(selectedLabel(doc, scope.nodeId))
+  const joined = sanitizeFileName(parts.filter((part) => part.trim() !== '').join(EXPORT_FILE_PART_SEPARATOR))
+  return `${joined === '' ? EXPORT_FILE_FALLBACK_NAME : joined}${EXPORT_FILE_EXTENSION}`
+}
+
+/** Размер в байтах как текст: `840 Б`, `1,2 КБ`, `2,0 МБ`. */
+export function formatSize(bytes: number): string {
+  if (bytes < EXPORT_BYTES_IN_KB) return `${String(bytes)} ${EXPORT_SIZE_UNITS.bytes}`
+  const kb = bytes / EXPORT_BYTES_IN_KB
+  if (kb < EXPORT_BYTES_IN_KB) return `${kb.toFixed(1).replace('.', ',')} ${EXPORT_SIZE_UNITS.kb}`
+  return `${(kb / EXPORT_BYTES_IN_KB).toFixed(1).replace('.', ',')} ${EXPORT_SIZE_UNITS.mb}`
+}
+
+/** Число строк и размер текста (в байтах UTF-8) для строки меты предпросмотра. */
+export function formatExportStats(text: string): ExportStats {
+  if (text === '') return { lines: 0, size: formatSize(0) }
+  const lines = text.replace(/\n$/, '').split(EXPORT_NEWLINE).length
+  return { lines, size: formatSize(new TextEncoder().encode(text).length) }
+}

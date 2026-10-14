@@ -4,6 +4,7 @@
  */
 import {
   ENTER_CODE,
+  EXPORT_HOTKEY_CODE,
   ESCAPE_CODE,
   NUMPAD_ENTER_CODE,
   SPACE_CODE,
@@ -108,6 +109,12 @@ export function matchCameraHotkey(e: KeyLike): CameraCommand | null {
   if (e.ctrlKey || e.metaKey) return CTRL_HOTKEYS[e.code] ?? null
   if (e.shiftKey) return SHIFT_HOTKEYS[e.code] ?? null
   return null
+}
+
+/** `true` для Ctrl/Cmd + E без Shift и Alt (окно экспорта); по коду клавиши, поэтому работает в любой раскладке. */
+export function matchExportHotkey(e: KeyLike): boolean {
+  if (e.altKey || e.shiftKey) return false
+  return (e.ctrlKey || e.metaKey) && e.code === EXPORT_HOTKEY_CODE
 }
 
 /** Сопоставляет Esc и Enter без модификаторов команде навигации по выделению. */

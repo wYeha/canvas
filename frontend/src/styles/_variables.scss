@@ -216,6 +216,9 @@ $export-modal-width: 1040px;
 $export-modal-height: 700px;
 $modal-compact-width: 480px; // компактная модалка (подтверждения), высота по содержимому
 $documents-dropdown-width: 340px;
+$export-sidebar-width: 300px; // левая колонка окна экспорта
+$export-line-number-width: 40px; // колонка номеров строк в предпросмотре кода
+$checkbox-size: 16px;
 $canvas-grid-step: 16px; // шаг точек сетки поля
 $canvas-dot-radius: 1px;
 $min-screen-width: 1366px; // минимальная ширина экрана (ноутбук), адаптива нет

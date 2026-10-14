@@ -27,4 +27,9 @@ describe('UiButton', () => {
     expect(wrapper.attributes('aria-keyshortcuts')).toBe('Control+F')
     expect(wrapper.find('.ui-button__hint').text()).toBe('F')
   })
+
+  it('вариант success даёт BEM-модификатор', () => {
+    const wrapper = mount(UiButton, { props: { variant: 'success' }, slots: { default: 'Скопировано' } })
+    expect(wrapper.classes()).toContain('ui-button--variant-success')
+  })
 })

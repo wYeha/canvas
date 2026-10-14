@@ -430,3 +430,12 @@ export const CHILD_HINT_ARROWS = {
   column: '↓',
   'column-reverse': '↑',
 } as const
+
+/** `KeyboardEvent.code` клавиши E: Ctrl+E открывает окно экспорта (по коду, чтобы работало в любой раскладке). */
+export const EXPORT_HOTKEY_CODE = 'KeyE'
+
+/** Значение `aria-keyshortcuts` кнопки «Экспорт». */
+export const EXPORT_KEYSHORTCUTS = 'Control+E'
+
+/** Подсказка клавиши на кнопке «Экспорт». */
+export const EXPORT_HINT = 'Ctrl E'

@@ -1,0 +1,155 @@
+// Стили модалки export-modal: слева охват, корни и шаблон промпта, справа предпросмотр кода с подсветкой
+@use 'variables' as v;
+@use 'components/ui-icon';
+@use 'components/ui-icon-button';
+@use 'components/ui-button';
+@use 'components/ui-modal';
+@use 'components/ui-field';
+@use 'components/ui-segmented';
+@use 'components/ui-checkbox';
+@use 'components/ui-textarea';
+
+.export-modal {
+  display: flex;
+  gap: v.$space-16;
+  height: 100%;
+  min-height: 0;
+
+  &__sidebar {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: v.$space-16;
+    width: v.$export-sidebar-width;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  &__roots {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-8;
+    min-height: 0;
+  }
+
+  &__caption {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-regular;
+    color: var(--color-muted);
+  }
+
+  &__note {
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__root-list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-6;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  &__root-width {
+    margin-left: auto;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__prompt {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-8;
+    align-items: flex-start;
+  }
+
+  &__reset {
+    flex: none;
+  }
+
+  &__preview {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: v.$space-8;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  &__meta {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__error {
+    font-size: v.$font-size-xs;
+    color: var(--color-danger);
+  }
+
+  &__code {
+    flex: 1;
+    min-height: 0;
+    padding: v.$space-8 0;
+    overflow: auto;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    background: var(--color-code);
+    border: 1px solid var(--color-line);
+    border-radius: v.$radius-control;
+  }
+
+  &__empty {
+    padding: v.$space-16;
+    font-family: v.$font-ui;
+    font-size: v.$font-size-sm;
+    color: var(--color-muted);
+  }
+
+  &__line {
+    display: flex;
+    min-width: max-content;
+  }
+
+  &__line-number {
+    flex: none;
+    width: v.$export-line-number-width;
+    padding-right: v.$space-8;
+    color: var(--color-muted);
+    text-align: right;
+    user-select: none;
+  }
+
+  &__line-text {
+    padding-right: v.$space-16;
+    white-space: pre;
+  }
+
+  &__token {
+    color: var(--color-text);
+
+    &--tag {
+      color: var(--color-syntax-tag);
+    }
+
+    &--attr {
+      color: var(--color-syntax-attr);
+    }
+
+    &--string {
+      color: var(--color-syntax-string);
+    }
+
+    &--comment {
+      color: var(--color-syntax-comment);
+    }
+
+    &--prompt {
+      color: var(--color-syntax-prompt);
+    }
+  }
+}
