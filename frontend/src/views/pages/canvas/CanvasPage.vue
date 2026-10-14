@@ -1,4 +1,4 @@
-<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями -->
+<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы -->
 <template>
   <div class="canvas-page">
     <CanvasHeader />
@@ -20,4 +20,7 @@ import CanvasProps from '@/views/pages/canvas/CanvasProps.vue'
 import CanvasToolbar from '@/views/pages/canvas/CanvasToolbar.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
+import { useCanvasHotkeys } from '@/scripts/pages/canvas/use-canvas-hotkeys'
+
+useCanvasHotkeys()
 </script>

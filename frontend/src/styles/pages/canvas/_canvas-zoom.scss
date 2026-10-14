@@ -8,6 +8,7 @@
     min-width: v.$zoom-value-width;
     font-family: v.$font-mono;
     font-size: v.$font-size-xs;
+    font-variant-numeric: tabular-nums;
     text-align: center;
   }
 }

@@ -189,12 +189,12 @@ $radius-pill: 999px;
 // ---------- Размеры ----------
 
 $header-height: 44px;
-$layers-width: 248px;
-$props-width: 288px;
-$panel-gap: 12px; // отступ плавающих панелей от краёв
+$layers-width: 248px; // продублировано в CANVAS_SAFE_INSETS (constants.ts)
+$props-width: 288px; // продублировано в CANVAS_SAFE_INSETS (constants.ts)
+$panel-gap: 12px; // отступ плавающих панелей от краёв; продублировано в CANVAS_SAFE_INSETS (constants.ts)
 $toolbar-button-size: 36px;
 $toolbar-padding: 6px;
-$pill-height: 32px; // плашки пути и зума
+$pill-height: 32px; // плашки пути и зума; продублировано в CANVAS_SAFE_INSETS (constants.ts)
 $control-height: 28px; // поле, селект в панели
 $segment-height: 26px; // сегменты, кнопки в панели, строки слоёв
 $label-chip-height: 16px;

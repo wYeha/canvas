@@ -69,3 +69,39 @@ export const FIT_ALL_MAX_ZOOM = 1
  * (288 + 12), bottom = `$pill-height` + 2 · `$panel-gap` (32 + 24), top = 0. При изменении переменных править оба места.
  */
 export const CANVAS_SAFE_INSETS: Readonly<Insets> = { top: 0, right: 300, bottom: 56, left: 260 }
+
+/** Шаг точек сетки поля в координатах поля, px. Повторяет SCSS `$canvas-grid-step`. */
+export const CANVAS_GRID_STEP = 16
+
+/** Минимальный экранный шаг точек: мельче — шаг удваивается, чтобы фон не сливался в серую кашу. */
+export const GRID_MIN_SCREEN_STEP = 8
+
+/** Максимальный экранный шаг точек: крупнее — шаг делится пополам. */
+export const GRID_MAX_SCREEN_STEP = 32
+
+/** Высота «строки» колеса в px для `deltaMode = 1` (DOM_DELTA_LINE, Firefox). */
+export const WHEEL_LINE_HEIGHT = 16
+
+/** Высота «страницы» колеса в px для `deltaMode = 2` (DOM_DELTA_PAGE). */
+export const WHEEL_PAGE_HEIGHT = 800
+
+/** Чувствительность зума колесом: `factor = exp(-deltaY * k)`. */
+export const WHEEL_ZOOM_SENSITIVITY = 0.005
+
+/** Предел |deltaY| для зума: щелчок колеса мыши (~100) даёт ~×0.82, щипок тачпада (1–10) — плавно. */
+export const WHEEL_ZOOM_MAX_DELTA = 40
+
+/** Код основной (левой) кнопки мыши в `PointerEvent.button`. */
+export const PRIMARY_BUTTON = 0
+
+/** Код средней кнопки мыши в `PointerEvent.button`. */
+export const MIDDLE_BUTTON = 1
+
+/** `KeyboardEvent.code` пробела. */
+export const SPACE_CODE = 'Space'
+
+/** `WheelEvent.deltaMode`: дельта в строках (DOM_DELTA_LINE). */
+export const WHEEL_DELTA_LINE = 1
+
+/** `WheelEvent.deltaMode`: дельта в страницах (DOM_DELTA_PAGE). */
+export const WHEEL_DELTA_PAGE = 2

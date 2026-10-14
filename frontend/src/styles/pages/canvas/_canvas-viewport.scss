@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-viewport: поле с точечным фоном и подсказкой по центру
+// Стили фрагмента canvas-viewport: поле с точечным фоном, слой мира камеры, подсказка по центру и курсоры пана
 @use 'variables' as v;
 
 .canvas-viewport {
@@ -8,16 +8,39 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  touch-action: none;
   background-color: var(--color-canvas);
   background-image: radial-gradient(
     circle,
     var(--color-canvas-dot) v.$canvas-dot-radius,
     transparent v.$canvas-dot-radius
   );
-  background-size: v.$canvas-grid-step v.$canvas-grid-step;
+  background-size: v.$canvas-grid-step v.$canvas-grid-step; // стартовое значение, перебивается :style камеры
+
+  &__world {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: v.$z-canvas;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
 
   &__hint {
     font-size: v.$font-size-base;
     color: var(--color-muted);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &--pan-ready {
+    cursor: grab;
+  }
+
+  &--panning {
+    cursor: grabbing;
+    user-select: none;
   }
 }
