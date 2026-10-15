@@ -18,6 +18,7 @@
 @use 'canvas-header';
 @use 'canvas-viewport';
 @use 'canvas-selection';
+@use 'canvas-label-editor';
 @use 'canvas-root';
 @use 'canvas-node';
 @use 'canvas-layers';
@@ -26,6 +27,7 @@
 @use 'canvas-props-block';
 @use 'canvas-props-container';
 @use 'canvas-props-child';
+@use 'canvas-props-actions';
 @use 'canvas-toolbar';
 @use 'canvas-breadcrumbs';
 @use 'canvas-zoom';

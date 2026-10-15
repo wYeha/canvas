@@ -439,3 +439,63 @@ export const EXPORT_KEYSHORTCUTS = 'Control+E'
 
 /** Подсказка клавиши на кнопке «Экспорт». */
 export const EXPORT_HINT = 'Ctrl E'
+
+/** Ширина превью нового корневого блока из тулбара, px: карточка помещается в видимую область при 100%; страницу выбирают пресетом. */
+export const NEW_ROOT_WIDTH = 480
+
+/** Оценка высоты нового пустого корня, px (редакторский min-height листа): по ней блок центрируется по вертикали. */
+export const NEW_ROOT_HEIGHT_ESTIMATE = 48
+
+/** Экранное смещение нового корня, если в этой точке уже лежит другой корень, px. */
+export const NEW_ROOT_OFFSET = 32
+
+/** Сколько раз сдвигать новый корень, прежде чем сдаться (защита от бесконечного цикла). */
+export const NEW_ROOT_MAX_SHIFTS = 200
+
+/** `KeyboardEvent.code` клавиши F: создать flex-блок. */
+export const CREATE_FLEX_CODE = 'KeyF'
+
+/** `KeyboardEvent.code` клавиши G: создать grid-блок. */
+export const CREATE_GRID_CODE = 'KeyG'
+
+/** Ширина поля ввода подписи на канвасе, экранные px. */
+export const LABEL_EDITOR_WIDTH = 160
+
+/** Минимальная ширина поля ввода подписи, экранные px (в очень узком блоке поле всё равно читается). */
+export const LABEL_EDITOR_MIN_WIDTH = 64
+
+/** Высота поля ввода подписи, экранные px. Повторяет SCSS `$label-editor-height`. */
+export const LABEL_EDITOR_HEIGHT = 24
+
+/** Отступ поля ввода подписи от левого верхнего угла блока, экранные px. */
+export const LABEL_EDITOR_INSET = 4
+
+/** Подпись поля ввода подписи блока (для скринридера). */
+export const LABEL_EDITOR_ARIA = 'Подпись блока'
+
+/** Подсказка пустого поля ввода подписи: пусто значит автоподпись. */
+export const LABEL_EDITOR_PLACEHOLDER = 'Блок-N'
+
+/** Подпись группы действий над блоком в панели свойств. */
+export const NODE_ACTIONS_LABEL = 'Действия'
+
+/** Действия над блоком в панели свойств в порядке показа. */
+export const NODE_ACTIONS = [
+  { id: 'move-up', label: 'Выше', icon: 'arrow-up' },
+  { id: 'move-down', label: 'Ниже', icon: 'arrow-down' },
+  { id: 'duplicate', label: 'Дублировать', icon: null },
+  { id: 'to-canvas', label: 'На канвас', icon: null },
+  { id: 'delete', label: 'Удалить', icon: 'trash' },
+] as const
+
+/** Причины недоступности действий над блоком (всплывающая подсказка недоступной кнопки). */
+export const NODE_ACTION_REASONS = {
+  first: 'Уже первый среди соседей',
+  last: 'Уже последний среди соседей',
+  alreadyRoot: 'Блок уже лежит на канвасе',
+  linkToCanvas: 'Связь нельзя вынести на канвас',
+  missing: 'Ничего не выделено',
+} as const
+
+/** Подсказка кнопки, пока отмена и повтор не готовы (5.3). */
+export const HISTORY_SOON_HINT = 'Появится позже'

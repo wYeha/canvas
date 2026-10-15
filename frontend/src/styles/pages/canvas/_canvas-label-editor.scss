@@ -1,0 +1,28 @@
+// Стили фрагмента canvas-label-editor: поле ввода подписи нового блока в экранном слое поверх поля
+@use 'variables' as v;
+
+.canvas-label-editor {
+  position: absolute;
+  inset: 0;
+  z-index: v.$z-badge;
+  overflow: hidden;
+  pointer-events: none;
+
+  &__input {
+    position: absolute; // left/top/width/height задаёт :style (экранный прямоугольник над блоком)
+    box-sizing: border-box;
+    padding: 0 v.$space-8;
+    font-family: v.$font-ui;
+    font-size: v.$font-size-sm;
+    color: var(--color-text);
+    pointer-events: auto;
+    background: var(--color-input);
+    border: 1px solid var(--color-accent);
+    border-radius: v.$radius-control;
+    outline: v.$focus-ring-width solid var(--color-accent-soft);
+
+    &::placeholder {
+      color: var(--color-muted);
+    }
+  }
+}

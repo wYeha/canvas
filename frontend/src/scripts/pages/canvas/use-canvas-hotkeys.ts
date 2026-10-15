@@ -1,15 +1,17 @@
-/** Глобальные хоткеи страницы canvas: камера (зум, вписывание) и навигация по выделению (Esc, Enter). */
+/** Глобальные хоткеи страницы canvas: камера (зум, вписывание), навигация по выделению (Esc, Enter) и создание блоков (F, G). */
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useCameraStore } from './camera-store'
 import {
   isEditableTarget,
   isInteractiveTarget,
   matchCameraHotkey,
+  matchCreateHotkey,
   matchExportHotkey,
   matchSelectionHotkey,
   type CameraCommand,
 } from './camera-input'
 import { useLayoutStore } from './layout-store'
+import { useCanvasCreate } from './use-canvas-create'
 import { measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
 
@@ -19,10 +21,11 @@ export interface CanvasHotkeysOptions {
   isBlocked: () => boolean
 }
 
-/** Подписывает страницу на хоткеи камеры, выделения и экспорта (Ctrl+E); в полях ввода и при открытом окне хоткеи не срабатывают. */
+/** Подписывает страницу на хоткеи камеры, выделения, создания блоков (F, G) и экспорта (Ctrl+E); в полях ввода и при открытом окне хоткеи не срабатывают. */
 export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions): void {
   const cameraStore = useCameraStore()
   const layoutStore = useLayoutStore()
+  const { createBlock } = useCanvasCreate()
 
   /** Вписывает выделенный блок: прямоугольник берётся из DOM в координатах поля. */
   function fitSelection(): void {
@@ -68,6 +71,13 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
       // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска
       e.preventDefault()
       openExport()
+      return
+    }
+    const kind = matchCreateHotkey(e)
+    if (kind !== null) {
+      e.preventDefault()
+      // Удержание клавиши не плодит блоки
+      if (!e.repeat) createBlock(kind)
       return
     }
     const command = matchCameraHotkey(e)

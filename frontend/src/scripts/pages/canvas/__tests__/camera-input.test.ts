@@ -5,6 +5,7 @@ import {
   isInteractiveTarget,
   shouldCaptureSpace,
   matchCameraHotkey,
+  matchCreateHotkey,
   matchExportHotkey,
   normalizeWheelDelta,
   wheelToAction,
@@ -173,5 +174,19 @@ describe('isInteractiveTarget / shouldCaptureSpace', () => {
     expect(shouldCaptureSpace({ ...space, altKey: true }, body)).toBe(false)
     expect(shouldCaptureSpace({ ...space, metaKey: true }, body)).toBe(false)
     expect(shouldCaptureSpace({ ...key('KeyA'), defaultPrevented: false }, body)).toBe(false)
+  })
+})
+
+describe('matchCreateHotkey', () => {
+  it('F - flex, G - grid, по коду клавиши', () => {
+    expect(matchCreateHotkey(key('KeyF'))).toBe('flex')
+    expect(matchCreateHotkey(key('KeyG'))).toBe('grid')
+  })
+
+  it('с модификаторами и на других клавишах - null', () => {
+    expect(matchCreateHotkey(key('KeyF', { ctrlKey: true }))).toBeNull()
+    expect(matchCreateHotkey(key('KeyG', { shiftKey: true }))).toBeNull()
+    expect(matchCreateHotkey(key('KeyF', { altKey: true }))).toBeNull()
+    expect(matchCreateHotkey(key('KeyH'))).toBeNull()
   })
 })

@@ -1,0 +1,12 @@
+// Стили фрагмента canvas-props-actions: ряд кнопок действий над блоком в футере панели свойств
+@use 'variables' as v;
+
+.canvas-props-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-6;
+
+  &__button {
+    flex: none;
+  }
+}

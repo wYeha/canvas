@@ -24,11 +24,15 @@
       <UiEmptyState :text="PROPS_EMPTY_TEXT" />
       <UiEmptyState class="canvas-props__hint" :text="PROPS_EMPTY_HINT" />
     </template>
+    <template v-if="header" #footer>
+      <CanvasPropsActions />
+    </template>
   </UiPanel>
 </template>
 
 <script setup lang="ts">
 import type { Component } from 'vue'
+import CanvasPropsActions from '@/views/pages/canvas/CanvasPropsActions.vue'
 import CanvasPropsBlock from '@/views/pages/canvas/CanvasPropsBlock.vue'
 import CanvasPropsChild from '@/views/pages/canvas/CanvasPropsChild.vue'
 import CanvasPropsContainer from '@/views/pages/canvas/CanvasPropsContainer.vue'

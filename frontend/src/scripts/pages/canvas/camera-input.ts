@@ -3,6 +3,8 @@
  * Принимают минимальные интерфейсы вместо DOM-событий, чтобы тестироваться без браузера.
  */
 import {
+  CREATE_FLEX_CODE,
+  CREATE_GRID_CODE,
   ENTER_CODE,
   EXPORT_HOTKEY_CODE,
   ESCAPE_CODE,
@@ -43,6 +45,9 @@ export type CameraCommand = 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'fit-all' | 
 
 /** Команда навигации по выделению: к родителю (Esc) или к первому ребёнку (Enter). */
 export type SelectionCommand = 'select-parent' | 'select-child'
+
+/** Вид блока, который создаёт хоткей: F — flex, G — grid. */
+export type CreateKind = 'flex' | 'grid'
 
 /** Нужные поля цели события для проверки «это поле ввода». */
 export type EditableLike = { tagName: string; isContentEditable: boolean } | null
@@ -115,6 +120,14 @@ export function matchCameraHotkey(e: KeyLike): CameraCommand | null {
 export function matchExportHotkey(e: KeyLike): boolean {
   if (e.altKey || e.shiftKey) return false
   return (e.ctrlKey || e.metaKey) && e.code === EXPORT_HOTKEY_CODE
+}
+
+/** Сопоставляет F / G без модификаторов созданию flex- или grid-блока; по коду клавиши, поэтому работает в любой раскладке. */
+export function matchCreateHotkey(e: KeyLike): CreateKind | null {
+  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return null
+  if (e.code === CREATE_FLEX_CODE) return 'flex'
+  if (e.code === CREATE_GRID_CODE) return 'grid'
+  return null
 }
 
 /** Сопоставляет Esc и Enter без модификаторов команде навигации по выделению. */

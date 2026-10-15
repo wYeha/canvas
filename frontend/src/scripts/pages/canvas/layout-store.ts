@@ -6,7 +6,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
-import { createBlock, createDocument, createRootEntry, type CanvasPoint } from './factories'
+import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
 import { rootLabels } from './node-view'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
@@ -63,6 +63,34 @@ export const useLayoutStore = defineStore('layout', () => {
   /** Добавляет новый пустой блок ребёнком `parentId` в конец; `false` при недопустимой цели. */
   function addChild(parentId: NodeId, kind: ContainerKind, label: string): boolean {
     return commit(tree.addChild(document.value, parentId, createBlock(kind, label)))
+  }
+
+  /** Создаёт пустой блок без подписи ребёнком `parentId` (в конец), выделяет его и возвращает id; `null` при отказе. */
+  function createChild(parentId: NodeId, kind: ContainerKind): NodeId | null {
+    const block = createBlock(kind, '')
+    if (!commit(tree.addChild(document.value, parentId, block))) return null
+    selectedId.value = block.id
+    return block.id
+  }
+
+  /** Создаёт пустой корневой блок без подписи в точке поля, выделяет его и возвращает id; `null` при отказе. */
+  function createRoot(kind: ContainerKind, at: CanvasPoint, width?: number): NodeId | null {
+    const entry = createRootEntry(kind, '', at, width)
+    if (!commit(tree.addRoot(document.value, entry))) return null
+    selectedId.value = entry.node.id
+    return entry.node.id
+  }
+
+  /**
+   * Записывает подпись блока; пустая (после обрезки пробелов) заменяется автоподписью `Блок-N`,
+   * а счётчик документа растёт в той же записи (номера не переиспользуются). `false`, если документ не изменился.
+   */
+  function setLabelOrAuto(id: NodeId, text: string): boolean {
+    const label = text.trim()
+    if (label !== '') return updateNode(id, { label })
+    const auto = nextAutoLabel(document.value)
+    const next = tree.updateNode(document.value, id, { label: auto.label })
+    return commit(next === document.value ? next : { ...next, labelCounter: auto.labelCounter })
   }
 
   /** Удаляет узел с поддеревом и снимает выделение и ховер, если они указывали на удалённое. */
@@ -125,6 +153,9 @@ export const useLayoutStore = defineStore('layout', () => {
     rootOf,
     addRoot,
     addChild,
+    createChild,
+    createRoot,
+    setLabelOrAuto,
     removeNode,
     duplicateNode,
     moveNode,
