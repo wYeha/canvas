@@ -1,6 +1,6 @@
 /**
  * Pinia-хранилище страницы canvas: текущий документ, выделение, ховер и история undo/redo. Экшены — тонкие
- * обёртки над чистыми операциями `tree.ts`; DOM и localStorage здесь не трогаем (автосохранение — 5.4).
+ * обёртки над чистыми операциями `tree.ts`; DOM и localStorage здесь не трогаем (сохранение — `documents-store.ts`).
  */
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
@@ -93,12 +93,13 @@ export const useLayoutStore = defineStore('layout', () => {
 
   /**
    * Применяет снимок отмены или повтора: документ (с новым `updatedAt` — это тоже изменение) и выделение
-   * того момента, если узел ещё есть; ховер сбрасывается, если его узла нет.
+   * того момента, если узел ещё есть; ховер сбрасывается, если его узла нет. Название документа остаётся
+   * текущим: переименование не входит в историю и отменой не откатывается.
    */
   function applyMove(move: HistoryMove<HistorySnapshot> | null): boolean {
     if (move === null) return false
     history.value = move.history
-    document.value = { ...move.snapshot.document, updatedAt: new Date().toISOString() }
+    document.value = { ...move.snapshot.document, name: document.value.name, updatedAt: new Date().toISOString() }
     selectedId.value = move.snapshot.selectedId
     dropMissingSelection()
     return true
@@ -235,6 +236,17 @@ export const useLayoutStore = defineStore('layout', () => {
     return result
   }
 
+  /**
+   * Переименовывает документ (без записи в историю). Пустое после обрезки пробелов имя и то же имя — отказ
+   * (`false`, документ не меняется). Меняет `updatedAt`, как любая правка.
+   */
+  function renameDocument(name: string): boolean {
+    const next = name.trim()
+    if (next === '' || next === document.value.name) return false
+    document.value = { ...document.value, name: next, updatedAt: new Date().toISOString() }
+    return true
+  }
+
   /** Выделяет узел; `null` снимает выделение. Несуществующий id снимает выделение. */
   function select(id: NodeId | null): void {
     selectedId.value = id === null || tree.findNode(document.value, id) ? id : null
@@ -270,6 +282,7 @@ export const useLayoutStore = defineStore('layout', () => {
     updateNode,
     updateRootPlacement,
     loadDocument,
+    renameDocument,
     select,
     hover,
   }

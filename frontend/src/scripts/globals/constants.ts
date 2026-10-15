@@ -29,3 +29,12 @@ export const PROPS_SECTIONS_STORAGE_KEY = 'layout-canvas:props-sections'
 
 /** Ключ localStorage для шаблона промпта экспорта (строка как есть; общий для всех документов). */
 export const EXPORT_PROMPT_STORAGE_KEY = 'layout-canvas:export-prompt'
+
+/** Ключ localStorage для индекса документов (JSON-массив `{ id, name, updatedAt, rootCount }`). */
+export const DOCUMENTS_INDEX_STORAGE_KEY = 'layout-canvas:documents'
+
+/** Префикс ключа localStorage документа; полный ключ — префикс + id документа. */
+export const DOCUMENT_STORAGE_PREFIX = 'layout-canvas:document:'
+
+/** Ключ localStorage для id текущего (открытого) документа. */
+export const CURRENT_DOCUMENT_STORAGE_KEY = 'layout-canvas:current-document'

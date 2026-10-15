@@ -43,5 +43,14 @@
     height: v.$status-dot-size;
     background: var(--color-ok);
     border-radius: v.$radius-pill;
+
+    &--saving,
+    &--demo {
+      background: var(--color-muted);
+    }
+
+    &--error {
+      background: var(--color-danger);
+    }
   }
 }

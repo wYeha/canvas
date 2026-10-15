@@ -1,8 +1,10 @@
-/** Логика фрагмента CanvasHeader: переключатель темы (иконка и подпись по текущей теме). */
+/** Логика фрагмента CanvasHeader: переключатель темы (иконка и подпись по текущей теме) и статус сохранения. */
 import { computed, type ComputedRef } from 'vue'
 import { THEMES } from '@/scripts/globals/constants'
 import { useTheme } from '@/scripts/globals/theme'
 import type { UiIconName } from '@/scripts/components/ui-icon/ui-icon.types'
+import { useDocumentsStore } from './documents-store'
+import { saveStatusLabel } from './save-status'
 
 /** Подпись кнопки, когда сейчас тёмная тема. */
 const LABEL_TO_LIGHT = 'Включить светлую тему'
@@ -14,10 +16,15 @@ export function useCanvasHeader(): {
   themeIcon: ComputedRef<UiIconName>
   themeLabel: ComputedRef<string>
   toggleTheme: () => void
+  statusLabel: ComputedRef<string>
+  statusDotClass: ComputedRef<string>
 } {
+  const documents = useDocumentsStore()
   const { theme, toggleTheme } = useTheme()
   const isDark = computed(() => theme.value === THEMES.DARK)
   const themeIcon = computed<UiIconName>(() => (isDark.value ? 'sun' : 'moon'))
   const themeLabel = computed(() => (isDark.value ? LABEL_TO_LIGHT : LABEL_TO_DARK))
-  return { themeIcon, themeLabel, toggleTheme }
+  const statusLabel = computed(() => saveStatusLabel(documents.status))
+  const statusDotClass = computed(() => `canvas-header__status-dot--${documents.status}`)
+  return { themeIcon, themeLabel, toggleTheme, statusLabel, statusDotClass }
 }

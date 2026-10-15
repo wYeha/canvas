@@ -23,11 +23,11 @@ import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
 import ExportModal from '@/views/modals/export-modal/ExportModal.vue'
 import { useCanvasHotkeys } from '@/scripts/pages/canvas/use-canvas-hotkeys'
-import { useCanvasDemo } from '@/scripts/pages/canvas/use-canvas-demo'
+import { useCanvasDocuments } from '@/scripts/pages/canvas/use-canvas-documents'
 import { useCanvasPage } from '@/scripts/pages/canvas/use-canvas-page'
 
 // Пока окно экспорта открыто, хоткеи канваса не срабатывают (Esc закрывает окно, а не поднимает выделение)
 const { exportOpen, openExport, isBlocked } = useCanvasPage()
 useCanvasHotkeys({ openExport, isBlocked })
-useCanvasDemo()
+useCanvasDocuments()
 </script>

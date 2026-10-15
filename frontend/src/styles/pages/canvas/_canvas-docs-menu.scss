@@ -1,0 +1,122 @@
+// Стили фрагмента canvas-docs-menu: выпадашка документов в хедере (строки с метой, действия при наведении, правка в строке)
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.canvas-docs-menu {
+  $b: &;
+
+  position: relative;
+  display: inline-flex;
+
+  &__trigger {
+    display: inline-flex;
+  }
+
+  &__button {
+    max-width: v.$documents-dropdown-width;
+  }
+
+  &__list {
+    @include mx.popup-list;
+
+    width: v.$documents-dropdown-width;
+    max-height: v.$documents-dropdown-max-height;
+  }
+
+  &__item {
+    @include mx.popup-item;
+
+    gap: v.$space-8;
+    height: auto;
+    min-height: v.$segment-height;
+    font-family: v.$font-ui;
+
+    &:hover,
+    &--active {
+      background: var(--color-hover);
+
+      #{$b}__actions {
+        display: flex;
+      }
+    }
+
+    &--editing {
+      background: transparent;
+    }
+
+    &--doc {
+      min-height: v.$docs-row-height;
+    }
+
+    &--first-action {
+      margin-top: v.$space-4;
+      border-top: 1px solid var(--color-line);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: v.$disabled-opacity;
+    }
+  }
+
+  &__check {
+    display: inline-flex;
+    flex: none;
+    width: v.$icon-size;
+    color: var(--color-accent);
+  }
+
+  &__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-muted);
+  }
+
+  &__actions {
+    display: none;
+    flex: none;
+    gap: v.$space-2;
+  }
+
+  &__input {
+    flex: 1;
+  }
+
+  &__confirm {
+    display: flex;
+    flex: 1;
+    gap: v.$space-6;
+    align-items: center;
+    min-width: 0;
+    padding: v.$space-4 v.$space-6;
+    background: var(--color-danger-soft);
+    border-radius: v.$radius-segment;
+  }
+
+  &__confirm-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__confirm-button {
+    flex: none;
+  }
+}

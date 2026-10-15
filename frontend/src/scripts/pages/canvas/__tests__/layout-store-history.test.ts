@@ -180,3 +180,28 @@ describe('лимит, повтор и загрузка', () => {
     expect(store.canRedo).toBe(false)
   })
 })
+
+describe('переименование документа', () => {
+  it('пустое имя и то же имя — отказ; имя обрезается, updatedAt обновляется', () => {
+    const store = useLayoutStore()
+    const before = store.document.updatedAt
+    vi.setSystemTime(5000)
+    expect(store.renameDocument('   ')).toBe(false)
+    expect(store.renameDocument(store.document.name)).toBe(false)
+    expect(store.document.updatedAt).toBe(before)
+    expect(store.renameDocument('  Лендинг  ')).toBe(true)
+    expect(store.document.name).toBe('Лендинг')
+    expect(store.document.updatedAt).not.toBe(before)
+  })
+
+  it('не попадает в историю: undo/redo не меняют название', () => {
+    const { store } = storeWithRoot()
+    store.createRoot('flex', { x: 0, y: 0 }, 480)
+    expect(store.renameDocument('Новое')).toBe(true)
+    expect(store.canUndo).toBe(true)
+    store.undo()
+    expect(store.document.name).toBe('Новое')
+    store.redo()
+    expect(store.document.name).toBe('Новое')
+  })
+})

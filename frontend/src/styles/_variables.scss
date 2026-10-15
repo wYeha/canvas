@@ -217,6 +217,8 @@ $export-modal-width: 1040px;
 $export-modal-height: 700px;
 $modal-compact-width: 480px; // компактная модалка (подтверждения), высота по содержимому
 $documents-dropdown-width: 340px;
+$documents-dropdown-max-height: 400px;
+$docs-row-height: 44px; // строка документа в выпадашке (название и мета в две строки)
 $export-sidebar-width: 300px; // левая колонка окна экспорта
 $export-line-number-width: 40px; // колонка номеров строк в предпросмотре кода
 $checkbox-size: 16px;

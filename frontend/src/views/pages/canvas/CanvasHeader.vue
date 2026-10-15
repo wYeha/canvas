@@ -7,12 +7,12 @@
         <path d="M2 9h16M9 9v9" />
       </svg>
       <h1 class="canvas-header__name">Layout Canvas</h1>
-      <UiButton variant="ghost" icon-after="chevron-down">Без названия</UiButton>
+      <CanvasDocsMenu />
     </div>
     <div class="canvas-header__group">
-      <span class="canvas-header__status">
-        <span class="canvas-header__status-dot"></span>
-        Сохранено
+      <span class="canvas-header__status" role="status">
+        <span class="canvas-header__status-dot" :class="statusDotClass"></span>
+        {{ statusLabel }}
       </span>
       <UiIconButton :icon="themeIcon" :label="themeLabel" @click="toggleTheme" />
       <UiButton variant="primary" :keyshortcuts="EXPORT_KEYSHORTCUTS" :hint="EXPORT_HINT" @click="emit('export')">
@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import CanvasDocsMenu from '@/views/pages/canvas/CanvasDocsMenu.vue'
 import UiButton from '@/views/components/ui-button/UiButton.vue'
 import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
 import type { CanvasHeaderEmits } from '@/scripts/pages/canvas/canvas-header.types'
@@ -30,5 +31,5 @@ import { EXPORT_HINT, EXPORT_KEYSHORTCUTS } from '@/scripts/pages/canvas/constan
 import { useCanvasHeader } from '@/scripts/pages/canvas/use-canvas-header'
 
 const emit = defineEmits<CanvasHeaderEmits>()
-const { themeIcon, themeLabel, toggleTheme } = useCanvasHeader()
+const { themeIcon, themeLabel, toggleTheme, statusLabel, statusDotClass } = useCanvasHeader()
 </script>
