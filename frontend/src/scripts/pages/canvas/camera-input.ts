@@ -16,8 +16,10 @@ import {
   ESCAPE_CODE,
   NUMPAD_ENTER_CODE,
   PASTE_HOTKEY_CODE,
+  REDO_HOTKEY_CODE,
   RENAME_HOTKEY_CODE,
   SPACE_CODE,
+  UNDO_HOTKEY_CODE,
   WHEEL_DELTA_LINE,
   WHEEL_DELTA_PAGE,
   WHEEL_LINE_HEIGHT,
@@ -56,6 +58,9 @@ export type SelectionCommand = 'select-parent' | 'select-child'
 
 /** Команда редактирования выделенного блока по хоткею. */
 export type EditCommand = 'delete' | 'duplicate' | 'move-up' | 'move-down' | 'rename' | 'copy' | 'paste'
+
+/** Команда истории по хоткею. */
+export type HistoryCommand = 'undo' | 'redo'
 
 /** Вид блока, который создаёт хоткей: F — flex, G — grid. */
 export type CreateKind = 'flex' | 'grid'
@@ -172,6 +177,16 @@ export function matchEditHotkey(e: KeyLike): EditCommand | null {
     return e.code === ARROW_DOWN_CODE ? 'move-down' : null
   }
   return e.shiftKey ? null : (PLAIN_EDIT_HOTKEYS[e.code] ?? null)
+}
+
+/**
+ * Сопоставляет клавишу команде истории: Ctrl/Cmd + Z — отменить, Ctrl/Cmd + Shift + Z и Ctrl/Cmd + Y — повторить.
+ * Alt отменяет хоткей; по коду клавиши, поэтому работает в любой раскладке.
+ */
+export function matchHistoryHotkey(e: KeyLike): HistoryCommand | null {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return null
+  if (e.code === UNDO_HOTKEY_CODE) return e.shiftKey ? 'redo' : 'undo'
+  return e.code === REDO_HOTKEY_CODE && !e.shiftKey ? 'redo' : null
 }
 
 /** `true`, если команду можно повторять при удержании клавиши (`event.repeat`). */

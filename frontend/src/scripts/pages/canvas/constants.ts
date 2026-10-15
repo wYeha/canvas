@@ -497,8 +497,23 @@ export const NODE_ACTION_REASONS = {
   missing: 'Ничего не выделено',
 } as const
 
-/** Подсказка кнопки, пока отмена и повтор не готовы (5.3). */
-export const HISTORY_SOON_HINT = 'Появится позже'
+/** Сколько шагов истории хранится; более старые отбрасываются. */
+export const HISTORY_LIMIT = 100
+
+/** Окно склейки правок одного поля одного узла, мс: стрелки числового поля и сегменты подряд — один шаг истории. */
+export const HISTORY_MERGE_MS = 500
+
+/** `KeyboardEvent.code` клавиши Z: Ctrl+Z отменяет, Ctrl+Shift+Z повторяет. */
+export const UNDO_HOTKEY_CODE = 'KeyZ'
+
+/** `KeyboardEvent.code` клавиши Y: Ctrl+Y повторяет. */
+export const REDO_HOTKEY_CODE = 'KeyY'
+
+/** Подпись и подсказка кнопки «Отменить». */
+export const UNDO_LABEL = 'Отменить (Ctrl Z)'
+
+/** Подпись и подсказка кнопки «Повторить». */
+export const REDO_LABEL = 'Повторить (Ctrl Shift Z)'
 
 /** `KeyboardEvent.code` клавиши Delete: удалить выделенное. */
 export const DELETE_CODE = 'Delete'

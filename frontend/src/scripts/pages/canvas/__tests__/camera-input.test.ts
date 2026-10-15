@@ -5,6 +5,7 @@ import {
   isInteractiveTarget,
   isRepeatableEdit,
   matchEditHotkey,
+  matchHistoryHotkey,
   shouldCaptureSpace,
   matchCameraHotkey,
   matchCreateHotkey,
@@ -190,6 +191,22 @@ describe('matchCreateHotkey', () => {
     expect(matchCreateHotkey(key('KeyG', { shiftKey: true }))).toBeNull()
     expect(matchCreateHotkey(key('KeyF', { altKey: true }))).toBeNull()
     expect(matchCreateHotkey(key('KeyH'))).toBeNull()
+  })
+})
+
+describe('matchHistoryHotkey', () => {
+  it('Ctrl/Cmd+Z — отменить, Ctrl+Shift+Z и Ctrl+Y — повторить', () => {
+    expect(matchHistoryHotkey(key('KeyZ', { ctrlKey: true }))).toBe('undo')
+    expect(matchHistoryHotkey(key('KeyZ', { metaKey: true }))).toBe('undo')
+    expect(matchHistoryHotkey(key('KeyZ', { ctrlKey: true, shiftKey: true }))).toBe('redo')
+    expect(matchHistoryHotkey(key('KeyY', { ctrlKey: true }))).toBe('redo')
+  })
+
+  it('без Ctrl, с Alt и Ctrl+Shift+Y — не хоткей', () => {
+    expect(matchHistoryHotkey(key('KeyZ'))).toBeNull()
+    expect(matchHistoryHotkey(key('KeyZ', { ctrlKey: true, altKey: true }))).toBeNull()
+    expect(matchHistoryHotkey(key('KeyY', { ctrlKey: true, shiftKey: true }))).toBeNull()
+    expect(matchHistoryHotkey(key('KeyX', { ctrlKey: true }))).toBeNull()
   })
 })
 

@@ -1,4 +1,4 @@
-/** Глобальные хоткеи страницы canvas: камера (зум, вписывание), навигация по выделению (Esc, Enter) и создание блоков (F, G) и редактирование (Del, Ctrl+D, Alt+↑/↓, F2, Ctrl+C/V). */
+/** Глобальные хоткеи страницы canvas: камера (зум, вписывание), навигация по выделению (Esc, Enter) и создание блоков (F, G), редактирование (Del, Ctrl+D, Alt+↑/↓, F2, Ctrl+C/V) и история (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y). */
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useCameraStore } from './camera-store'
 import {
@@ -9,6 +9,7 @@ import {
   matchCreateHotkey,
   matchEditHotkey,
   matchExportHotkey,
+  matchHistoryHotkey,
   matchSelectionHotkey,
   type CameraCommand,
   type EditCommand,
@@ -18,6 +19,7 @@ import { useLayoutStore } from './layout-store'
 import { useCanvasClipboard } from './use-canvas-clipboard'
 import { useCanvasPropsActions } from './use-canvas-props-actions'
 import { useCanvasCreate } from './use-canvas-create'
+import { useCanvasHistory } from './use-canvas-history'
 import { measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
 
@@ -35,6 +37,7 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
   const { createBlock } = useCanvasCreate()
   const { run } = useCanvasPropsActions()
   const { copySelected, pasteClipboard, renameSelected } = useCanvasClipboard()
+  const history = useCanvasHistory()
 
   /** Вписывает выделенный блок: прямоугольник берётся из DOM в координатах поля. */
   function fitSelection(): void {
@@ -101,6 +104,16 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
     return { tagName: t.tagName, isContentEditable: t.isContentEditable, role: t.getAttribute('role') }
   }
 
+  /** Ctrl+Z — отменить, Ctrl+Shift+Z / Ctrl+Y — повторить (удержание повторяет); `true`, если клавиша распознана. */
+  function handleHistoryKey(e: KeyboardEvent): boolean {
+    const command = matchHistoryHotkey(e)
+    if (command === null) return false
+    // preventDefault: Ctrl+Y в части браузеров открывает историю, Ctrl+Z не должен уйти в нативную отмену
+    e.preventDefault()
+    history[command]()
+    return true
+  }
+
   /** Сопоставляет клавишу команде; preventDefault блокирует браузерный зум на Ctrl+=/-/0. */
   function onKeyDown(e: KeyboardEvent): void {
     // Пока открыт ввод подписи, клавиши канваса не работают (фокус и так в поле, это страховка на момент до фокуса)
@@ -112,6 +125,7 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
       openExport()
       return
     }
+    if (handleHistoryKey(e)) return
     const kind = matchCreateHotkey(e)
     if (kind !== null) {
       e.preventDefault()

@@ -1,16 +1,38 @@
 /**
- * Pinia-хранилище страницы canvas: текущий документ, выделение и ховер. Экшены — тонкие обёртки над
- * чистыми операциями `tree.ts`; DOM и localStorage здесь не трогаем (автосохранение — 5.4).
+ * Pinia-хранилище страницы canvas: текущий документ, выделение, ховер и история undo/redo. Экшены — тонкие
+ * обёртки над чистыми операциями `tree.ts`; DOM и localStorage здесь не трогаем (автосохранение — 5.4).
  */
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
+import { HISTORY_LIMIT, HISTORY_MERGE_MS } from './constants'
+import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
 import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
 import { rootLabels } from './node-view'
 import { prepareForPaste } from './node-paste'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
+
+/** Снимок для истории: документ (иммутабелен, хранится по ссылке) и выделение в момент записи шага. */
+interface HistorySnapshot {
+  document: LayoutDocument
+  selectedId: NodeId | null
+}
+
+/** Ключ и окно склейки записи в историю; без них запись — отдельный шаг. */
+interface MergeOptions {
+  key: string
+  window: number
+}
+
+/** Склейка без ограничения по времени: подпись нового блока входит в шаг его создания, сколько бы её ни вводили. */
+const UNLIMITED_MERGE_WINDOW = Number.POSITIVE_INFINITY
+
+/** Склейка шага создания блока с записью его подписи. */
+function createMerge(id: NodeId): MergeOptions {
+  return { key: `create:${id}`, window: UNLIMITED_MERGE_WINDOW }
+}
 
 export const useLayoutStore = defineStore('layout', () => {
   /** Текущий документ. */
@@ -19,6 +41,13 @@ export const useLayoutStore = defineStore('layout', () => {
   const selectedId = ref<NodeId | null>(null)
   /** Id узла под курсором. */
   const hoveredId = ref<NodeId | null>(null)
+  /** История undo/redo: заменяется целиком, поэтому достаточно shallowRef. */
+  const history = shallowRef(emptyHistory<HistorySnapshot>())
+
+  /** Есть шаг для отмены. */
+  const canUndo = computed(() => history.value.past.length > 0)
+  /** Есть шаг для повтора. */
+  const canRedo = computed(() => history.value.future.length > 0)
 
   /** Выделенный узел или `undefined`, если выделения нет. */
   const selectedNode = computed<LayoutNode | undefined>(() =>
@@ -39,15 +68,50 @@ export const useLayoutStore = defineStore('layout', () => {
     return rootId === undefined ? undefined : tree.findRootEntry(document.value, rootId)
   }
 
+  /** Текущее состояние для истории. */
+  function snapshot(): HistorySnapshot {
+    return { document: document.value, selectedId: selectedId.value }
+  }
+
   /**
    * Применяет результат операции: тот же объект документа — ничего не делает и возвращает `false`,
-   * иначе заменяет документ, ставит `updatedAt` и возвращает `true`.
-   * Единая точка записи: сюда в 5.3 встанет история undo/redo.
+   * иначе записывает шаг истории (снимок до изменения; с `merge` — склейка с предыдущим шагом того же ключа),
+   * заменяет документ, ставит `updatedAt` и возвращает `true`. Единая точка записи документа.
    */
-  function commit(next: LayoutDocument): boolean {
+  function commit(next: LayoutDocument, merge?: MergeOptions): boolean {
     if (next === document.value) return false
-    document.value = { ...next, updatedAt: new Date().toISOString() }
+    const now = Date.now()
+    history.value = recordStep(history.value, snapshot(), {
+      key: merge?.key ?? null,
+      now,
+      mergeWindow: merge?.window ?? 0,
+      limit: HISTORY_LIMIT,
+    })
+    document.value = { ...next, updatedAt: new Date(now).toISOString() }
     return true
+  }
+
+  /**
+   * Применяет снимок отмены или повтора: документ (с новым `updatedAt` — это тоже изменение) и выделение
+   * того момента, если узел ещё есть; ховер сбрасывается, если его узла нет.
+   */
+  function applyMove(move: HistoryMove<HistorySnapshot> | null): boolean {
+    if (move === null) return false
+    history.value = move.history
+    document.value = { ...move.snapshot.document, updatedAt: new Date().toISOString() }
+    selectedId.value = move.snapshot.selectedId
+    dropMissingSelection()
+    return true
+  }
+
+  /** Отменяет последний шаг; `false`, если отменять нечего. */
+  function undo(): boolean {
+    return applyMove(undoStep(history.value, snapshot()))
+  }
+
+  /** Повторяет отменённый шаг; `false`, если повторять нечего. */
+  function redo(): boolean {
+    return applyMove(redoStep(history.value, snapshot()))
   }
 
   /** Сбрасывает выделение и ховер, если их узлов больше нет в документе (удалены сами или вместе с предком). */
@@ -69,7 +133,7 @@ export const useLayoutStore = defineStore('layout', () => {
   /** Создаёт пустой блок без подписи ребёнком `parentId` (в конец), выделяет его и возвращает id; `null` при отказе. */
   function createChild(parentId: NodeId, kind: ContainerKind): NodeId | null {
     const block = createBlock(kind, '')
-    if (!commit(tree.addChild(document.value, parentId, block))) return null
+    if (!commit(tree.addChild(document.value, parentId, block), createMerge(block.id))) return null
     selectedId.value = block.id
     return block.id
   }
@@ -77,7 +141,7 @@ export const useLayoutStore = defineStore('layout', () => {
   /** Создаёт пустой корневой блок без подписи в точке поля, выделяет его и возвращает id; `null` при отказе. */
   function createRoot(kind: ContainerKind, at: CanvasPoint, width?: number): NodeId | null {
     const entry = createRootEntry(kind, '', at, width)
-    if (!commit(tree.addRoot(document.value, entry))) return null
+    if (!commit(tree.addRoot(document.value, entry), createMerge(entry.node.id))) return null
     selectedId.value = entry.node.id
     return entry.node.id
   }
@@ -85,13 +149,14 @@ export const useLayoutStore = defineStore('layout', () => {
   /**
    * Записывает подпись блока; пустая (после обрезки пробелов) заменяется автоподписью `Блок-N`,
    * а счётчик документа растёт в той же записи (номера не переиспользуются). `false`, если документ не изменился.
+   * Запись склеивается с шагом создания блока (`createRoot`/`createChild`), если он последний в истории.
    */
   function setLabelOrAuto(id: NodeId, text: string): boolean {
     const label = text.trim()
-    if (label !== '') return updateNode(id, { label })
+    if (label !== '') return commit(tree.updateNode(document.value, id, { label }), createMerge(id))
     const auto = nextAutoLabel(document.value)
     const next = tree.updateNode(document.value, id, { label: auto.label })
-    return commit(next === document.value ? next : { ...next, labelCounter: auto.labelCounter })
+    return commit(next === document.value ? next : { ...next, labelCounter: auto.labelCounter }, createMerge(id))
   }
 
   /**
@@ -135,21 +200,36 @@ export const useLayoutStore = defineStore('layout', () => {
     return commit(tree.moveNode(document.value, id, target))
   }
 
-  /** Правит поля узла (см. `updateNode`); `false`, если ничего не изменилось. */
+  /** Склейка правок одних и тех же полей объекта подряд: ключ — префикс, id и список изменённых полей. */
+  function fieldMerge(prefix: string, id: NodeId, before: object | undefined, after: object | undefined): MergeOptions {
+    const fields = before && after ? changedFields(before, after).join(',') : ''
+    return { key: `${prefix}:${id}:${fields}`, window: HISTORY_MERGE_MS }
+  }
+
+  /** Правит поля узла (см. `updateNode`); `false`, если ничего не изменилось. Частые правки одного поля — один шаг. */
   function updateNode(id: NodeId, patch: NodePatch): boolean {
-    return commit(tree.updateNode(document.value, id, patch))
+    const next = tree.updateNode(document.value, id, patch)
+    if (next === document.value) return false
+    return commit(next, fieldMerge('node', id, tree.findNode(document.value, id), tree.findNode(next, id)))
   }
 
-  /** Правит положение и размер корня на поле; `false`, если ничего не изменилось. */
+  /** Правит положение и размер корня на поле; `false`, если ничего не изменилось. Частые правки одного поля — один шаг. */
   function updateRootPlacement(rootId: NodeId, patch: Partial<CanvasPlacement>): boolean {
-    return commit(tree.updateRootPlacement(document.value, rootId, patch))
+    const next = tree.updateRootPlacement(document.value, rootId, patch)
+    if (next === document.value) return false
+    const before = tree.findRootEntry(document.value, rootId)?.canvas
+    return commit(next, fieldMerge('placement', rootId, before, tree.findRootEntry(next, rootId)?.canvas))
   }
 
-  /** Заменяет документ проверенным (parseDocument), сбрасывает выделение и ховер; при ошибке документ не меняется. */
+  /**
+   * Заменяет документ проверенным (parseDocument), сбрасывает выделение, ховер и историю (новый документ
+   * нельзя отменить в старый); при ошибке документ не меняется.
+   */
   function loadDocument(data: unknown): ParseDocumentResult {
     const result = parseDocument(data)
     if (!result.ok) return result
     document.value = result.document
+    history.value = emptyHistory()
     selectedId.value = null
     hoveredId.value = null
     return result
@@ -172,7 +252,11 @@ export const useLayoutStore = defineStore('layout', () => {
     selectedNode,
     selectedPath,
     rootLabelMap,
+    canUndo,
+    canRedo,
     rootOf,
+    undo,
+    redo,
     addRoot,
     addChild,
     createChild,
