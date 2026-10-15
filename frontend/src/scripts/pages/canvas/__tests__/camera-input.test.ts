@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   isEditableTarget,
   isInteractiveTarget,
+  isRepeatableEdit,
+  matchEditHotkey,
   shouldCaptureSpace,
   matchCameraHotkey,
   matchCreateHotkey,
@@ -188,5 +190,43 @@ describe('matchCreateHotkey', () => {
     expect(matchCreateHotkey(key('KeyG', { shiftKey: true }))).toBeNull()
     expect(matchCreateHotkey(key('KeyF', { altKey: true }))).toBeNull()
     expect(matchCreateHotkey(key('KeyH'))).toBeNull()
+  })
+})
+
+describe('matchEditHotkey', () => {
+  it('Del, Backspace, F2 без модификаторов', () => {
+    expect(matchEditHotkey(key('Delete'))).toBe('delete')
+    expect(matchEditHotkey(key('Backspace'))).toBe('delete')
+    expect(matchEditHotkey(key('F2'))).toBe('rename')
+    expect(matchEditHotkey(key('Delete', { shiftKey: true }))).toBeNull()
+    expect(matchEditHotkey(key('F2', { ctrlKey: true }))).toBeNull()
+  })
+
+  it('Ctrl/Cmd + D, C, V по коду клавиши (русская раскладка тоже)', () => {
+    expect(matchEditHotkey(key('KeyD', { ctrlKey: true }))).toBe('duplicate')
+    expect(matchEditHotkey(key('KeyC', { metaKey: true }))).toBe('copy')
+    expect(matchEditHotkey(key('KeyV', { ctrlKey: true }))).toBe('paste')
+  })
+
+  it('D, C, V без Ctrl и с лишними Shift/Alt - null', () => {
+    expect(matchEditHotkey(key('KeyD'))).toBeNull()
+    expect(matchEditHotkey(key('KeyV', { ctrlKey: true, shiftKey: true }))).toBeNull()
+    expect(matchEditHotkey(key('KeyC', { ctrlKey: true, altKey: true }))).toBeNull()
+  })
+
+  it('Alt + стрелки - выше/ниже; без Alt или с Ctrl/Shift - null', () => {
+    expect(matchEditHotkey(key('ArrowUp', { altKey: true }))).toBe('move-up')
+    expect(matchEditHotkey(key('ArrowDown', { altKey: true }))).toBe('move-down')
+    expect(matchEditHotkey(key('ArrowUp'))).toBeNull()
+    expect(matchEditHotkey(key('ArrowUp', { altKey: true, shiftKey: true }))).toBeNull()
+    expect(matchEditHotkey(key('ArrowUp', { altKey: true, ctrlKey: true }))).toBeNull()
+  })
+
+  it('повтор при удержании разрешён только для перестановки', () => {
+    expect(isRepeatableEdit('move-up')).toBe(true)
+    expect(isRepeatableEdit('move-down')).toBe(true)
+    for (const c of ['delete', 'duplicate', 'paste', 'copy', 'rename'] as const) {
+      expect(isRepeatableEdit(c)).toBe(false)
+    }
   })
 })

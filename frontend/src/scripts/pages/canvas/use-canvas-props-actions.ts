@@ -44,10 +44,12 @@ export function useCanvasPropsActions() {
     })
   })
 
-  /** Выполняет действие над выделенным узлом; недоступное или без выделения — ничего. */
+  /** Выполняет действие над выделенным узлом (кнопка или хоткей); недоступное или без выделения — ничего. */
   function run(action: NodeActionId): void {
     const id = layoutStore.selectedId
     if (id === null) return
+    // Та же доступность, что у кнопки: недоступное действие (в том числе по хоткею) не выполняется
+    if (nodeActionStates(layoutStore.document, id).find((state) => state.id === action)?.disabled !== false) return
     // Незаконченный ввод подписи применяется до правки структуры
     labelEdit.finish()
     const doc = layoutStore.document

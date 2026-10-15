@@ -1,16 +1,22 @@
-/** Глобальные хоткеи страницы canvas: камера (зум, вписывание), навигация по выделению (Esc, Enter) и создание блоков (F, G). */
+/** Глобальные хоткеи страницы canvas: камера (зум, вписывание), навигация по выделению (Esc, Enter) и создание блоков (F, G) и редактирование (Del, Ctrl+D, Alt+↑/↓, F2, Ctrl+C/V). */
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useCameraStore } from './camera-store'
 import {
   isEditableTarget,
   isInteractiveTarget,
   matchCameraHotkey,
+  isRepeatableEdit,
   matchCreateHotkey,
+  matchEditHotkey,
   matchExportHotkey,
   matchSelectionHotkey,
   type CameraCommand,
+  type EditCommand,
 } from './camera-input'
+import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
+import { useCanvasClipboard } from './use-canvas-clipboard'
+import { useCanvasPropsActions } from './use-canvas-props-actions'
 import { useCanvasCreate } from './use-canvas-create'
 import { measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
@@ -25,7 +31,10 @@ export interface CanvasHotkeysOptions {
 export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions): void {
   const cameraStore = useCameraStore()
   const layoutStore = useLayoutStore()
+  const labelEdit = useLabelEditStore()
   const { createBlock } = useCanvasCreate()
+  const { run } = useCanvasPropsActions()
+  const { copySelected, pasteClipboard, renameSelected } = useCanvasClipboard()
 
   /** Вписывает выделенный блок: прямоугольник берётся из DOM в координатах поля. */
   function fitSelection(): void {
@@ -58,6 +67,35 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
     layoutStore.select(command === 'select-parent' ? parentSelection(doc, id) : firstChildSelection(doc, id))
   }
 
+  /** Есть ли на странице выделенный текст: тогда Ctrl+C копирует его, а не блок. */
+  function hasTextSelection(): boolean {
+    return (window.getSelection()?.toString() ?? '') !== ''
+  }
+
+  /** Выполняет команду редактирования общей с кнопками логикой; `true`, если событие обработано (нужен preventDefault). */
+  function runEdit(command: EditCommand): boolean {
+    if (command === 'copy') return !hasTextSelection() && copySelected()
+    if (command === 'paste') return pasteClipboard()
+    if (command === 'rename') return renameSelected()
+    // Ctrl+D всегда перехватываем: иначе браузер добавит закладку
+    if (layoutStore.selectedId === null) return command === 'duplicate'
+    run(command)
+    return true
+  }
+
+  /** Del, Ctrl+D, Alt+↑/↓, F2, Ctrl+C/V; `true`, если клавиша распознана и обработана. Удержание не повторяет опасные действия. */
+  function handleEditKey(e: KeyboardEvent): boolean {
+    const command = matchEditHotkey(e)
+    if (command === null) return false
+    if (e.repeat && !isRepeatableEdit(command)) {
+      e.preventDefault()
+      return true
+    }
+    if (!runEdit(command)) return false
+    e.preventDefault()
+    return true
+  }
+
   /** Сужает цель события до полей, нужных проверкам интерактивности. */
   function describeTarget(t: HTMLElement) {
     return { tagName: t.tagName, isContentEditable: t.isContentEditable, role: t.getAttribute('role') }
@@ -65,7 +103,8 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
 
   /** Сопоставляет клавишу команде; preventDefault блокирует браузерный зум на Ctrl+=/-/0. */
   function onKeyDown(e: KeyboardEvent): void {
-    if (isBlocked() || e.defaultPrevented) return
+    // Пока открыт ввод подписи, клавиши канваса не работают (фокус и так в поле, это страховка на момент до фокуса)
+    if (isBlocked() || e.defaultPrevented || labelEdit.editingId !== null) return
     if (e.target instanceof HTMLElement && isEditableTarget(e.target)) return
     if (matchExportHotkey(e)) {
       // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска
@@ -80,6 +119,7 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
       if (!e.repeat) createBlock(kind)
       return
     }
+    if (handleEditKey(e)) return
     const command = matchCameraHotkey(e)
     if (command === null) {
       handleSelectionKey(e)

@@ -3,12 +3,20 @@
  * Принимают минимальные интерфейсы вместо DOM-событий, чтобы тестироваться без браузера.
  */
 import {
+  ARROW_DOWN_CODE,
+  ARROW_UP_CODE,
+  BACKSPACE_CODE,
+  COPY_HOTKEY_CODE,
   CREATE_FLEX_CODE,
   CREATE_GRID_CODE,
+  DELETE_CODE,
+  DUPLICATE_HOTKEY_CODE,
   ENTER_CODE,
   EXPORT_HOTKEY_CODE,
   ESCAPE_CODE,
   NUMPAD_ENTER_CODE,
+  PASTE_HOTKEY_CODE,
+  RENAME_HOTKEY_CODE,
   SPACE_CODE,
   WHEEL_DELTA_LINE,
   WHEEL_DELTA_PAGE,
@@ -45,6 +53,9 @@ export type CameraCommand = 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'fit-all' | 
 
 /** Команда навигации по выделению: к родителю (Esc) или к первому ребёнку (Enter). */
 export type SelectionCommand = 'select-parent' | 'select-child'
+
+/** Команда редактирования выделенного блока по хоткею. */
+export type EditCommand = 'delete' | 'duplicate' | 'move-up' | 'move-down' | 'rename' | 'copy' | 'paste'
 
 /** Вид блока, который создаёт хоткей: F — flex, G — grid. */
 export type CreateKind = 'flex' | 'grid'
@@ -128,6 +139,44 @@ export function matchCreateHotkey(e: KeyLike): CreateKind | null {
   if (e.code === CREATE_FLEX_CODE) return 'flex'
   if (e.code === CREATE_GRID_CODE) return 'grid'
   return null
+}
+
+/** Команды редактирования с Ctrl/Cmd: `event.code` → команда. */
+const CTRL_EDIT_HOTKEYS: Readonly<Record<string, EditCommand>> = {
+  [DUPLICATE_HOTKEY_CODE]: 'duplicate',
+  [COPY_HOTKEY_CODE]: 'copy',
+  [PASTE_HOTKEY_CODE]: 'paste',
+}
+
+/** Команды редактирования без модификаторов: `event.code` → команда. */
+const PLAIN_EDIT_HOTKEYS: Readonly<Record<string, EditCommand>> = {
+  [DELETE_CODE]: 'delete',
+  [BACKSPACE_CODE]: 'delete',
+  [RENAME_HOTKEY_CODE]: 'rename',
+}
+
+/** Команды редактирования, которым повтор при удержании клавиши безопасен (остальные срабатывают один раз). */
+const REPEATABLE_EDIT_COMMANDS: ReadonlySet<EditCommand> = new Set(['move-up', 'move-down'])
+
+/**
+ * Сопоставляет клавишу команде редактирования: Del / Backspace, F2 — без модификаторов; Ctrl/Cmd + D, C, V;
+ * Alt + ↑ / ↓. Лишние модификаторы (Shift, Alt у Ctrl-сочетаний) отменяют хоткей; по коду клавиши, поэтому
+ * работает в любой раскладке.
+ */
+export function matchEditHotkey(e: KeyLike): EditCommand | null {
+  const ctrl = e.ctrlKey || e.metaKey
+  if (ctrl) return e.altKey || e.shiftKey ? null : (CTRL_EDIT_HOTKEYS[e.code] ?? null)
+  if (e.altKey) {
+    if (e.shiftKey) return null
+    if (e.code === ARROW_UP_CODE) return 'move-up'
+    return e.code === ARROW_DOWN_CODE ? 'move-down' : null
+  }
+  return e.shiftKey ? null : (PLAIN_EDIT_HOTKEYS[e.code] ?? null)
+}
+
+/** `true`, если команду можно повторять при удержании клавиши (`event.repeat`). */
+export function isRepeatableEdit(command: EditCommand): boolean {
+  return REPEATABLE_EDIT_COMMANDS.has(command)
 }
 
 /** Сопоставляет Esc и Enter без модификаторов команде навигации по выделению. */

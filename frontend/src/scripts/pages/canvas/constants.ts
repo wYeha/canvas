@@ -499,3 +499,27 @@ export const NODE_ACTION_REASONS = {
 
 /** Подсказка кнопки, пока отмена и повтор не готовы (5.3). */
 export const HISTORY_SOON_HINT = 'Появится позже'
+
+/** `KeyboardEvent.code` клавиши Delete: удалить выделенное. */
+export const DELETE_CODE = 'Delete'
+
+/** `KeyboardEvent.code` клавиши Backspace: удалить выделенное. */
+export const BACKSPACE_CODE = 'Backspace'
+
+/** `KeyboardEvent.code` клавиши D (с Ctrl): дублировать. */
+export const DUPLICATE_HOTKEY_CODE = 'KeyD'
+
+/** `KeyboardEvent.code` клавиши C (с Ctrl): копировать блок. */
+export const COPY_HOTKEY_CODE = 'KeyC'
+
+/** `KeyboardEvent.code` клавиши V (с Ctrl): вставить блок. */
+export const PASTE_HOTKEY_CODE = 'KeyV'
+
+/** `KeyboardEvent.code` клавиши F2: переименовать выделенный блок. */
+export const RENAME_HOTKEY_CODE = 'F2'
+
+/** `KeyboardEvent.code` стрелки вверх (с Alt): выше среди соседей. */
+export const ARROW_UP_CODE = 'ArrowUp'
+
+/** `KeyboardEvent.code` стрелки вниз (с Alt): ниже среди соседей. */
+export const ARROW_DOWN_CODE = 'ArrowDown'

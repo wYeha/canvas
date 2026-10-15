@@ -8,6 +8,7 @@ import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
 import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
 import { rootLabels } from './node-view'
+import { prepareForPaste } from './node-paste'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
 
@@ -93,6 +94,27 @@ export const useLayoutStore = defineStore('layout', () => {
     return commit(next === document.value ? next : { ...next, labelCounter: auto.labelCounter })
   }
 
+  /**
+   * Вставляет копию поддерева ребёнком `parentId` (в конец) с новыми id и выделяет её; связи на удалённые корни
+   * убираются. Возвращает id копии или `null` при отказе (нет блока-родителя, скопирована осиротевшая связь).
+   */
+  function pasteChild(parentId: NodeId, copied: LayoutNode): NodeId | null {
+    const node = prepareForPaste(document.value, copied)
+    if (node === null || !commit(tree.addChild(document.value, parentId, node))) return null
+    selectedId.value = node.id
+    return node.id
+  }
+
+  /** Вставляет копию блока новым корнем в точку поля (шириной `width`) и выделяет; связь корнем быть не может — `null`. */
+  function pasteRoot(copied: LayoutNode, at: CanvasPoint, width: number): NodeId | null {
+    const node = prepareForPaste(document.value, copied)
+    if (node?.type !== 'block') return null
+    const canvas = { x: at.x, y: at.y, width, height: null, exportMaxWidth: false }
+    if (!commit(tree.addRoot(document.value, { canvas, node }))) return null
+    selectedId.value = node.id
+    return node.id
+  }
+
   /** Удаляет узел с поддеревом и снимает выделение и ховер, если они указывали на удалённое. */
   function removeNode(id: NodeId): boolean {
     const changed = commit(tree.removeNode(document.value, id))
@@ -156,6 +178,8 @@ export const useLayoutStore = defineStore('layout', () => {
     createChild,
     createRoot,
     setLabelOrAuto,
+    pasteChild,
+    pasteRoot,
     removeNode,
     duplicateNode,
     moveNode,

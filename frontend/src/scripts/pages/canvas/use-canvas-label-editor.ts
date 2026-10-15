@@ -1,6 +1,7 @@
 /**
  * Composable поля ввода подписи на канвасе: положение поля в экранных координатах оверлея (берётся из DOM блока
- * и пересчитывается при смене камеры и документа), фокус при открытии, Enter / blur применяют, Esc — автоподпись.
+ * и пересчитывается при смене камеры и документа), фокус при открытии, Enter / blur применяют, Esc — автоподпись
+ * (при создании) или откат (при переименовании).
  */
 import { nextTick, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -50,6 +51,8 @@ export function useCanvasLabelEditor() {
   async function focusInput(): Promise<void> {
     await nextTick()
     inputEl.value?.focus()
+    // При переименовании текущая подпись выделена целиком: можно сразу печатать новую
+    if (labelEdit.mode === 'rename') inputEl.value?.select()
   }
 
   watch([camera, doc, rootHeights], recompute, { flush: 'post' })
@@ -62,7 +65,7 @@ export function useCanvasLabelEditor() {
     { flush: 'post' },
   )
 
-  /** Enter применяет подпись, Esc отказывается от ввода (автоподпись). */
+  /** Enter применяет подпись, Esc отказывается от ввода (автоподпись при создании, откат при переименовании). */
   function onKeydown(e: KeyboardEvent): void {
     // Enter внутри композиции IME подтверждает символы, а не подпись
     if (e.isComposing) return

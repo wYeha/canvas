@@ -9,7 +9,7 @@ import { NEW_ROOT_WIDTH } from './constants'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 
-/** Возвращает `createBlock(kind)`: блок в выделенный блок либо новый корень в центре видимой области. */
+/** Возвращает `createBlock(kind)` (блок в выделенный блок либо новый корень в центре видимой области) и `newRootPoint()`. */
 export function useCanvasCreate() {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
@@ -33,5 +33,5 @@ export function useCanvasCreate() {
     if (id !== null) labelEdit.begin(id)
   }
 
-  return { createBlock }
+  return { createBlock, newRootPoint }
 }
