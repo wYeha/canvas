@@ -1,10 +1,9 @@
 /**
- * Composable строки панели «Слои»: вид строки (значок, подпись, тип, классы), сворачивание, клик и переименование
- * в строке (двойной клик или F2; поле — общий `UiTextInput`, черновик и завершение — в `label-edit-store`).
+ * Composable строки панели «Слои»: вид строки (значок, подпись, тип, классы), сворачивание, клик и переименование.
  * Выделенная строка прокручивается в видимую часть панели — и при выделении на канвасе, и после раскрытия ветки.
+ * Состояния строки — отдельные computed: смена ховера или выделения пересчитывает только затронутые строки.
  */
-import { computed, inject, nextTick, onMounted, watch, type ComputedRef, type Ref } from 'vue'
-import { storeToRefs } from 'pinia'
+import { computed, inject, onMounted, watch, type ComputedRef, type Ref } from 'vue'
 import type { LayoutNode } from '@shared'
 import type { CanvasLayerItemProps } from './canvas-layer-item.types'
 import {
@@ -16,13 +15,11 @@ import {
   layerToggleLabel,
   type LayerIcon,
 } from './layers'
-import { LABEL_EDITOR_ARIA } from './constants'
-import { useLabelEditStore } from './label-edit-store'
-import { labelEditKeyAction } from './label-editor'
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
 import { nodeTypeLabel } from './selection'
 import { CANVAS_LAYERS_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
+import { useCanvasLayerRename, type CanvasLayerRenameState } from './use-canvas-layer-rename'
 
 /** Вид строки слоя для шаблона. */
 export interface LayerItemView {
@@ -31,7 +28,8 @@ export interface LayerItemView {
   icon: LayerIcon
   caption: string
   type: string
-  selected: boolean
+  /** `true` или `undefined`: `aria-current` ставится только выделенной строке. */
+  current: true | undefined
   expandable: boolean
   expanded: boolean
   toggleLabel: string
@@ -39,16 +37,11 @@ export interface LayerItemView {
   children: readonly LayoutNode[]
 }
 
-/** Результат `useCanvasLayerItem`. */
-export interface CanvasLayerItemState {
+/** Результат `useCanvasLayerItem`: вид, действия строки и переименование. */
+export interface CanvasLayerItemState extends Omit<CanvasLayerRenameState, 'renaming'> {
   view: ComputedRef<LayerItemView>
-  draft: Ref<string>
-  renameLabel: string
   toggle: () => void
   activate: () => void
-  startRename: () => void
-  onRenameKeydown: (e: KeyboardEvent) => void
-  onRenameBlur: () => void
 }
 
 /** Контекст панели «Слои»; строка вне панели — ошибка разработчика. */
@@ -58,38 +51,39 @@ function injectLayersContext(): CanvasLayersContext {
   return context
 }
 
-/** Собирает вид строки; `rowEl` — ref строки для прокрутки к выделенной. */
+/** Собирает вид строки; `rowEl` — ref строки для прокрутки к выделенной и для поля переименования. */
 export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLElement | null>): CanvasLayerItemState {
   const context = injectLayersContext()
   const store = useLayoutStore()
-  const labelEdit = useLabelEditStore()
-  const { draft } = storeToRefs(labelEdit)
-
-  /** Открыто ли переименование этой строки в «Слоях». */
-  const renaming = computed(() => labelEdit.editingId === props.node.id && labelEdit.place === 'layers')
+  const { renaming, ...rename } = useCanvasLayerRename(() => props.node, rowEl)
 
   /** Выделена ли строка. */
   const selected = computed(() => store.selectedId === props.node.id)
+  /** Под курсором ли блок строки (на канвасе или в «Слоях»). */
+  const hovered = computed(() => store.hoveredId === props.node.id)
+  /** Дети строки. */
+  const children = computed(() => layerChildren(props.node))
+  /** Раскрыта ли ветка: есть дети и она не свёрнута. */
+  const expanded = computed(() => children.value.length > 0 && !context.collapsed.value.has(props.node.id))
+  /** Подпись строки (у связи — по подписи источника). */
+  const caption = computed(() => layerCaption(props.node, store.rootLabelMap))
 
   /** Вид строки: всё, что нужно шаблону. */
   const view = computed<LayerItemView>(() => {
     const { node, depth } = props
-    const children = layerChildren(node)
-    const expandable = children.length > 0
-    const expanded = expandable && !context.collapsed.value.has(node.id)
-    const state = { root: depth === 0, selected: selected.value, hovered: store.hoveredId === node.id }
+    const state = { root: depth === 0, selected: selected.value, hovered: hovered.value }
     return {
       rowClasses: layerRowClasses(state),
-      chevronClasses: layerChevronClasses(expanded),
+      chevronClasses: layerChevronClasses(expanded.value),
       icon: layerIcon(node),
-      caption: layerCaption(node, store.rootLabelMap),
+      caption: caption.value,
       type: nodeTypeLabel(node),
-      selected: selected.value,
-      expandable,
-      expanded,
-      toggleLabel: layerToggleLabel(expanded),
+      current: selected.value || undefined,
+      expandable: children.value.length > 0,
+      expanded: expanded.value,
+      toggleLabel: layerToggleLabel(expanded.value),
       renaming: renaming.value,
-      children,
+      children: children.value,
     }
   })
 
@@ -102,18 +96,6 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
   watch(selected, revealIfSelected, { flush: 'post' })
   onMounted(revealIfSelected)
 
-  /** Фокусирует поле переименования и выделяет текст целиком: можно сразу печатать новую подпись. */
-  async function focusRenameInput(): Promise<void> {
-    await nextTick()
-    const input = rowEl.value?.querySelector('input')
-    input?.focus()
-    input?.select()
-  }
-
-  watch(renaming, (on) => {
-    if (on) void focusRenameInput()
-  })
-
   /** Сворачивает или раскрывает ветку строки. */
   function toggle(): void {
     context.toggle(props.node.id)
@@ -124,34 +106,5 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
     context.activate(props.node.id)
   }
 
-  /** Двойной клик по строке: переименование блока прямо в строке; у связи подписи нет. */
-  function startRename(): void {
-    const { node } = props
-    if (node.type !== 'block') return
-    labelEdit.beginRename(node.id, node.label, 'layers')
-  }
-
-  /** Enter применяет подпись, Esc откатывает (пустое значение тоже откат). */
-  function onRenameKeydown(e: KeyboardEvent): void {
-    const action = labelEditKeyAction(e)
-    if (action === null) return
-    e.preventDefault()
-    labelEdit[action]()
-  }
-
-  /** Клик мимо поля применяет подпись. */
-  function onRenameBlur(): void {
-    labelEdit.finish()
-  }
-
-  return {
-    view,
-    draft,
-    renameLabel: LABEL_EDITOR_ARIA,
-    toggle,
-    activate,
-    startRename,
-    onRenameKeydown,
-    onRenameBlur,
-  }
+  return { view, ...rename, toggle, activate }
 }

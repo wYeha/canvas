@@ -43,6 +43,13 @@ export function labelNodeIdAt(target: EventTarget | null, point: CanvasPoint): s
   return label.getAttribute(LABEL_NODE_ATTR)
 }
 
+/** Фокусирует первое поле ввода внутри контейнера и выделяет его текст целиком (переименование в строке). */
+export function focusInputIn(container: Element | null): void {
+  const input = container?.querySelector('input')
+  input?.focus()
+  input?.select()
+}
+
 /** Прокручивает ближайший прокручиваемый контейнер так, чтобы элемент был виден (если его не видно). */
 export function scrollIntoViewIfHidden(el: Element): void {
   // В jsdom метода нет: тесты компонентов не должны падать на прокрутке

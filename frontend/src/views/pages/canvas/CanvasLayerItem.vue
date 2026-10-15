@@ -29,7 +29,7 @@
         v-else
         class="canvas-layer-item__select"
         type="button"
-        :aria-current="view.selected"
+        :aria-current="view.current"
         @mousedown="keepFocusOnMouseDown"
         @click="activate"
         @dblclick="startRename"

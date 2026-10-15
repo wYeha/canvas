@@ -10,7 +10,7 @@ import { LAYERS_EMPTY_TEXT, LAYERS_LIST_LABEL } from './constants'
 import { expandPath, toggleCollapsed } from './layers'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
-import { findRootEntry } from './tree-query'
+import { findRootEntry, getPath, isDescendant } from './tree-query'
 
 /** Общее для всех строк дерева: свёрнутые ветки и действия. */
 export interface CanvasLayersContext {
@@ -32,6 +32,37 @@ export interface CanvasLayersState {
   listLabel: string
 }
 
+/**
+ * Синхронизирует панель с остальным редактором: выделение и переименование в строке раскрывают свёрнутых предков
+ * (иначе строки и поля нет в DOM, а хоткеи ждут конца ввода); выделение, сменившееся не кликом по строке
+ * (клавиши, удаление), снова направляет F2 на канвас.
+ */
+function watchLayersSync(collapsed: Ref<ReadonlySet<NodeId>>): void {
+  const layoutStore = useLayoutStore()
+  const labelEdit = useLabelEditStore()
+
+  watch(
+    () => layoutStore.selectedPath,
+    (path) => {
+      collapsed.value = expandPath(collapsed.value, path)
+    },
+  )
+
+  watch(
+    () => (labelEdit.place === 'layers' ? labelEdit.editingId : null),
+    (id) => {
+      if (id !== null) collapsed.value = expandPath(collapsed.value, getPath(layoutStore.document, id))
+    },
+  )
+
+  watch(
+    () => layoutStore.selectedId,
+    (id) => {
+      if (id !== labelEdit.layersPickId) labelEdit.pickInLayers(null)
+    },
+  )
+}
+
 /** Подключает панель «Слои»: раскрывает путь к выделенному блоку и отдаёт строкам контекст. */
 export function useCanvasLayers(): CanvasLayersState {
   const layoutStore = useLayoutStore()
@@ -42,21 +73,26 @@ export function useCanvasLayers(): CanvasLayersState {
   /** Корневые блоки документа в порядке `roots`. */
   const roots = computed(() => layoutStore.document.roots)
 
-  // Выделение с канваса раскрывает свёрнутых предков, чтобы строка выделенного блока была видна
-  watch(
-    () => layoutStore.selectedPath,
-    (path) => {
-      collapsed.value = expandPath(collapsed.value, path)
-    },
-  )
+  watchLayersSync(collapsed)
 
-  /** Сворачивает или раскрывает ветку. */
+  /**
+   * Сворачивает или раскрывает ветку. Ввод, открытый в строке внутри сворачиваемой ветки, сначала применяется:
+   * строка размонтируется, а `blur` при удалении элемента приходит не во всех браузерах.
+   */
   function toggle(id: NodeId): void {
+    const editing = labelEdit.editingId
+    if (editing !== null && labelEdit.place === 'layers' && isDescendant(layoutStore.document, id, editing)) {
+      labelEdit.finish()
+    }
     collapsed.value = toggleCollapsed(collapsed.value, id)
   }
 
-  /** Выделяет узел (F2 после этого переименовывает в строке); корневой блок ставит по центру видимой области без смены зума. */
+  /**
+   * Выделяет узел (F2 после этого переименовывает в строке); корневой блок ставит по центру видимой области без
+   * смены зума. Открытый ввод подписи применяется: кнопки строк не забирают фокус, поэтому `blur` не придёт.
+   */
   function activate(id: NodeId): void {
+    labelEdit.finish()
     layoutStore.select(id)
     labelEdit.pickInLayers(id)
     const root = findRootEntry(layoutStore.document, id)

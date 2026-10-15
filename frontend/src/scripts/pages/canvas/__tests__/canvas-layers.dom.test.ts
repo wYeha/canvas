@@ -1,7 +1,7 @@
 /** DOM-тесты панели «Слои»: дерево корней, сворачивание, синхронизация выделения и ховера, центрирование корня. */
 import { afterEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
@@ -127,5 +127,46 @@ describe('CanvasLayers: переименование', () => {
     const wrapper = setup()
     await row(wrapper, 'a1').find('.canvas-layer-item__select').trigger('click')
     expect(useLabelEditStore().renamePlaceFor('a1')).toBe('layers')
+  })
+})
+
+describe('CanvasLayers: ввод в строке и сворачивание (ревью этапа 6)', () => {
+  it('переименование в «Слоях» раскрывает свёрнутых предков и даёт поле в фокусе', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a1x').find('.canvas-layer-item__select').trigger('click')
+    await row(wrapper, 'A').find('.canvas-layer-item__toggle').trigger('click')
+    useLabelEditStore().beginRename('a1x', 'a1x', 'layers')
+    await flushPromises()
+    const input = row(wrapper, 'a1x').find('input')
+    expect(input.exists()).toBe(true)
+    expect(document.activeElement).toBe(input.element)
+  })
+
+  it('сворачивание ветки с открытым вводом применяет подпись', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a1x').find('.canvas-layer-item__select').trigger('dblclick')
+    await row(wrapper, 'a1x').find('input').setValue('Новая')
+    await row(wrapper, 'a1').find('.canvas-layer-item__toggle').trigger('click')
+    expect(useLabelEditStore().editingId).toBeNull()
+    expect(findNode(useLayoutStore().document, 'a1x')).toMatchObject({ label: 'Новая' })
+  })
+
+  it('клик по другой строке применяет открытый ввод', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a2').find('.canvas-layer-item__select').trigger('dblclick')
+    await row(wrapper, 'a2').find('input').setValue('Подвал')
+    await row(wrapper, 'b1').find('.canvas-layer-item__select').trigger('click')
+    expect(useLabelEditStore().editingId).toBeNull()
+    expect(findNode(useLayoutStore().document, 'a2')).toMatchObject({ label: 'Подвал' })
+  })
+
+  it('смена выделения не кликом по строке направляет F2 обратно на канвас', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a1').find('.canvas-layer-item__select').trigger('click')
+    useLayoutStore().select('a1x')
+    await wrapper.vm.$nextTick()
+    useLayoutStore().select('a1')
+    await wrapper.vm.$nextTick()
+    expect(useLabelEditStore().renamePlaceFor('a1')).toBe('canvas')
   })
 })
