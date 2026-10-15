@@ -1,4 +1,10 @@
-// Стили фрагмента canvas-layers: панель «Слои» (геометрию задаёт страница)
+// Стили фрагмента canvas-layers: панель «Слои» (геометрию задаёт страница) и список корней
+@use 'variables' as v;
+
 .canvas-layers {
   user-select: none;
+
+  &__list {
+    padding: v.$space-6;
+  }
 }

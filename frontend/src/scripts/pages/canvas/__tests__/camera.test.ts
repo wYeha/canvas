@@ -1,11 +1,13 @@
 /** Тесты геометрии камеры: экран ↔ поле, зум к точке, ступени, безопасная область, вписывание, габариты корней. */
 import { describe, expect, it } from 'vitest'
 import {
+  centerOn,
   clampZoom,
   fitRect,
   formatZoom,
   nextZoomStep,
   prevZoomStep,
+  rootRect,
   rootsBounds,
   safeArea,
   screenToWorld,
@@ -214,5 +216,34 @@ describe('formatZoom', () => {
     expect(formatZoom(1)).toBe('100%')
     expect(formatZoom(0.1)).toBe('10%')
     expect(formatZoom(1.5)).toBe('150%')
+  })
+})
+
+describe('rootRect', () => {
+  it('высота: явная, иначе замер, иначе 0', () => {
+    const root = createRootEntry('flex', 'A', { x: 10, y: 20 }, 100)
+    expect(rootRect(root, new Map())).toEqual({ x: 10, y: 20, width: 100, height: 0 })
+    expect(rootRect(root, new Map([[root.node.id, 50]]))).toEqual({ x: 10, y: 20, width: 100, height: 50 })
+    const fixed = { ...root, canvas: { ...root.canvas, height: 70 } }
+    expect(rootRect(fixed, new Map([[root.node.id, 50]])).height).toBe(70)
+  })
+})
+
+describe('centerOn', () => {
+  const area: Rect = { x: 100, y: 0, width: 800, height: 600 }
+
+  it('центрирует прямоугольник в области, зум не меняет', () => {
+    const camera: Camera = { x: 0, y: 0, zoom: 0.5 }
+    const next = centerOn(camera, { x: 200, y: 100, width: 400, height: 200 }, area, 40)
+    expect(next.zoom).toBe(0.5)
+    const center = worldToScreen(next, { x: 400, y: 200 })
+    expect(center).toEqual({ x: 500, y: 300 })
+  })
+
+  it('слишком большой по оси прямоугольник прижимается к началу с отступом', () => {
+    const camera: Camera = { x: 0, y: 0, zoom: 1 }
+    const next = centerOn(camera, { x: 0, y: 0, width: 400, height: 2000 }, area, 40)
+    const topLeft = worldToScreen(next, { x: 0, y: 0 })
+    expect(topLeft).toEqual({ x: 300, y: 40 })
   })
 })

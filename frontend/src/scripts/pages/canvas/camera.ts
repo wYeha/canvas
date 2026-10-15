@@ -121,14 +121,50 @@ export function rootsBounds(roots: readonly RootEntry[], heights: ReadonlyMap<No
   let top = Infinity
   let right = -Infinity
   let bottom = -Infinity
-  for (const { canvas, node } of roots) {
-    const height = canvas.height ?? heights.get(node.id) ?? 0
-    left = Math.min(left, canvas.x)
-    top = Math.min(top, canvas.y)
-    right = Math.max(right, canvas.x + canvas.width)
-    bottom = Math.max(bottom, canvas.y + height)
+  for (const root of roots) {
+    const rect = rootRect(root, heights)
+    left = Math.min(left, rect.x)
+    top = Math.min(top, rect.y)
+    right = Math.max(right, rect.x + rect.width)
+    bottom = Math.max(bottom, rect.y + rect.height)
   }
   return { x: left, y: top, width: right - left, height: bottom - top }
+}
+
+/** Прямоугольник корня на поле. Высота — явная `canvas.height`, иначе замер из `heights`, иначе 0. */
+export function rootRect(root: RootEntry, heights: ReadonlyMap<NodeId, number>): Rect {
+  const { canvas, node } = root
+  return { x: canvas.x, y: canvas.y, width: canvas.width, height: canvas.height ?? heights.get(node.id) ?? 0 }
+}
+
+/**
+ * Смещение камеры по одной оси: отрезок поля `[start, start + size]` при зуме `zoom` встаёт по центру экранного
+ * отрезка `[areaStart, areaStart + areaSize]`; если с отступами не помещается — прижимается к его началу.
+ */
+function centerAxis(
+  start: number,
+  size: number,
+  areaStart: number,
+  areaSize: number,
+  zoom: number,
+  padding: number,
+): number {
+  const screenSize = size * zoom
+  const offset = screenSize <= areaSize - padding * 2 ? (areaSize - screenSize) / 2 : padding
+  return areaStart + offset - start * zoom
+}
+
+/**
+ * Камера с тем же зумом, при которой прямоугольник поля `rect` стоит по центру экранной области `area`.
+ * Большой прямоугольник не центрируется по своей оси, а показывается с начала (левый или верхний край с отступом).
+ */
+export function centerOn(camera: Camera, rect: Rect, area: Rect, padding: number): Camera {
+  const { zoom } = camera
+  return {
+    x: centerAxis(rect.x, rect.width, area.x, area.width, zoom, padding),
+    y: centerAxis(rect.y, rect.height, area.y, area.height, zoom, padding),
+    zoom,
+  }
 }
 
 /** Подпись зума в процентах: 1 → `'100%'`. */

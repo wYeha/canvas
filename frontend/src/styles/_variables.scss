@@ -197,6 +197,8 @@ $toolbar-padding: 6px;
 $pill-height: 32px; // плашки пути и зума; продублировано в CANVAS_SAFE_INSETS (constants.ts)
 $control-height: 28px; // поле, селект в панели
 $segment-height: 26px; // сегменты, кнопки в панели, строки слоёв
+$layer-indent: 12px; // отступ вложенного уровня в «Слоях»
+$layer-toggle-width: 18px; // колонка шеврона сворачивания строки слоя
 $label-chip-height: 16px;
 $label-chip-offset: 4px; // отступ чипа от угла блока (4–5)
 $root-header-gap: 6px; // зазор между подписью корня и блоком

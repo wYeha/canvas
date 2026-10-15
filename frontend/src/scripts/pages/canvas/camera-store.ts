@@ -7,6 +7,7 @@ import { defineStore } from 'pinia'
 import type { NodeId } from '@shared'
 import {
   areaCenter,
+  centerOn,
   fitRect,
   formatZoom,
   nextZoomStep,
@@ -97,6 +98,11 @@ export const useCameraStore = defineStore('camera', () => {
     if (next !== null) camera.value = next
   }
 
+  /** Ставит прямоугольник поля (например, корневой блок) по центру видимой области, не меняя зум. */
+  function centerWorldRect(rect: Rect): void {
+    camera.value = centerOn(camera.value, rect, visibleArea.value, FIT_PADDING)
+  }
+
   return {
     camera,
     viewportSize,
@@ -113,5 +119,6 @@ export const useCameraStore = defineStore('camera', () => {
     resetZoom,
     fitAll,
     fitWorldRect,
+    centerWorldRect,
   }
 })

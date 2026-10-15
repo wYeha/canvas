@@ -1,12 +1,13 @@
 /**
  * Composable выделения мышью: клик по блоку выделяет самый глубокий блок под курсором, клик по пустому полю
- * снимает выделение, движение указателя подсвечивает блок. Клик, завершивший пан или со сдвигом больше порога, не считается.
+ * снимает выделение, движение указателя подсвечивает блок (и над строками панели «Слои»).
+ * Клик, завершивший пан или со сдвигом больше порога, не считается.
  */
 import { onBeforeUnmount, onMounted, type Ref } from 'vue'
 import { CLICK_DRAG_THRESHOLD, PRIMARY_BUTTON } from './constants'
 import type { CanvasPoint } from './factories'
 import { useLayoutStore } from './layout-store'
-import { nodeIdFromTarget } from './node-dom'
+import { layerIdFromTarget, nodeIdFromTarget } from './node-dom'
 import { isClickGesture, resolveClickTarget } from './selection'
 
 /** Подключает выделение к viewport; `isPanning` сообщает, что пробел зажат или идёт тяга поля. */
@@ -34,10 +35,13 @@ export function useCanvasSelect(
     layoutStore.select(resolveClickTarget(layoutStore.document, nodeIdFromTarget(e.target)))
   }
 
-  /** Подсвечивает блок под курсором; во время тяги поля и над панелями подсветки нет. */
+  /**
+   * Подсвечивает блок под курсором: на поле — блок, над строкой «Слоёв» — её блок, над остальными панелями ничего.
+   * Ховер строк обрабатывается здесь же, а не в самой строке: иначе этот обработчик сразу снимал бы подсветку.
+   */
   function onPointerMove(e: PointerEvent): void {
     if (isPanning()) return
-    layoutStore.hover(isSurface(e.target) ? nodeIdFromTarget(e.target) : null)
+    layoutStore.hover(isSurface(e.target) ? nodeIdFromTarget(e.target) : layerIdFromTarget(e.target))
   }
 
   /** Сбрасывает ожидание клика (отмена жеста). */

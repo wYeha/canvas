@@ -1,0 +1,103 @@
+// Стили фрагмента canvas-layer-item: строка панели «Слои» (шеврон, значок, подпись, тип) и отступ вложенного списка
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.canvas-layer-item {
+  $b: &;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    height: v.$segment-height;
+    border-radius: v.$radius-segment;
+
+    &--root {
+      #{$b}__label {
+        font-weight: v.$font-weight-medium;
+      }
+    }
+
+    &--hovered {
+      background: var(--color-hover);
+    }
+
+    &--selected {
+      color: var(--color-accent-text);
+      background: var(--color-accent-soft);
+
+      #{$b}__icon,
+      #{$b}__type {
+        color: var(--color-accent-text);
+      }
+    }
+  }
+
+  &__toggle,
+  &__spacer {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: v.$layer-toggle-width;
+    height: 100%;
+  }
+
+  &__toggle {
+    color: var(--color-muted);
+    cursor: pointer;
+    border-radius: v.$radius-segment;
+
+    @include mx.focus-ring;
+
+    &:hover {
+      color: var(--color-text);
+    }
+  }
+
+  &__chevron {
+    &--collapsed {
+      transform: rotate(v.$section-chevron-collapsed-rotation);
+    }
+  }
+
+  &__select {
+    display: flex;
+    flex: 1;
+    gap: v.$space-6;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+    padding-right: v.$space-6;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-radius: v.$radius-segment;
+
+    @include mx.focus-ring;
+  }
+
+  &__icon {
+    flex: none;
+    color: var(--color-muted);
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: v.$font-size-sm;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__type {
+    flex: none;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-2xs;
+    color: var(--color-muted);
+  }
+
+  &__children {
+    padding-left: v.$layer-indent;
+  }
+}

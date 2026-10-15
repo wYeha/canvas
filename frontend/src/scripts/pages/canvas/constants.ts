@@ -178,6 +178,24 @@ export const NODE_ID_ATTR = 'data-node-id'
 /** CSS-селектор элемента, помеченного id узла. */
 export const NODE_SELECTOR = `[${NODE_ID_ATTR}]`
 
+/** Имя атрибута строки панели «Слои»: по нему наведение на строку подсвечивает блок на канвасе. */
+export const LAYER_ID_ATTR = 'data-layer-id'
+
+/** CSS-селектор строки панели «Слои», помеченной id узла. */
+export const LAYER_SELECTOR = `[${LAYER_ID_ATTR}]`
+
+/** Подсказка кнопки сворачивания раскрытой ветки в «Слоях». */
+export const LAYER_COLLAPSE_LABEL = 'Свернуть'
+
+/** Подсказка кнопки сворачивания свёрнутой ветки в «Слоях». */
+export const LAYER_EXPAND_LABEL = 'Развернуть'
+
+/** Пустое состояние панели «Слои». */
+export const LAYERS_EMPTY_TEXT = 'Нет блоков'
+
+/** Доступное имя списка слоёв. */
+export const LAYERS_LIST_LABEL = 'Дерево блоков'
+
 /** CSS-селектор слоя мира: от его положения на экране считаются координаты поля. */
 export const WORLD_SELECTOR = '[data-canvas-world]'
 
