@@ -52,14 +52,14 @@ describe('создание блока', () => {
     expect(store.selectedId).toBe(id)
   })
 
-  it('автоподпись тоже входит в шаг создания, счётчик откатывается вместе с блоком', () => {
+  it('автоподпись тоже входит в шаг создания, а счётчик при отмене не уменьшается (номера не переиспользуются)', () => {
     const { store } = storeWithRoot()
     const counter = store.document.labelCounter
     const id = store.createRoot('flex', { x: 600, y: 0 }) ?? ''
     store.setLabelOrAuto(id, '')
     expect(store.document.labelCounter).toBe(counter + 1)
     store.undo()
-    expect(store.document.labelCounter).toBe(counter)
+    expect(store.document.labelCounter).toBe(counter + 1)
     expect(store.canUndo).toBe(false)
   })
 
@@ -203,5 +203,19 @@ describe('переименование документа', () => {
     expect(store.document.name).toBe('Новое')
     store.redo()
     expect(store.document.name).toBe('Новое')
+  })
+})
+
+describe('счётчик автоподписей', () => {
+  it('отмена не откатывает счётчик: create → undo → create даёт следующий номер, а не повтор', () => {
+    const store = useLayoutStore()
+    const first = store.createRoot('flex', { x: 0, y: 0 }, 480) ?? ''
+    store.setLabelOrAuto(first, '')
+    expect(store.document.roots[0]?.node.label).toBe('Блок-1')
+    store.undo()
+    expect(store.document.labelCounter).toBe(1)
+    const second = store.createRoot('flex', { x: 0, y: 0 }, 480) ?? ''
+    store.setLabelOrAuto(second, '')
+    expect(store.document.roots[0]?.node.label).toBe('Блок-2')
   })
 })

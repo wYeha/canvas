@@ -6,7 +6,11 @@ import {
   DOCUMENT_STORAGE_PREFIX,
   DOCUMENTS_INDEX_STORAGE_KEY,
 } from '@/scripts/globals/constants'
-import { AUTOSAVE_DELAY_MS } from '@/scripts/pages/canvas/documents-constants'
+import {
+  AUTOSAVE_DELAY_MS,
+  DOCUMENT_NAME_MAX_LENGTH,
+  IMPORT_ERROR_SAVE,
+} from '@/scripts/pages/canvas/documents-constants'
 import { useDocumentsStore } from '@/scripts/pages/canvas/documents-store'
 import { createDocument } from '@/scripts/pages/canvas/factories'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
@@ -105,7 +109,7 @@ describe('запуск', () => {
     expect(start().layout.document.id).toBe(fresh.id)
   })
 
-  it('битый документ пропускается с предупреждением и удаляется из списка', () => {
+  it('битый документ пропускается с предупреждением и убирается из списка, но его данные остаются в хранилище', () => {
     const good = seed('Хороший', '2026-01-01T00:00:00.000Z')
     const bad = seed('Битый', '2026-02-01T00:00:00.000Z')
     storage.data.set(DOCUMENT_STORAGE_PREFIX + bad.id, '{"id": 1}')
@@ -115,6 +119,15 @@ describe('запуск', () => {
     expect(console.warn).toHaveBeenCalled()
     expect(documents.entries.map((m) => m.id)).toEqual([good.id])
     expect(storedIndex().map((m) => m.id)).toEqual([good.id])
+    expect(storage.data.get(DOCUMENT_STORAGE_PREFIX + bad.id)).toBe('{"id": 1}')
+  })
+
+  it('запись индекса без данных убирается из списка', () => {
+    const good = seed('Хороший', '2026-01-01T00:00:00.000Z')
+    const ghost = seed('Призрак', '2026-02-01T00:00:00.000Z')
+    storage.data.delete(DOCUMENT_STORAGE_PREFIX + ghost.id)
+    const { documents } = start()
+    expect(documents.entries.map((m) => m.id)).toEqual([good.id])
   })
 
   it('все документы битые — создаётся новый пустой', () => {
@@ -238,6 +251,7 @@ describe('переключение', () => {
     expect(documents.switchTo(bad.id)).toBe(false)
     expect(layout.document.id).toBe(currentId)
     expect(documents.entries.some((m) => m.id === bad.id)).toBe(false)
+    expect(storage.data.get(DOCUMENT_STORAGE_PREFIX + bad.id)).toBe('{}')
   })
 
   it('если текущий не удалось сохранить, переключения нет (правки не теряются)', () => {
@@ -274,6 +288,13 @@ describe('переименование', () => {
     expect(stored(other.id).name).toBe('Новое имя')
     expect(documents.entries.find((m) => m.id === other.id)?.name).toBe('Новое имя')
     expect(layout.document.id).toBe(currentId)
+  })
+
+  it('длинное имя обрезается до DOCUMENT_NAME_MAX_LENGTH', () => {
+    const { documents, layout } = start()
+    expect(documents.rename(layout.document.id, 'я'.repeat(DOCUMENT_NAME_MAX_LENGTH + 20))).toBe(true)
+    expect(Array.from(layout.document.name)).toHaveLength(DOCUMENT_NAME_MAX_LENGTH)
+    expect(stored(layout.document.id).name).toBe(layout.document.name)
   })
 
   it('пустое имя — откат без изменений', () => {
@@ -335,5 +356,60 @@ describe('демо', () => {
     expect(documents.status).toBe('demo')
     expect(documents.flush()).toBe(true)
     expect(storage.data.size).toBe(0)
+  })
+})
+
+describe('несколько вкладок', () => {
+  it('запись индекса сливается с тем, что добавила другая вкладка', () => {
+    const { documents, layout } = start()
+    // Другая вкладка дописала документ в индекс, пока эта о нём не знает
+    const foreign = seed('Из другой вкладки', '2025-01-01T00:00:00.000Z')
+    layout.addRoot('flex', 'A', AT)
+    vi.advanceTimersByTime(AUTOSAVE_DELAY_MS)
+    expect(storedIndex().map((m) => m.id)).toContain(foreign.id)
+    expect(storedIndex().map((m) => m.id)).toContain(layout.document.id)
+    expect(documents.entries.map((m) => m.id)).toContain(foreign.id)
+  })
+
+  it('удаление не возвращает документ, удалённый в другой вкладке, и не стирает чужие', () => {
+    const a = seed('А', '2025-01-01T00:00:00.000Z')
+    const b = seed('Б', '2025-02-01T00:00:00.000Z')
+    seedCurrent()
+    const { documents } = start()
+    // Другая вкладка удалила «Б» и добавила «В»
+    const c = seed('В', '2025-03-01T00:00:00.000Z')
+    storage.data.set(DOCUMENTS_INDEX_STORAGE_KEY, JSON.stringify(storedIndex().filter((m) => m.id !== b.id)))
+    documents.remove(a.id)
+    expect(storedIndex().map((m) => m.id)).toContain(c.id)
+    expect(storedIndex().map((m) => m.id)).not.toContain(a.id)
+    expect(storedIndex().map((m) => m.id)).not.toContain(b.id)
+  })
+
+  it('refreshIndex подтягивает индекс из хранилища', () => {
+    const { documents } = start()
+    const foreign = seed('Из другой вкладки', '2025-01-01T00:00:00.000Z')
+    expect(documents.entries.map((m) => m.id)).not.toContain(foreign.id)
+    documents.refreshIndex()
+    expect(documents.entries.map((m) => m.id)).toContain(foreign.id)
+  })
+})
+
+describe('импорт при ошибке записи', () => {
+  it('нехватка места: ничего не активируется, текущий документ остаётся, понятная причина', () => {
+    const { documents, layout } = start()
+    const currentId = layout.document.id
+    const seq = documents.loadSeq
+    const keysBefore = [...storage.data.keys()].sort()
+    storage.fail.writes = true
+    const result = documents.importDocument(createDocument('Из файла'))
+    storage.fail.writes = false
+    expect(result).toEqual({ ok: false, error: IMPORT_ERROR_SAVE })
+    expect(IMPORT_ERROR_SAVE).toContain('Не хватает места'.toLowerCase())
+    expect(documents.currentId).toBe(currentId)
+    expect(layout.document.id).toBe(currentId)
+    expect(documents.loadSeq).toBe(seq)
+    expect(documents.status).toBe('saved')
+    expect([...storage.data.keys()].sort()).toEqual(keysBefore)
+    expect(documents.entries.map((m) => m.id)).toEqual([currentId])
   })
 })

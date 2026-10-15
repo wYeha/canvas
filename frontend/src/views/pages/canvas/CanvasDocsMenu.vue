@@ -65,8 +65,18 @@
             <span class="canvas-docs-menu__meta">{{ item.meta }}</span>
           </span>
           <span class="canvas-docs-menu__actions">
-            <UiIconButton icon="edit" :label="DOCS_MENU_RENAME_LABEL" @click.stop="beginRename(item.value)" />
-            <UiIconButton icon="trash" :label="DOCS_MENU_DELETE_LABEL" @click.stop="beginDelete(item.value)" />
+            <UiIconButton
+              icon="edit"
+              tabindex="-1"
+              :label="DOCS_MENU_RENAME_LABEL"
+              @click.stop="beginRename(item.value)"
+            />
+            <UiIconButton
+              icon="trash"
+              tabindex="-1"
+              :label="DOCS_MENU_DELETE_LABEL"
+              @click.stop="beginDelete(item.value)"
+            />
           </span>
         </template>
       </li>

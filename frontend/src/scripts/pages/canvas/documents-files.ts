@@ -45,6 +45,11 @@ export function parseImportText(text: string): ParseDocumentResult {
   return parseDocument(data)
 }
 
+/** Обрезает пробелы и ограничивает название `DOCUMENT_NAME_MAX_LENGTH` символами (по кодовым точкам). */
+export function truncateName(name: string): string {
+  return Array.from(name.trim()).slice(0, DOCUMENT_NAME_MAX_LENGTH).join('').trim()
+}
+
 /** Имя без совпадений с `taken`: при совпадении добавляется « (2)», « (3)»…; общая длина не больше лимита. */
 export function uniqueName(name: string, taken: readonly string[]): string {
   const base = name.trim() === '' ? DEFAULT_DOCUMENT_NAME : name.trim()

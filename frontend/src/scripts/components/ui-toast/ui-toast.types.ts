@@ -3,7 +3,7 @@
 /** Вид тоста: ошибка (role="alert") или обычное сообщение (role="status"). */
 export type UiToastKind = 'error' | 'info'
 
-/** Пропсы тоста: текст, вид и время автоскрытия в мс (0 — не скрывать само). */
+/** Пропсы тоста: текст, вид и время автоскрытия в мс (0 — не скрывать само; по умолчанию ошибка не скрывается, обычный тост — `TOAST_DURATION_MS`). */
 export interface UiToastProps {
   message: string
   kind?: UiToastKind

@@ -1,14 +1,13 @@
 /**
  * Composable страницы canvas: запускает документы (сохранённые или демо по `?demo`), дописывает сохранение
- * при уходе со страницы и возвращает камеру при каждой смене документа (вписать всё; пустой — в начало).
+ * при уходе со страницы и скрытии вкладки, следит за индексом из других вкладок и возвращает камеру при каждой смене документа (вписать всё; пустой — в начало).
  */
 import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useCameraStore } from './camera-store'
+import { PAGE_HIDE_EVENT, STORAGE_EVENT, VISIBILITY_CHANGE_EVENT } from './documents-constants'
+import { DOCUMENTS_INDEX_STORAGE_KEY } from '@/scripts/globals/constants'
 import { useDocumentsStore } from './documents-store'
 import { isDemoRequested } from './save-status'
-
-/** Событие страницы, при котором дописываем отложенное сохранение (закрытие вкладки, уход со страницы). */
-const PAGE_HIDE_EVENT = 'pagehide'
 
 /** Запускает документы и привязывает к ним камеру и сохранение при закрытии страницы. */
 export function useCanvasDocuments(): void {
@@ -43,6 +42,16 @@ export function useCanvasDocuments(): void {
     documents.flush()
   }
 
+  /** Вкладка скрыта (на мобильных и при переключении вкладок `pagehide` может не прийти): дописываем сохранение. */
+  function flushOnVisibility(): void {
+    if (document.visibilityState === 'hidden') documents.flush()
+  }
+
+  /** Другая вкладка изменила индекс документов: обновляем список (`key === null` — хранилище очищено). */
+  function onStorage(event: StorageEvent): void {
+    if (event.key === null || event.key === DOCUMENTS_INDEX_STORAGE_KEY) documents.refreshIndex()
+  }
+
   documents.init({ demo: isDemoRequested(window.location.search, import.meta.env.DEV) })
   // Смена документа: после отрисовки новых корней (их высоты замеряются при монтировании) вписываем всё
   watch(
@@ -54,10 +63,14 @@ export function useCanvasDocuments(): void {
   )
   onMounted(() => {
     window.addEventListener(PAGE_HIDE_EVENT, flushOnHide)
+    document.addEventListener(VISIBILITY_CHANGE_EVENT, flushOnVisibility)
+    window.addEventListener(STORAGE_EVENT, onStorage)
     fitWhenMeasured()
   })
   onBeforeUnmount(() => {
     window.removeEventListener(PAGE_HIDE_EVENT, flushOnHide)
+    document.removeEventListener(VISIBILITY_CHANGE_EVENT, flushOnVisibility)
+    window.removeEventListener(STORAGE_EVENT, onStorage)
     documents.flush()
   })
 }

@@ -6,9 +6,10 @@ import { computed, ref, toRaw, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { LayoutDocument } from '@shared'
 import { AUTOSAVE_DELAY_MS, IMPORT_ERROR_FLUSH, IMPORT_ERROR_OPEN, IMPORT_ERROR_SAVE } from './documents-constants'
-import { prepareImport } from './documents-files'
+import { prepareImport, truncateName } from './documents-files'
 import { pickDocumentId, removeMeta, sortMetas, toMeta, upsertMeta } from './documents-index'
 import {
+  hasStoredDocument,
   readCurrentId,
   readDocument,
   readIndex,
@@ -65,19 +66,29 @@ export const useDocumentsStore = defineStore('documents', () => {
     timer = null
   }
 
-  /** Записывает индекс; ошибка записи отражается в статусе. */
-  function persistIndex(next: DocumentMeta[]): boolean {
+  /**
+   * Применяет изменение к свежему индексу из хранилища (в другой вкладке он мог измениться) и записывает его:
+   * так чужие документы не затираются содержимым из памяти. Ошибка записи отражается в статусе.
+   */
+  function persistIndex(change: (current: DocumentMeta[]) => DocumentMeta[]): boolean {
+    const next = change(readIndex())
     metas.value = next
     const ok = writeIndex(next)
     if (!ok) status.value = 'error'
     return ok
   }
 
+  /** Перечитывает индекс из хранилища (событие `storage` из другой вкладки). В демо списка нет. */
+  function refreshIndex(): void {
+    if (status.value === 'demo') return
+    metas.value = readIndex()
+  }
+
   /** Сохраняет текущий документ и его запись в индексе; обновляет статус. */
   function persistCurrent(): boolean {
     clearTimer()
     const doc = toRaw(layout.document)
-    const ok = writeDocument(doc) && persistIndex(upsertMeta(metas.value, toMeta(doc)))
+    const ok = writeDocument(doc) && persistIndex((current) => upsertMeta(current, toMeta(doc)))
     status.value = ok ? 'saved' : 'error'
     if (ok) cleanDocument = doc
     return ok
@@ -126,11 +137,14 @@ export const useDocumentsStore = defineStore('documents', () => {
     return true
   }
 
-  /** Убирает документ, который не удалось прочитать, из индекса и хранилища. */
-  function dropBroken(id: string): void {
-    removeDocument(id)
-    metas.value = removeMeta(metas.value, id)
-    writeIndex(metas.value)
+  /**
+   * Убирает нечитаемый документ только из индекса. Сырые данные `layout-canvas:document:<id>` не удаляются никогда:
+   * документ мог не пройти схему из-за новой версии приложения или ручной правки, и его можно восстановить.
+   */
+  function hideUnreadable(id: string): void {
+    if (hasStoredDocument(id)) console.warn(`Документ «${id}» убран из списка, его данные оставлены в хранилище`)
+    else console.warn(`Запись индекса «${id}» без данных убрана из списка`)
+    persistIndex((current) => removeMeta(current, id))
   }
 
   /** Создаёт новый пустой документ, делает его текущим и сразу сохраняет (чтобы он попал в список). */
@@ -138,13 +152,13 @@ export const useDocumentsStore = defineStore('documents', () => {
     return activate(createDocument()) && persistCurrent()
   }
 
-  /** Открывает предпочитаемый или самый свежий читаемый документ, битые выбрасывает; если ничего нет — создаёт пустой. */
+  /** Открывает предпочитаемый или самый свежий читаемый документ, нечитаемые убирает из списка (данные не трогает); если ничего нет — создаёт пустой. */
   function openAvailable(preferredId: string | null): void {
     let id = pickDocumentId(metas.value, preferredId)
     while (id !== null) {
       const doc = readDocument(id)
       if (doc !== null && activate(doc)) return
-      dropBroken(id)
+      hideUnreadable(id)
       id = pickDocumentId(metas.value, null)
     }
     createAndOpen()
@@ -179,7 +193,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     if (!flush()) return false
     const doc = readDocument(id)
     if (doc === null) {
-      dropBroken(id)
+      hideUnreadable(id)
       return false
     }
     return activate(doc)
@@ -192,24 +206,42 @@ export const useDocumentsStore = defineStore('documents', () => {
   function importDocument(doc: LayoutDocument): ImportResult {
     if (!flush()) return { ok: false, error: IMPORT_ERROR_FLUSH }
     const names = entries.value.map((meta) => meta.name)
-    if (!activate(prepareImport(doc, names, createId(), new Date()))) return { ok: false, error: IMPORT_ERROR_OPEN }
-    return persistCurrent() ? { ok: true } : { ok: false, error: IMPORT_ERROR_SAVE }
+    const prepared = prepareImport(doc, names, createId(), new Date())
+    const previousStatus = status.value
+    // Сначала запись документа и индекса: при ошибке (квота) текущий документ остаётся нетронутым
+    if (!writeDocument(prepared) || !persistIndex((current) => upsertMeta(current, toMeta(prepared)))) {
+      rollbackImport(prepared.id, previousStatus)
+      return { ok: false, error: IMPORT_ERROR_SAVE }
+    }
+    if (activate(prepared)) return { ok: true }
+    rollbackImport(prepared.id, previousStatus)
+    return { ok: false, error: IMPORT_ERROR_OPEN }
+  }
+
+  /**
+   * Откатывает неудавшийся импорт: убирает только что записанный новый документ (наш собственный, не чужие данные)
+   * и его запись в индексе. Статус возвращается прежний: текущий документ не менялся.
+   */
+  function rollbackImport(id: string, previousStatus: SaveStatus): void {
+    removeDocument(id)
+    persistIndex((current) => removeMeta(current, id))
+    status.value = previousStatus
   }
 
   /** Переименовывает не текущий документ прямо в хранилище. */
   function renameStored(id: string, name: string): boolean {
     const doc = readDocument(id)
     if (doc === null) {
-      dropBroken(id)
+      hideUnreadable(id)
       return false
     }
     const next: LayoutDocument = { ...doc, name, updatedAt: new Date().toISOString() }
-    return writeDocument(next) && persistIndex(upsertMeta(metas.value, toMeta(next)))
+    return writeDocument(next) && persistIndex((current) => upsertMeta(current, toMeta(next)))
   }
 
-  /** Переименовывает документ; пустое имя (после обрезки пробелов) — отказ без изменений. */
+  /** Переименовывает документ; имя обрезается до `DOCUMENT_NAME_MAX_LENGTH`, пустое (после обрезки пробелов) — отказ. */
   function rename(id: string, name: string): boolean {
-    const next = name.trim()
+    const next = truncateName(name)
     if (next === '') return false
     if (id !== currentId.value) return renameStored(id, next)
     if (!layout.renameDocument(next)) return true
@@ -221,7 +253,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     const wasCurrent = id === currentId.value
     if (wasCurrent) clearTimer()
     removeDocument(id)
-    const ok = persistIndex(removeMeta(metas.value, id))
+    const ok = persistIndex((current) => removeMeta(current, id))
     if (wasCurrent) {
       currentId.value = null
       openAvailable(null)
@@ -237,6 +269,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     loadSeq,
     entries,
     init,
+    refreshIndex,
     flush,
     create,
     importDocument,

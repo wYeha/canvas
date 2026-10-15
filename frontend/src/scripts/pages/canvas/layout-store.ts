@@ -93,13 +93,19 @@ export const useLayoutStore = defineStore('layout', () => {
 
   /**
    * Применяет снимок отмены или повтора: документ (с новым `updatedAt` — это тоже изменение) и выделение
-   * того момента, если узел ещё есть; ховер сбрасывается, если его узла нет. Название документа остаётся
+   * того момента, если узел ещё есть; счётчик автоподписей не уменьшается; ховер сбрасывается, если его узла нет. Название документа остаётся
    * текущим: переименование не входит в историю и отменой не откатывается.
    */
   function applyMove(move: HistoryMove<HistorySnapshot> | null): boolean {
     if (move === null) return false
     history.value = move.history
-    document.value = { ...move.snapshot.document, name: document.value.name, updatedAt: new Date().toISOString() }
+    // Счётчик автоподписей не откатывается: номера, однажды выданные блокам, не переиспользуются
+    document.value = {
+      ...move.snapshot.document,
+      name: document.value.name,
+      labelCounter: Math.max(document.value.labelCounter, move.snapshot.document.labelCounter),
+      updatedAt: new Date().toISOString(),
+    }
     selectedId.value = move.snapshot.selectedId
     dropMissingSelection()
     return true

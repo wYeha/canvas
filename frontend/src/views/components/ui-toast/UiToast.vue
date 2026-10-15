@@ -10,11 +10,11 @@
 
 <script setup lang="ts">
 import UiIcon from '@/views/components/ui-icon/UiIcon.vue'
-import { TOAST_CLOSE_LABEL, TOAST_DURATION_MS } from '@/scripts/components/ui-toast/ui-toast.constants'
+import { TOAST_CLOSE_LABEL } from '@/scripts/components/ui-toast/ui-toast.constants'
 import type { UiToastEmits, UiToastProps } from '@/scripts/components/ui-toast/ui-toast.types'
 import { useUiToast } from '@/scripts/components/ui-toast/use-ui-toast'
 
-const props = withDefaults(defineProps<UiToastProps>(), { kind: 'info', duration: TOAST_DURATION_MS })
+const props = withDefaults(defineProps<UiToastProps>(), { kind: 'info' })
 const emit = defineEmits<UiToastEmits>()
 const { role, classes } = useUiToast(props, emit)
 </script>

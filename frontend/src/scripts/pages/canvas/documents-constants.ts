@@ -70,6 +70,11 @@ export const DELETE_KEY = 'Delete'
 /** Подсказка клавиш строки документа для скринридера (aria-keyshortcuts): переименовать и удалить. */
 export const DOC_ROW_KEYSHORTCUTS = 'F2 Delete'
 
+/** События окна, при которых дописываем сохранение и обновляем список документов (другая вкладка). */
+export const PAGE_HIDE_EVENT = 'pagehide'
+export const VISIBILITY_CHANGE_EVENT = 'visibilitychange'
+export const STORAGE_EVENT = 'storage'
+
 /** Файлы .json: расширение, тип, ограничения и отступ сериализации. */
 export const DOCUMENT_FILE_EXTENSION = '.layout.json'
 export const DOCUMENT_FILE_MIME = 'application/json'
@@ -92,6 +97,6 @@ export const IMPORT_ERROR_TOO_LARGE = 'файл больше 2 МБ'
 export const IMPORT_ERROR_NOT_JSON = 'это не JSON'
 export const IMPORT_ERROR_READ = 'не удалось прочитать файл'
 export const IMPORT_ERROR_FLUSH = 'не удалось сохранить текущий документ'
-export const IMPORT_ERROR_SAVE = 'документ открыт, но не сохранён: в браузере нет места'
+export const IMPORT_ERROR_SAVE = 'не хватает места в хранилище браузера — удалите ненужные документы'
 export const IMPORT_ERROR_OPEN = 'документ не загрузился в редактор'
 export const SAVE_FILE_ERROR = 'Не удалось скачать файл'

@@ -50,6 +50,11 @@ export function readDocument(id: string): LayoutDocument | null {
   return null
 }
 
+/** Есть ли в хранилище сырые данные документа (читаемые или нет): отличает «нет данных» от «не прошли схему». */
+export function hasStoredDocument(id: string): boolean {
+  return getStorageItem(documentKey(id)) !== null
+}
+
 /** Записывает документ под его id; `false`, если запись не удалась. */
 export function writeDocument(doc: LayoutDocument): boolean {
   return setStorageItem(documentKey(doc.id), JSON.stringify(doc))

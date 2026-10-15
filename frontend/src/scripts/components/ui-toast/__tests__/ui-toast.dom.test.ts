@@ -32,6 +32,15 @@ describe('UiToast', () => {
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
+  it('ошибка без явного duration сама не скрывается, обычный тост — скрывается', () => {
+    vi.useFakeTimers()
+    const error = mount(UiToast, { props: { message: 'Ошибка', kind: 'error' } })
+    const info = mount(UiToast, { props: { message: 'Готово' } })
+    vi.advanceTimersByTime(TOAST_DURATION_MS * 3)
+    expect(error.emitted('close')).toBeUndefined()
+    expect(info.emitted('close')).toHaveLength(1)
+  })
+
   it('смена текста перезапускает таймер, duration 0 отключает автоскрытие', async () => {
     vi.useFakeTimers()
     const wrapper = mount(UiToast, { props: { message: 'Один' } })
