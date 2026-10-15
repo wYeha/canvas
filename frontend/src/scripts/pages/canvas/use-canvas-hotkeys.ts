@@ -20,7 +20,7 @@ import { useCanvasClipboard } from './use-canvas-clipboard'
 import { useCanvasPropsActions } from './use-canvas-props-actions'
 import { useCanvasCreate } from './use-canvas-create'
 import { useCanvasHistory } from './use-canvas-history'
-import { measureNodeWorldRect } from './node-dom'
+import { layerIdFromTarget, measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
 
 /** Зависимости хоткеев страницы: открытие окна экспорта и признак «хоткеи сейчас заблокированы» (открыто окно). */
@@ -76,10 +76,10 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
   }
 
   /** Выполняет команду редактирования общей с кнопками логикой; `true`, если событие обработано (нужен preventDefault). */
-  function runEdit(command: EditCommand): boolean {
+  function runEdit(command: EditCommand, target: EventTarget | null): boolean {
     if (command === 'copy') return !hasTextSelection() && copySelected()
     if (command === 'paste') return pasteClipboard()
-    if (command === 'rename') return renameSelected()
+    if (command === 'rename') return renameSelected(layerIdFromTarget(target) !== null)
     // Ctrl+D всегда перехватываем: иначе браузер добавит закладку
     if (layoutStore.selectedId === null) return command === 'duplicate'
     run(command)
@@ -94,7 +94,7 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
       e.preventDefault()
       return true
     }
-    if (!runEdit(command)) return false
+    if (!runEdit(command, e.target)) return false
     e.preventDefault()
     return true
   }

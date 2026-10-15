@@ -36,11 +36,14 @@ export function useCanvasClipboard() {
     return layoutStore.pasteRoot(entry.node, newRootPoint(), entry.rootWidth ?? NEW_ROOT_WIDTH) !== null
   }
 
-  /** Открывает ввод подписи выделенного блока с текущим значением; у связи подписи нет — ничего. */
-  function renameSelected(): boolean {
+  /**
+   * Открывает ввод подписи выделенного блока с текущим значением; у связи подписи нет — ничего. Поле открывается
+   * в строке «Слоёв», если `F2` нажат с фокусом в строке или блок выбран там последним кликом, иначе на канвасе.
+   */
+  function renameSelected(fromLayers = false): boolean {
     const node = layoutStore.selectedNode
     if (node?.type !== 'block') return false
-    labelEdit.beginRename(node.id, node.label)
+    labelEdit.beginRename(node.id, node.label, fromLayers ? 'layers' : labelEdit.renamePlaceFor(node.id))
     return true
   }
 

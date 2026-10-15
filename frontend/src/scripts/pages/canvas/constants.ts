@@ -178,6 +178,12 @@ export const NODE_ID_ATTR = 'data-node-id'
 /** CSS-селектор элемента, помеченного id узла. */
 export const NODE_SELECTOR = `[${NODE_ID_ATTR}]`
 
+/** Имя атрибута подписи блока на канвасе (заголовок корня, чип, подпись листа): двойной клик по ней переименовывает блок. */
+export const LABEL_NODE_ATTR = 'data-label-node-id'
+
+/** CSS-селектор подписи блока на канвасе. */
+export const LABEL_NODE_SELECTOR = `[${LABEL_NODE_ATTR}]`
+
 /** Имя атрибута строки панели «Слои»: по нему наведение на строку подсвечивает блок на канвасе. */
 export const LAYER_ID_ATTR = 'data-layer-id'
 

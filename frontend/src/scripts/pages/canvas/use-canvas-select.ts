@@ -1,13 +1,15 @@
 /**
  * Composable выделения мышью: клик по блоку выделяет самый глубокий блок под курсором, клик по пустому полю
  * снимает выделение, движение указателя подсвечивает блок (и над строками панели «Слои»).
- * Клик, завершивший пан или со сдвигом больше порога, не считается.
+ * Клик, завершивший пан или со сдвигом больше порога, не считается. Двойной клик по подписи блока — переименование.
  */
 import { onBeforeUnmount, onMounted, type Ref } from 'vue'
 import { CLICK_DRAG_THRESHOLD, PRIMARY_BUTTON } from './constants'
 import type { CanvasPoint } from './factories'
+import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
-import { layerIdFromTarget, nodeIdFromTarget } from './node-dom'
+import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget } from './node-dom'
+import { findNode } from './tree-query'
 import { isClickGesture, resolveClickTarget } from './selection'
 
 /** Подключает выделение к viewport; `isPanning` сообщает, что пробел зажат или идёт тяга поля. */
@@ -17,6 +19,7 @@ export function useCanvasSelect(
   isPanning: () => boolean,
 ): void {
   const layoutStore = useLayoutStore()
+  const labelEdit = useLabelEditStore()
   /** Указатель и точка нажатия, которое может стать кликом; `null` — клика не ждём. */
   let press: { pointerId: number; point: CanvasPoint } | null = null
 
@@ -33,6 +36,18 @@ export function useCanvasSelect(
     if (start === null || start.pointerId !== e.pointerId || isPanning()) return
     if (!isClickGesture(start.point, { x: e.clientX, y: e.clientY }, CLICK_DRAG_THRESHOLD)) return
     layoutStore.select(resolveClickTarget(layoutStore.document, nodeIdFromTarget(e.target)))
+    // Выбор на канвасе: F2 теперь открывает поле у блока, а не в «Слоях»
+    labelEdit.pickInLayers(null)
+  }
+
+  /** Двойной клик по подписи блока (заголовок корня, чип, подпись листа) открывает переименование на канвасе. */
+  function onDoubleClick(e: MouseEvent): void {
+    if (e.button !== PRIMARY_BUTTON || !isSurface(e.target) || isPanning()) return
+    const id = labelNodeIdAt(e.target, { x: e.clientX, y: e.clientY })
+    const node = id === null ? undefined : findNode(layoutStore.document, id)
+    if (node?.type !== 'block') return
+    layoutStore.select(node.id)
+    labelEdit.beginRename(node.id, node.label, 'canvas')
   }
 
   /**
@@ -62,6 +77,7 @@ export function useCanvasSelect(
     el.addEventListener('pointercancel', onPointerCancel)
     el.addEventListener('pointermove', onPointerMove)
     el.addEventListener('pointerleave', onPointerLeave)
+    el.addEventListener('dblclick', onDoubleClick)
   })
 
   onBeforeUnmount(() => {
@@ -72,6 +88,7 @@ export function useCanvasSelect(
     el.removeEventListener('pointercancel', onPointerCancel)
     el.removeEventListener('pointermove', onPointerMove)
     el.removeEventListener('pointerleave', onPointerLeave)
+    el.removeEventListener('dblclick', onDoubleClick)
     layoutStore.hover(null)
   })
 }

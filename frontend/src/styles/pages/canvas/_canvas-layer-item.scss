@@ -60,6 +60,21 @@
     }
   }
 
+  &__edit {
+    display: flex;
+    flex: 1;
+    gap: v.$space-6;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+  }
+
   &__select {
     display: flex;
     flex: 1;

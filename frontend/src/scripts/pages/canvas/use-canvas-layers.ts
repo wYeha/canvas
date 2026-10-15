@@ -8,6 +8,7 @@ import { rootRect } from './camera'
 import { useCameraStore } from './camera-store'
 import { LAYERS_EMPTY_TEXT, LAYERS_LIST_LABEL } from './constants'
 import { expandPath, toggleCollapsed } from './layers'
+import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { findRootEntry } from './tree-query'
 
@@ -35,6 +36,7 @@ export interface CanvasLayersState {
 export function useCanvasLayers(): CanvasLayersState {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
+  const labelEdit = useLabelEditStore()
   const collapsed = shallowRef<ReadonlySet<NodeId>>(new Set())
 
   /** Корневые блоки документа в порядке `roots`. */
@@ -53,9 +55,10 @@ export function useCanvasLayers(): CanvasLayersState {
     collapsed.value = toggleCollapsed(collapsed.value, id)
   }
 
-  /** Выделяет узел; корневой блок ставит по центру видимой области без смены зума. */
+  /** Выделяет узел (F2 после этого переименовывает в строке); корневой блок ставит по центру видимой области без смены зума. */
   function activate(id: NodeId): void {
     layoutStore.select(id)
+    labelEdit.pickInLayers(id)
     const root = findRootEntry(layoutStore.document, id)
     if (root !== undefined) cameraStore.centerWorldRect(rootRect(root, cameraStore.rootHeights))
   }

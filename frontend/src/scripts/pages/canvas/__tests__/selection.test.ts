@@ -6,6 +6,7 @@ import {
   breadcrumbSegments,
   firstChildSelection,
   isBadgeInside,
+  rectContains,
   isClickGesture,
   nodeTypeLabel,
   overlayRectStyle,
@@ -128,5 +129,15 @@ describe('selection: геометрия и тексты', () => {
     expect(segments.map((s) => s.id)).toEqual(['A', 'a1', 'a1x'])
     expect(segments.map((s) => s.text)).toEqual(['A', 'a1', 'a1x'])
     expect(breadcrumbSegments(doc, [])).toEqual([])
+  })
+})
+
+describe('rectContains', () => {
+  it('границы включительно, снаружи — false', () => {
+    const rect = { x: 10, y: 10, width: 20, height: 10 }
+    expect(rectContains(rect, { x: 10, y: 10 })).toBe(true)
+    expect(rectContains(rect, { x: 30, y: 20 })).toBe(true)
+    expect(rectContains(rect, { x: 31, y: 15 })).toBe(false)
+    expect(rectContains(rect, { x: 15, y: 9 })).toBe(false)
   })
 })

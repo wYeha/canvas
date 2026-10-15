@@ -93,6 +93,11 @@ export function isBadgeInside(rect: Rect): boolean {
   return rect.y < SELECTION_BADGE_OFFSET
 }
 
+/** `true`, если точка лежит внутри прямоугольника (границы включительно). */
+export function rectContains(rect: Rect, point: CanvasPoint): boolean {
+  return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height
+}
+
 /** Динамический стиль рамки оверлея: положение и размер в экранных px. */
 export function overlayRectStyle(rect: Rect): Record<string, string> {
   return {

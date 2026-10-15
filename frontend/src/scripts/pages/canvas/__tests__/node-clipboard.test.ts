@@ -115,3 +115,25 @@ describe('переименование', () => {
     expect(store.document.roots[0]?.node.label).toBe('Блок-1')
   })
 })
+
+describe('label-edit-store: место переименования', () => {
+  it('F2 открывает поле в «Слоях» только для блока, выбранного там последним кликом', () => {
+    loadedStore()
+    const edit = useLabelEditStore()
+    expect(edit.renamePlaceFor('a2')).toBe('canvas')
+    edit.pickInLayers('a2')
+    expect(edit.renamePlaceFor('a2')).toBe('layers')
+    expect(edit.renamePlaceFor('a1')).toBe('canvas')
+    edit.pickInLayers(null)
+    expect(edit.renamePlaceFor('a2')).toBe('canvas')
+  })
+
+  it('место ввода сбрасывается на канвас после завершения', () => {
+    loadedStore()
+    const edit = useLabelEditStore()
+    edit.beginRename('a2', 'a2', 'layers')
+    expect(edit.place).toBe('layers')
+    edit.finish()
+    expect(edit.place).toBe('canvas')
+  })
+})

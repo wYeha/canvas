@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: рекурсивная строка панели «Слои» (шеврон сворачивания, значок типа, подпись, тип) и её дети -->
+<!-- Фрагмент страницы canvas: рекурсивная строка панели «Слои» (шеврон сворачивания, значок типа, подпись или поле переименования, тип) и её дети -->
 <template>
   <li class="canvas-layer-item">
     <div ref="rowEl" :class="view.rowClasses" :data-layer-id="node.id">
@@ -15,12 +15,24 @@
         <UiIcon name="chevron-down" :class="view.chevronClasses" />
       </button>
       <span v-else class="canvas-layer-item__spacer" />
+      <div v-if="view.renaming" class="canvas-layer-item__edit">
+        <UiIcon :name="view.icon" class="canvas-layer-item__icon" />
+        <UiTextInput
+          v-model="draft"
+          class="canvas-layer-item__input"
+          :label="renameLabel"
+          @keydown="onRenameKeydown"
+          @blur="onRenameBlur"
+        />
+      </div>
       <button
+        v-else
         class="canvas-layer-item__select"
         type="button"
         :aria-current="view.selected"
         @mousedown="keepFocusOnMouseDown"
         @click="activate"
+        @dblclick="startRename"
       >
         <UiIcon :name="view.icon" class="canvas-layer-item__icon" />
         <span class="canvas-layer-item__label">{{ view.caption }}</span>
@@ -36,11 +48,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import UiIcon from '@/views/components/ui-icon/UiIcon.vue'
+import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import type { CanvasLayerItemProps } from '@/scripts/pages/canvas/canvas-layer-item.types'
 import { useCanvasLayerItem } from '@/scripts/pages/canvas/use-canvas-layer-item'
 import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 
 const props = defineProps<CanvasLayerItemProps>()
 const rowEl = ref<HTMLElement | null>(null)
-const { view, toggle, activate } = useCanvasLayerItem(props, rowEl)
+const { view, draft, renameLabel, toggle, activate, startRename, onRenameKeydown, onRenameBlur } = useCanvasLayerItem(
+  props,
+  rowEl,
+)
 </script>

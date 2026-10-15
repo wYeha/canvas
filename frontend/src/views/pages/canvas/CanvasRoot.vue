@@ -2,7 +2,7 @@
 <template>
   <div ref="rootEl" class="canvas-root" :style="style">
     <div class="canvas-root__header">
-      <span class="canvas-root__title">{{ title }}</span>
+      <span class="canvas-root__title" :data-label-node-id="root.node.id">{{ title }}</span>
       <span class="canvas-root__width">{{ widthText }}</span>
     </div>
     <CanvasNode class="canvas-root__node" :node="root.node" :depth="0" :parent-kind="null" />

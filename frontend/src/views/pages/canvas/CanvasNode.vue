@@ -4,11 +4,11 @@
     {{ view.text }}
   </div>
   <div v-else :class="view.classes" :data-node-id="node.id" :style="view.style">
-    <span v-if="view.leaf" class="canvas-node__caption">
+    <span v-if="view.leaf" class="canvas-node__caption" :data-label-node-id="node.id">
       <span class="canvas-node__icon">{{ view.icon }}</span>
       <span v-if="view.label !== ''">{{ view.label }}</span>
     </span>
-    <span v-else class="canvas-node__chip">
+    <span v-else class="canvas-node__chip" :data-label-node-id="node.id">
       <span class="canvas-node__icon">{{ view.icon }}</span>
       <span v-if="view.label !== ''" class="canvas-node__text">{{ view.label }}</span>
     </span>

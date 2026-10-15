@@ -1,6 +1,7 @@
 /**
- * Pinia-хранилище ввода подписи на канвасе: какой блок сейчас подписывается и черновик текста.
- * Состояние интерфейса, не документ: нужно тулбару и хоткеям (начать), полю на канвасе (ввод) и панели (завершить).
+ * Pinia-хранилище ввода подписи: какой блок сейчас подписывается, черновик текста и где открыто поле — на канвасе
+ * или в строке «Слоёв». Состояние интерфейса, не документ: нужно тулбару и хоткеям (начать), полю на канвасе и
+ * строке слоя (ввод), панелям (завершить).
  * Два режима: создание (пустое значение и Esc дают автоподпись) и переименование (пустое значение и Esc — откат).
  */
 import { ref } from 'vue'
@@ -11,6 +12,9 @@ import { useLayoutStore } from './layout-store'
 /** Режим ввода: подпись только что созданного блока или переименование существующего. */
 export type LabelEditMode = 'create' | 'rename'
 
+/** Где открыто поле ввода: у блока на канвасе или в строке панели «Слои». */
+export type LabelEditPlace = 'canvas' | 'layers'
+
 export const useLabelEditStore = defineStore('label-edit', () => {
   const layoutStore = useLayoutStore()
   /** Id блока, чья подпись вводится; `null` — ввода нет. */
@@ -19,6 +23,10 @@ export const useLabelEditStore = defineStore('label-edit', () => {
   const draft = ref('')
   /** Режим текущего ввода. */
   const mode = ref<LabelEditMode>('create')
+  /** Место текущего ввода. */
+  const place = ref<LabelEditPlace>('canvas')
+  /** Блок, выбранный последним кликом в «Слоях»: `F2` для него открывает переименование в строке слоя. */
+  const layersPickId = ref<NodeId | null>(null)
 
   /**
    * Применяет черновик и закрывает ввод; без активного ввода ничего не делает. При создании пустой черновик
@@ -32,6 +40,7 @@ export const useLabelEditStore = defineStore('label-edit', () => {
     editingId.value = null
     draft.value = ''
     mode.value = 'create'
+    place.value = 'canvas'
     if (renaming) {
       if (text.trim() !== '') layoutStore.updateNode(id, { label: text.trim() })
       return
@@ -53,13 +62,36 @@ export const useLabelEditStore = defineStore('label-edit', () => {
     mode.value = 'create'
   }
 
-  /** Открывает переименование блока с текущей подписью; предыдущий ввод завершается. */
-  function beginRename(id: NodeId, currentLabel: string): void {
+  /** Открывает переименование блока с текущей подписью на канвасе или в «Слоях»; предыдущий ввод завершается. */
+  function beginRename(id: NodeId, currentLabel: string, where: LabelEditPlace = 'canvas'): void {
     finish()
     editingId.value = id
     draft.value = currentLabel
     mode.value = 'rename'
+    place.value = where
   }
 
-  return { editingId, draft, mode, begin, beginRename, finish, cancel }
+  /** Запоминает блок, выбранный в «Слоях» (`null` — выбор пришёл с канваса). */
+  function pickInLayers(id: NodeId | null): void {
+    layersPickId.value = id
+  }
+
+  /** Где переименовывать блок по `F2`: в «Слоях», если он выбран там последним кликом, иначе на канвасе. */
+  function renamePlaceFor(id: NodeId): LabelEditPlace {
+    return layersPickId.value === id ? 'layers' : 'canvas'
+  }
+
+  return {
+    editingId,
+    draft,
+    mode,
+    place,
+    layersPickId,
+    begin,
+    beginRename,
+    finish,
+    cancel,
+    pickInLayers,
+    renamePlaceFor,
+  }
 })

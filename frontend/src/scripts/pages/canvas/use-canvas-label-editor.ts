@@ -7,12 +7,11 @@ import { nextTick, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCameraStore } from './camera-store'
 import { clientRectOf, findNodeElement } from './node-dom'
-import { labelEditorRect } from './label-editor'
+import { labelEditKeyAction, labelEditorRect } from './label-editor'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { overlayRectStyle, toLocalRect } from './selection'
 import { findNode } from './tree-query'
-import { ENTER_CODE, ESCAPE_CODE, NUMPAD_ENTER_CODE } from './constants'
 
 /** Возвращает refs оверлея и поля, стиль положения (или `null`, если ввода нет) и обработчики клавиш и потери фокуса. */
 export function useCanvasLabelEditor() {
@@ -21,7 +20,7 @@ export function useCanvasLabelEditor() {
   const labelEdit = useLabelEditStore()
   const { document: doc } = storeToRefs(layoutStore)
   const { camera, rootHeights } = storeToRefs(cameraStore)
-  const { editingId, draft } = storeToRefs(labelEdit)
+  const { editingId, draft, place } = storeToRefs(labelEdit)
   /** Элемент оверлея: его положение на странице — начало экранных координат. */
   const overlayEl = ref<HTMLElement | null>(null)
   /** Поле ввода. */
@@ -38,7 +37,8 @@ export function useCanvasLabelEditor() {
       return
     }
     const origin = overlayEl.value?.getBoundingClientRect()
-    const el = id === null ? null : findNodeElement(id)
+    // Переименование в строке «Слоёв» рисует своё поле, на канвасе поля нет
+    const el = id === null || place.value !== 'canvas' ? null : findNodeElement(id)
     if (id === null || origin === undefined || el === null) {
       style.value = null
       return
@@ -67,15 +67,10 @@ export function useCanvasLabelEditor() {
 
   /** Enter применяет подпись, Esc отказывается от ввода (автоподпись при создании, откат при переименовании). */
   function onKeydown(e: KeyboardEvent): void {
-    // Enter внутри композиции IME подтверждает символы, а не подпись
-    if (e.isComposing) return
-    if (e.code === ENTER_CODE || e.code === NUMPAD_ENTER_CODE) {
-      e.preventDefault()
-      labelEdit.finish()
-    } else if (e.code === ESCAPE_CODE) {
-      e.preventDefault()
-      labelEdit.cancel()
-    }
+    const action = labelEditKeyAction(e)
+    if (action === null) return
+    e.preventDefault()
+    labelEdit[action]()
   }
 
   /** Потеря фокуса применяет подпись; если ввод уже закрыт клавишей, ничего не делает. */

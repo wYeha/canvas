@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
+import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
+import { findNode } from '@/scripts/pages/canvas/tree-query'
 import CanvasLayers from '@/views/pages/canvas/CanvasLayers.vue'
 import { makeDoc } from './tree-fixture'
 
@@ -14,7 +16,7 @@ function setup(withDoc = true): VueWrapper {
   const pinia = createPinia()
   setActivePinia(pinia)
   if (withDoc) useLayoutStore().loadDocument(makeDoc())
-  mounted = mount(CanvasLayers, { global: { plugins: [pinia] } })
+  mounted = mount(CanvasLayers, { global: { plugins: [pinia] }, attachTo: document.body })
   return mounted
 }
 
@@ -86,5 +88,44 @@ describe('CanvasLayers', () => {
     expect(useLayoutStore().selectedId).toBe('B')
     expect(camera.camera).not.toEqual(before)
     expect(camera.camera.zoom).toBe(before.zoom)
+  })
+})
+
+describe('CanvasLayers: переименование', () => {
+  /** Подпись блока в документе. */
+  function labelOf(id: string): string | undefined {
+    const node = findNode(useLayoutStore().document, id)
+    return node?.type === 'block' ? node.label : undefined
+  }
+
+  it('двойной клик открывает поле с текущей подписью в фокусе, Enter записывает', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a2').find('.canvas-layer-item__select').trigger('dblclick')
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+    const input = row(wrapper, 'a2').find('input')
+    expect((input.element as HTMLInputElement).value).toBe('a2')
+    expect(document.activeElement).toBe(input.element)
+    await input.setValue('Подвал')
+    await input.trigger('keydown', { code: 'Enter' })
+    expect(labelOf('a2')).toBe('Подвал')
+    expect(row(wrapper, 'a2').find('input').exists()).toBe(false)
+  })
+
+  it('Esc откатывает, у связи двойной клик ничего не открывает', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a2').find('.canvas-layer-item__select').trigger('dblclick')
+    const input = row(wrapper, 'a2').find('input')
+    await input.setValue('Другое')
+    await input.trigger('keydown', { code: 'Escape' })
+    expect(labelOf('a2')).toBe('a2')
+    await row(wrapper, 'linkB').find('.canvas-layer-item__select').trigger('dblclick')
+    expect(useLabelEditStore().editingId).toBeNull()
+  })
+
+  it('клик по строке запоминает выбор в «Слоях» для F2', async () => {
+    const wrapper = setup()
+    await row(wrapper, 'a1').find('.canvas-layer-item__select').trigger('click')
+    expect(useLabelEditStore().renamePlaceFor('a1')).toBe('layers')
   })
 })

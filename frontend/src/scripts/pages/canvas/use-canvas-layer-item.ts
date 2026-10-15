@@ -1,8 +1,10 @@
 /**
- * Composable строки панели «Слои»: вид строки (значок, подпись, тип, классы), сворачивание и клик.
+ * Composable строки панели «Слои»: вид строки (значок, подпись, тип, классы), сворачивание, клик и переименование
+ * в строке (двойной клик или F2; поле — общий `UiTextInput`, черновик и завершение — в `label-edit-store`).
  * Выделенная строка прокручивается в видимую часть панели — и при выделении на канвасе, и после раскрытия ветки.
  */
-import { computed, inject, onMounted, watch, type ComputedRef, type Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, watch, type ComputedRef, type Ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import type { LayoutNode } from '@shared'
 import type { CanvasLayerItemProps } from './canvas-layer-item.types'
 import {
@@ -14,6 +16,9 @@ import {
   layerToggleLabel,
   type LayerIcon,
 } from './layers'
+import { LABEL_EDITOR_ARIA } from './constants'
+import { useLabelEditStore } from './label-edit-store'
+import { labelEditKeyAction } from './label-editor'
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
 import { nodeTypeLabel } from './selection'
@@ -30,14 +35,20 @@ export interface LayerItemView {
   expandable: boolean
   expanded: boolean
   toggleLabel: string
+  renaming: boolean
   children: readonly LayoutNode[]
 }
 
 /** Результат `useCanvasLayerItem`. */
 export interface CanvasLayerItemState {
   view: ComputedRef<LayerItemView>
+  draft: Ref<string>
+  renameLabel: string
   toggle: () => void
   activate: () => void
+  startRename: () => void
+  onRenameKeydown: (e: KeyboardEvent) => void
+  onRenameBlur: () => void
 }
 
 /** Контекст панели «Слои»; строка вне панели — ошибка разработчика. */
@@ -51,6 +62,11 @@ function injectLayersContext(): CanvasLayersContext {
 export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLElement | null>): CanvasLayerItemState {
   const context = injectLayersContext()
   const store = useLayoutStore()
+  const labelEdit = useLabelEditStore()
+  const { draft } = storeToRefs(labelEdit)
+
+  /** Открыто ли переименование этой строки в «Слоях». */
+  const renaming = computed(() => labelEdit.editingId === props.node.id && labelEdit.place === 'layers')
 
   /** Выделена ли строка. */
   const selected = computed(() => store.selectedId === props.node.id)
@@ -72,6 +88,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
       expandable,
       expanded,
       toggleLabel: layerToggleLabel(expanded),
+      renaming: renaming.value,
       children,
     }
   })
@@ -85,6 +102,18 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
   watch(selected, revealIfSelected, { flush: 'post' })
   onMounted(revealIfSelected)
 
+  /** Фокусирует поле переименования и выделяет текст целиком: можно сразу печатать новую подпись. */
+  async function focusRenameInput(): Promise<void> {
+    await nextTick()
+    const input = rowEl.value?.querySelector('input')
+    input?.focus()
+    input?.select()
+  }
+
+  watch(renaming, (on) => {
+    if (on) void focusRenameInput()
+  })
+
   /** Сворачивает или раскрывает ветку строки. */
   function toggle(): void {
     context.toggle(props.node.id)
@@ -95,5 +124,34 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
     context.activate(props.node.id)
   }
 
-  return { view, toggle, activate }
+  /** Двойной клик по строке: переименование блока прямо в строке; у связи подписи нет. */
+  function startRename(): void {
+    const { node } = props
+    if (node.type !== 'block') return
+    labelEdit.beginRename(node.id, node.label, 'layers')
+  }
+
+  /** Enter применяет подпись, Esc откатывает (пустое значение тоже откат). */
+  function onRenameKeydown(e: KeyboardEvent): void {
+    const action = labelEditKeyAction(e)
+    if (action === null) return
+    e.preventDefault()
+    labelEdit[action]()
+  }
+
+  /** Клик мимо поля применяет подпись. */
+  function onRenameBlur(): void {
+    labelEdit.finish()
+  }
+
+  return {
+    view,
+    draft,
+    renameLabel: LABEL_EDITOR_ARIA,
+    toggle,
+    activate,
+    startRename,
+    onRenameKeydown,
+    onRenameBlur,
+  }
 }
