@@ -47,9 +47,6 @@ export const MONTH_SHORT_NAMES = [
 /** Склонения «корневой» для числа корней: один, несколько (2–4), много. */
 export const ROOTS_WORD_FORMS = { one: 'корневой', few: 'корневых', many: 'корневых' } as const
 
-/** Причина недоступности пунктов работы с файлами до 5.5. */
-export const FILES_UNAVAILABLE_TITLE = 'Появится в 5.5'
-
 /** Подписи меню документов. */
 export const DOCS_MENU_LABEL = 'Документы'
 export const DOCS_MENU_NEW_LABEL = 'Новый документ'
@@ -72,3 +69,29 @@ export const DELETE_KEY = 'Delete'
 
 /** Подсказка клавиш строки документа для скринридера (aria-keyshortcuts): переименовать и удалить. */
 export const DOC_ROW_KEYSHORTCUTS = 'F2 Delete'
+
+/** Файлы .json: расширение, тип, ограничения и отступ сериализации. */
+export const DOCUMENT_FILE_EXTENSION = '.layout.json'
+export const DOCUMENT_FILE_MIME = 'application/json'
+export const DOCUMENT_FILE_ACCEPT = '.json,application/json'
+export const DOCUMENT_FILE_FALLBACK_NAME = 'layout'
+export const DOCUMENT_JSON_INDENT = 2
+
+/** Максимальный размер импортируемого файла, байт (2 МБ). */
+export const IMPORT_MAX_BYTES = 2 * 1024 * 1024
+
+/** Код BOM (U+FEFF) в начале UTF-8 файла: его снимаем перед разбором. */
+export const BOM_CODE = 0xfeff
+
+/** Суффикс имени при совпадении: «Лендинг (2)». */
+export const IMPORT_DUPLICATE_SUFFIX_START = 2
+
+/** Сообщения об ошибках файлов (показываются тостом). */
+export const IMPORT_ERROR_PREFIX = 'Файл не открыт: '
+export const IMPORT_ERROR_TOO_LARGE = 'файл больше 2 МБ'
+export const IMPORT_ERROR_NOT_JSON = 'это не JSON'
+export const IMPORT_ERROR_READ = 'не удалось прочитать файл'
+export const IMPORT_ERROR_FLUSH = 'не удалось сохранить текущий документ'
+export const IMPORT_ERROR_SAVE = 'документ открыт, но не сохранён: в браузере нет места'
+export const IMPORT_ERROR_OPEN = 'документ не загрузился в редактор'
+export const SAVE_FILE_ERROR = 'Не удалось скачать файл'

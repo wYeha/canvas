@@ -1,4 +1,4 @@
-<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы и окно экспорта -->
+<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы, окно экспорта и тосты -->
 <template>
   <div class="canvas-page">
     <CanvasHeader @export="openExport" />
@@ -10,6 +10,7 @@
       <CanvasZoom class="canvas-page__zoom" />
     </CanvasViewport>
     <ExportModal v-model:open="exportOpen" />
+    <CanvasToast />
   </div>
 </template>
 
@@ -19,6 +20,7 @@ import CanvasHeader from '@/views/pages/canvas/CanvasHeader.vue'
 import CanvasLayers from '@/views/pages/canvas/CanvasLayers.vue'
 import CanvasProps from '@/views/pages/canvas/CanvasProps.vue'
 import CanvasToolbar from '@/views/pages/canvas/CanvasToolbar.vue'
+import CanvasToast from '@/views/pages/canvas/CanvasToast.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
 import ExportModal from '@/views/modals/export-modal/ExportModal.vue'

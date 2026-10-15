@@ -1,6 +1,7 @@
-<!-- Фрагмент страницы canvas: выпадашка документов в хедере (список, переименование и удаление в строке, новый документ) -->
+<!-- Фрагмент страницы canvas: выпадашка документов в хедере (список, правка в строке, новый документ, файлы .json) -->
 <template>
   <div ref="root" class="canvas-docs-menu">
+    <input ref="fileInput" type="file" hidden :accept="DOCUMENT_FILE_ACCEPT" @change="onFileChange" />
     <span ref="trigger" class="canvas-docs-menu__trigger" @click="toggle" @keydown="onTriggerKeydown">
       <UiButton
         v-bind="triggerAttrs"
@@ -80,6 +81,7 @@ import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import {
   DOC_ROW_KEYSHORTCUTS,
+  DOCUMENT_FILE_ACCEPT,
   DOCS_MENU_CANCEL_LABEL,
   DOCS_MENU_DELETE_LABEL,
   DOCS_MENU_DEMO_TITLE,
@@ -115,5 +117,7 @@ const {
   confirmDelete,
   onTriggerKeydown,
   onListKeydown,
+  fileInput,
+  onFileChange,
 } = useCanvasDocsMenu()
 </script>

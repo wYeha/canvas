@@ -11,6 +11,7 @@
       <UiKitSelects />
       <UiKitPanelParts />
       <UiKitModal />
+      <UiKitToast />
       <UiKitSurfaces />
     </main>
   </div>
@@ -24,6 +25,7 @@ import UiKitModal from '@/views/pages/ui-kit/UiKitModal.vue'
 import UiKitPanelParts from '@/views/pages/ui-kit/UiKitPanelParts.vue'
 import UiKitSelects from '@/views/pages/ui-kit/UiKitSelects.vue'
 import UiKitSurfaces from '@/views/pages/ui-kit/UiKitSurfaces.vue'
+import UiKitToast from '@/views/pages/ui-kit/UiKitToast.vue'
 import { useUiKitPage } from '@/scripts/pages/ui-kit/use-ui-kit-page'
 
 const { themeIcon, themeText, toggleTheme } = useUiKitPage()

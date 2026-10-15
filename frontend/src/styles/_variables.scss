@@ -216,6 +216,8 @@ $link-port-border: 2px;
 $export-modal-width: 1040px;
 $export-modal-height: 700px;
 $modal-compact-width: 480px; // компактная модалка (подтверждения), высота по содержимому
+$toast-close-opacity: 0.7; // кнопка закрытия тоста в покое
+$toast-bottom: $panel-gap * 3 + $toolbar-button-size + $toolbar-padding * 2; // тост над нижним тулбаром
 $documents-dropdown-width: 340px;
 $documents-dropdown-max-height: 400px;
 $docs-row-height: 44px; // строка документа в выпадашке (название и мета в две строки)

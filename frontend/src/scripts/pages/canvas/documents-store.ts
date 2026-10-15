@@ -5,7 +5,8 @@
 import { computed, ref, toRaw, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { LayoutDocument } from '@shared'
-import { AUTOSAVE_DELAY_MS } from './documents-constants'
+import { AUTOSAVE_DELAY_MS, IMPORT_ERROR_FLUSH, IMPORT_ERROR_OPEN, IMPORT_ERROR_SAVE } from './documents-constants'
+import { prepareImport } from './documents-files'
 import { pickDocumentId, removeMeta, sortMetas, toMeta, upsertMeta } from './documents-index'
 import {
   readCurrentId,
@@ -21,6 +22,10 @@ import { isAutosaveEnabled } from './save-status'
 import { createDemoDocument } from './demo-document'
 import { createDocument } from './factories'
 import { useLayoutStore } from './layout-store'
+import { createId } from '@/scripts/globals/id'
+
+/** Результат добавления документа из файла: успех или причина отказа для тоста. */
+export type ImportResult = { ok: true } | { ok: false; error: string }
 
 /** Параметры запуска: открыть временный демо-документ вместо сохранённых. */
 export interface DocumentsInitOptions {
@@ -180,6 +185,17 @@ export const useDocumentsStore = defineStore('documents', () => {
     return activate(doc)
   }
 
+  /**
+   * Добавляет документ из файла как новый (новый id, уникальное имя) и открывает его; текущий перед этим сохраняется.
+   * Документ уже проверен схемой; редактор при открытии проверяет его ещё раз.
+   */
+  function importDocument(doc: LayoutDocument): ImportResult {
+    if (!flush()) return { ok: false, error: IMPORT_ERROR_FLUSH }
+    const names = entries.value.map((meta) => meta.name)
+    if (!activate(prepareImport(doc, names, createId(), new Date()))) return { ok: false, error: IMPORT_ERROR_OPEN }
+    return persistCurrent() ? { ok: true } : { ok: false, error: IMPORT_ERROR_SAVE }
+  }
+
   /** Переименовывает не текущий документ прямо в хранилище. */
   function renameStored(id: string, name: string): boolean {
     const doc = readDocument(id)
@@ -213,5 +229,19 @@ export const useDocumentsStore = defineStore('documents', () => {
     return ok
   }
 
-  return { metas, currentId, status, isDemo, loadSeq, entries, init, flush, create, switchTo, rename, remove }
+  return {
+    metas,
+    currentId,
+    status,
+    isDemo,
+    loadSeq,
+    entries,
+    init,
+    flush,
+    create,
+    importDocument,
+    switchTo,
+    rename,
+    remove,
+  }
 })

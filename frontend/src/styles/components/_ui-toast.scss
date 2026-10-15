@@ -1,0 +1,41 @@
+// Стили общего компонента ui-toast: плашка инверсных цветов с текстом и кнопкой закрытия
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-toast {
+  display: flex;
+  gap: v.$space-12;
+  align-items: center;
+  max-width: v.$modal-compact-width;
+  padding: v.$space-10 v.$space-12 v.$space-10 v.$space-16;
+  font-size: v.$font-size-base;
+  color: var(--color-on-toast);
+  background: var(--color-toast);
+  border-radius: v.$radius-control;
+  box-shadow: var(--shadow-popover);
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__close {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: v.$control-height;
+    height: v.$control-height;
+    color: inherit;
+    cursor: pointer;
+    border-radius: v.$radius-control;
+    opacity: v.$toast-close-opacity;
+
+    @include mx.focus-ring;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

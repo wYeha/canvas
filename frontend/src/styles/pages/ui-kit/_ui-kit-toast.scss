@@ -1,0 +1,15 @@
+// Стили фрагмента ui-kit-toast: ряд кнопок и неподвижное место тоста внутри секции витрины
+@use 'variables' as v;
+
+.ui-kit-toast {
+  &__row {
+    display: flex;
+    gap: v.$space-8;
+  }
+
+  &__slot {
+    display: flex;
+    min-height: v.$control-height * 2;
+    margin-top: v.$space-12;
+  }
+}

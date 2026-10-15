@@ -1,0 +1,15 @@
+// Стили фрагмента canvas-toast: слой тостов снизу по центру над нижним тулбаром
+@use 'variables' as v;
+
+.canvas-toast {
+  position: fixed;
+  inset: auto 0 v.$toast-bottom;
+  z-index: v.$z-toast;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
+  &__item {
+    pointer-events: auto;
+  }
+}

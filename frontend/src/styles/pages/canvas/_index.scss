@@ -14,6 +14,7 @@
 @use 'components/ui-number-input';
 @use 'components/ui-segmented';
 @use 'components/ui-switch';
+@use 'components/ui-toast';
 @use 'canvas-page';
 @use 'canvas-header';
 @use 'canvas-docs-menu';
@@ -32,3 +33,4 @@
 @use 'canvas-toolbar';
 @use 'canvas-breadcrumbs';
 @use 'canvas-zoom';
+@use 'canvas-toast';

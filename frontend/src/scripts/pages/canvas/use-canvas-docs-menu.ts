@@ -14,12 +14,12 @@ import {
   DOCS_MENU_NEW_LABEL,
   DOCS_MENU_OPEN_FILE_LABEL,
   DOCS_MENU_SAVE_FILE_LABEL,
-  FILES_UNAVAILABLE_TITLE,
   RENAME_KEY,
 } from './documents-constants'
 import { formatDocumentMeta } from './documents-index'
 import { useDocumentsStore } from './documents-store'
 import type { DocsMenuItem } from './documents.types'
+import { useCanvasDocsFiles, type CanvasDocsFiles } from './use-canvas-docs-files'
 import { useLayoutStore } from './layout-store'
 
 /** Режим редактируемой строки: переименование (поле ввода) или подтверждение удаления. */
@@ -29,7 +29,8 @@ interface EditingRow {
 }
 
 /** Состояние меню документов для шаблона. */
-export interface CanvasDocsMenuState extends Omit<PopupList, 'anchor' | 'onListKeydown'> {
+export interface CanvasDocsMenuState
+  extends Omit<PopupList, 'anchor' | 'onListKeydown'>, Pick<CanvasDocsFiles, 'fileInput' | 'onFileChange'> {
   trigger: PopupList['anchor']
   menuId: string
   items: ComputedRef<DocsMenuItem[]>
@@ -49,24 +50,12 @@ export interface CanvasDocsMenuState extends Omit<PopupList, 'anchor' | 'onListK
   onListKeydown: (event: KeyboardEvent) => void
 }
 
-/** Действия внизу меню; «Открыть» и «Сохранить» в .json появятся в 5.5, поэтому пока недоступны. */
+/** Действия внизу меню: новый документ, открыть и сохранить .json. */
 function actionItems(): DocsMenuItem[] {
   return [
     { value: DOCS_ACTION_NEW, label: DOCS_MENU_NEW_LABEL, kind: 'action' },
-    {
-      value: DOCS_ACTION_OPEN_FILE,
-      label: DOCS_MENU_OPEN_FILE_LABEL,
-      kind: 'action',
-      disabled: true,
-      title: FILES_UNAVAILABLE_TITLE,
-    },
-    {
-      value: DOCS_ACTION_SAVE_FILE,
-      label: DOCS_MENU_SAVE_FILE_LABEL,
-      kind: 'action',
-      disabled: true,
-      title: FILES_UNAVAILABLE_TITLE,
-    },
+    { value: DOCS_ACTION_OPEN_FILE, label: DOCS_MENU_OPEN_FILE_LABEL, kind: 'action' },
+    { value: DOCS_ACTION_SAVE_FILE, label: DOCS_MENU_SAVE_FILE_LABEL, kind: 'action' },
   ]
 }
 
@@ -74,6 +63,7 @@ function actionItems(): DocsMenuItem[] {
 export function useCanvasDocsMenu(): CanvasDocsMenuState {
   const documents = useDocumentsStore()
   const layout = useLayoutStore()
+  const files = useCanvasDocsFiles()
   const menuId = ['canvas-docs-menu', useId()].join('-')
   const editing = ref<EditingRow | null>(null)
   const draft = ref('')
@@ -98,12 +88,20 @@ export function useCanvasDocsMenu(): CanvasDocsMenuState {
     return items.value.findIndex((item) => item.kind === 'doc' && item.value === id)
   }
 
-  /** Выбирает пункт: документ — переключиться, «Новый документ» — создать; в режиме правки строки игнорируется. */
+  /** Выполняет пункт: документ — переключиться, действие — по значению; `true`, если меню нужно закрыть. */
+  function runItem(item: DocsMenuItem): boolean {
+    if (item.kind === 'doc') return documents.switchTo(item.value)
+    if (item.value === DOCS_ACTION_OPEN_FILE) files.pickFile()
+    else if (item.value === DOCS_ACTION_SAVE_FILE) files.saveFile()
+    else return documents.create()
+    return true
+  }
+
+  /** Выбирает пункт меню; в режиме правки строки игнорируется. */
   function choose(index: number): void {
     const item = items.value[index]
     if (!item || item.disabled || editing.value !== null) return
-    const done = item.kind === 'doc' ? documents.switchTo(item.value) : documents.create()
-    if (done) popup.close(true)
+    if (runItem(item)) popup.close(true)
   }
 
   const popup = usePopupList({
@@ -265,5 +263,7 @@ export function useCanvasDocsMenu(): CanvasDocsMenuState {
     cancelEdit,
     confirmDelete,
     onListKeydown,
+    fileInput: files.fileInput,
+    onFileChange: files.onFileChange,
   }
 }

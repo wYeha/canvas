@@ -17,6 +17,7 @@
 @use 'components/ui-checkbox';
 @use 'components/ui-dropdown';
 @use 'components/ui-modal';
+@use 'components/ui-toast';
 @use 'ui-kit-page';
 @use 'ui-kit-section';
 @use 'ui-kit-buttons';
@@ -24,4 +25,5 @@
 @use 'ui-kit-selects';
 @use 'ui-kit-panel-parts';
 @use 'ui-kit-modal';
+@use 'ui-kit-toast';
 @use 'ui-kit-surfaces';
