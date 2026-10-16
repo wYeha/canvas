@@ -1,6 +1,6 @@
 /** Константы страницы canvas: значения по умолчанию для новых блоков, корневых блоков, документов и камеры. */
 import type { FlexContainer, GridContainer, LayoutTag } from '@shared'
-import type { Camera, Insets } from './camera'
+import type { Camera, Insets, Size } from './camera'
 
 /** Семантический тег нового блока. */
 export const DEFAULT_TAG: LayoutTag = 'div'
@@ -97,6 +97,9 @@ export const WHEEL_ZOOM_MAX_DELTA = 40
 /** Код основной (левой) кнопки мыши в `PointerEvent.button`. */
 export const PRIMARY_BUTTON = 0
 
+/** Бит основной кнопки в маске `PointerEvent.buttons`: кнопка сейчас зажата. */
+export const PRIMARY_BUTTON_MASK = 1
+
 /** Код средней кнопки мыши в `PointerEvent.button`. */
 export const MIDDLE_BUTTON = 1
 
@@ -171,6 +174,12 @@ export const DEMO_QUERY_PARAM = 'demo'
 
 /** Порог клика, экранные px: сдвиг указателя между нажатием и отпусканием больше порога — это перетаскивание. */
 export const CLICK_DRAG_THRESHOLD = 4
+
+/**
+ * Наибольший экранный размер призрака перетаскивания, px: крупный блок (страница 1440) уменьшается
+ * с сохранением пропорций, иначе призрак закрыл бы поле. Повторено в TOKENS.md.
+ */
+export const DRAG_GHOST_MAX_SIZE: Readonly<Size> = { width: 320, height: 200 }
 
 /** Имя атрибута, которым помечены элементы блоков и плашек связей: по нему ищется цель клика. */
 export const NODE_ID_ATTR = 'data-node-id'

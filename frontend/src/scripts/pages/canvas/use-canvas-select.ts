@@ -3,9 +3,10 @@
  * снимает выделение, движение указателя подсвечивает блок (и над строками панели «Слои»).
  * Клик, завершивший пан или со сдвигом больше порога, не считается. Двойной клик по подписи блока — переименование.
  */
-import { onBeforeUnmount, onMounted, type Ref } from 'vue'
+import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import { CLICK_DRAG_THRESHOLD, PRIMARY_BUTTON } from './constants'
 import type { CanvasPoint } from './factories'
+import { useDragStore } from './dnd/drag-store'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget } from './node-dom'
@@ -20,6 +21,7 @@ export function useCanvasSelect(
 ): void {
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
+  const dragStore = useDragStore()
   /** Указатель и точка нажатия, которое может стать кликом; `null` — клика не ждём. */
   let press: { pointerId: number; point: CanvasPoint } | null = null
 
@@ -55,7 +57,8 @@ export function useCanvasSelect(
    * Ховер строк обрабатывается здесь же, а не в самой строке: иначе этот обработчик сразу снимал бы подсветку.
    */
   function onPointerMove(e: PointerEvent): void {
-    if (isPanning()) return
+    // Во время перетаскивания указатель захвачен полем: цель события — viewport, ховер по ней был бы ложным
+    if (isPanning() || dragStore.isDragging) return
     layoutStore.hover(isSurface(e.target) ? nodeIdFromTarget(e.target) : layerIdFromTarget(e.target))
   }
 
@@ -68,6 +71,16 @@ export function useCanvasSelect(
   function onPointerLeave(): void {
     layoutStore.hover(null)
   }
+
+  // Нажатие, ставшее перетаскиванием, кликом уже не будет, даже если указатель вернётся к точке нажатия
+  // или перетаскивание отменят по Esc
+  watch(
+    () => dragStore.isDragging,
+    (dragging) => {
+      if (dragging) press = null
+    },
+    { flush: 'sync' },
+  )
 
   onMounted(() => {
     const el = viewportEl.value

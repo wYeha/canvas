@@ -239,6 +239,9 @@ $status-dot-size: 8px;
 $toolbar-divider-height: 20px;
 $zoom-value-width: 44px;
 $empty-leaf-min-height: 48px; // редакторский min-height пустого листа, в экспорт не идёт
+$drag-ghost-tilt: 2deg; // наклон призрака перетаскивания
+$drag-ghost-opacity: 0.9; // призрак перетаскивания
+$drag-source-opacity: 0.4; // перетаскиваемый блок на своём месте (пунктирный след)
 
 // Запас по высоте под нижние плашки: панели «Слои» и «Свойства» не заходят на них
 $floating-reserve: $panel-gap * 3 + $pill-height;

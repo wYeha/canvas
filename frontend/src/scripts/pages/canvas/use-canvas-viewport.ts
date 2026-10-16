@@ -1,6 +1,7 @@
 /**
  * Composable фрагмента CanvasViewport: template refs поля и слоя мира, колесо (пан и зум к курсору),
- * замер размера viewport, признак движения камеры, классы курсора и стили камеры для фона и слоя мира.
+ * замер размера viewport, признак движения камеры, классы курсора и стили камеры для фона и слоя мира;
+ * подключает пан, выделение и перетаскивание блоков.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -10,6 +11,8 @@ import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
+import { useDragStore } from './dnd/drag-store'
+import { useCanvasDnd } from './dnd/use-canvas-dnd'
 
 /** Подключает камеру к viewport: возвращает refs для шаблона, классы и динамические стили. */
 export function useCanvasViewport() {
@@ -37,7 +40,15 @@ export function useCanvasViewport() {
   }
 
   const { spaceHeld, panning } = useCanvasPan(viewportEl, isSurface)
-  useCanvasSelect(viewportEl, isSurface, () => spaceHeld.value || panning.value)
+  const dragStore = useDragStore()
+
+  /** Пробел зажат или идёт тяга поля: ЛКМ двигает поле, а не выделяет и не тянет блок. */
+  function isPanning(): boolean {
+    return spaceHeld.value || panning.value
+  }
+
+  useCanvasSelect(viewportEl, isSurface, isPanning)
+  useCanvasDnd(viewportEl, isSurface, isPanning)
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);
@@ -91,11 +102,12 @@ export function useCanvasViewport() {
     resizeObserver = null
   })
 
-  /** BEM-классы поля: курсор «рука» при зажатом пробеле и во время тяги. */
+  /** BEM-классы поля: курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока. */
   const classes = computed(() => ({
     'canvas-viewport': true,
     'canvas-viewport--pan-ready': spaceHeld.value && !panning.value,
     'canvas-viewport--panning': panning.value,
+    'canvas-viewport--dragging': dragStore.isDragging,
   }))
 
   /** BEM-классы слоя мира: `--moving` на время жеста камеры. */

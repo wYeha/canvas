@@ -49,6 +49,11 @@ export function blockClasses(block: BlockNode, depth: number, parentKind: Contai
   return classes
 }
 
+/** BEM-классы плашки связи. */
+export function linkClasses(): string[] {
+  return ['canvas-node', 'canvas-node--link']
+}
+
 /** Подпись блока без пробелов по краям; пустая строка, если подписи нет. */
 export function blockLabel(block: BlockNode): string {
   return block.label.trim()

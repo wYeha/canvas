@@ -14,6 +14,7 @@ import {
   type CameraCommand,
   type EditCommand,
 } from './camera-input'
+import { useDragStore } from './dnd/drag-store'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { useCanvasClipboard } from './use-canvas-clipboard'
@@ -34,6 +35,7 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
   const cameraStore = useCameraStore()
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
+  const dragStore = useDragStore()
   const { createBlock } = useCanvasCreate()
   const { run } = useCanvasPropsActions()
   const { copySelected, pasteClipboard, renameSelected } = useCanvasClipboard()
@@ -116,8 +118,9 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
 
   /** Сопоставляет клавишу команде; preventDefault блокирует браузерный зум на Ctrl+=/-/0. */
   function onKeyDown(e: KeyboardEvent): void {
-    // Пока открыт ввод подписи, клавиши канваса не работают (фокус и так в поле, это страховка на момент до фокуса)
-    if (isBlocked() || e.defaultPrevented || labelEdit.editingId !== null) return
+    // Пока открыт ввод подписи, клавиши канваса не работают (фокус и так в поле, это страховка на момент до фокуса).
+    // Во время перетаскивания тоже: удаление или отмена посреди жеста убрали бы перетаскиваемый блок (Esc ловит DnD).
+    if (isBlocked() || e.defaultPrevented || labelEdit.editingId !== null || dragStore.isDragging) return
     if (e.target instanceof HTMLElement && isEditableTarget(e.target)) return
     if (matchExportHotkey(e)) {
       // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска

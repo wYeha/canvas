@@ -104,4 +104,10 @@
       transparent v.$hatch-line v.$hatch-step
     );
   }
+
+  // Перетаскиваемый узел на своём месте: пунктирный след акцентом (после --link, чтобы перебить его обводку)
+  &--drag-source {
+    outline: 1px dashed var(--color-accent);
+    opacity: v.$drag-source-opacity;
+  }
 }

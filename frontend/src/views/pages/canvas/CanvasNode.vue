@@ -1,9 +1,9 @@
 <!-- Фрагмент страницы canvas: рекурсивный блок превью (раскладка из styleEntries, цвет по глубине, подпись) или заглушка связи -->
 <template>
-  <div v-if="view.kind === 'link'" class="canvas-node canvas-node--link" :data-node-id="node.id" :style="view.style">
+  <div v-if="view.kind === 'link'" :class="classes" :data-node-id="node.id" :style="view.style">
     {{ view.text }}
   </div>
-  <div v-else :class="view.classes" :data-node-id="node.id" :style="view.style">
+  <div v-else :class="classes" :data-node-id="node.id" :style="view.style">
     <span v-if="view.leaf" class="canvas-node__caption" :data-label-node-id="node.id">
       <span class="canvas-node__icon">{{ view.icon }}</span>
       <span v-if="view.label !== ''">{{ view.label }}</span>
@@ -22,7 +22,7 @@ import type { CanvasNodeProps } from '@/scripts/pages/canvas/canvas-node.types'
 import { useCanvasNode } from '@/scripts/pages/canvas/use-canvas-node'
 
 const props = defineProps<CanvasNodeProps>()
-const { view } = useCanvasNode(props)
+const { view, classes } = useCanvasNode(props)
 /** Вид контейнера этого узла: родитель для детей. */
 const kind = computed(() => (props.node.type === 'block' ? props.node.container.kind : null))
 </script>

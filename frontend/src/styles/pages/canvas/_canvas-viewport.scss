@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-viewport: поле с точечным фоном, слой мира камеры, подсказка по центру и курсоры пана
+// Стили фрагмента canvas-viewport: поле с точечным фоном, слой мира камеры, подсказка по центру, курсоры пана и перетаскивания
 @use 'variables' as v;
 
 .canvas-viewport {
@@ -43,6 +43,11 @@
   }
 
   &--panning {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  &--dragging {
     cursor: grabbing;
     user-select: none;
   }

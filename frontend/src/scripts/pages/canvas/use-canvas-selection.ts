@@ -7,6 +7,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { LayoutDocument, NodeId } from '@shared'
 import { useCameraStore } from './camera-store'
+import { useDragStore } from './dnd/drag-store'
 import { useLayoutStore } from './layout-store'
 import { clientRectOf, findNodeElement } from './node-dom'
 import { isBadgeInside, overlayRectStyle, selectionBadgeText, sizeText, toLocalRect, visibleHoverId } from './selection'
@@ -27,6 +28,7 @@ export function useCanvasSelection() {
   const cameraStore = useCameraStore()
   const { document: doc, selectedId, hoveredId } = storeToRefs(layoutStore)
   const { camera, rootHeights } = storeToRefs(cameraStore)
+  const dragStore = useDragStore()
   /** Элемент оверлея: его положение на странице — начало экранных координат. */
   const overlayEl = ref<HTMLElement | null>(null)
   /** Рамки для отрисовки: наведение, затем выделение. */
@@ -63,7 +65,8 @@ export function useCanvasSelection() {
   /** Пересчитывает рамки по текущему DOM. */
   function recompute(): void {
     const origin = overlayEl.value?.getBoundingClientRect()
-    if (origin === undefined) {
+    // Во время перетаскивания рамки скрыты: сплошная рамка выделения закрыла бы пунктирный след блока на месте
+    if (origin === undefined || dragStore.isDragging) {
       boxes.value = []
       return
     }
@@ -88,7 +91,7 @@ export function useCanvasSelection() {
 
   // Камера, документ, выделение и наведение: после обновления DOM и в том же кадре, чтобы рамка не отставала при пане.
   // Замеры корней — размеры блоков могли поменяться без смены документа.
-  watch([camera, doc, selectedId, hoveredId, rootHeights], recompute, { flush: 'post' })
+  watch([camera, doc, selectedId, hoveredId, rootHeights, () => dragStore.isDragging], recompute, { flush: 'post' })
 
   onMounted(() => {
     window.addEventListener('resize', schedule)
