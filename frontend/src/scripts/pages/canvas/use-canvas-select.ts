@@ -7,6 +7,7 @@ import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import { CLICK_DRAG_THRESHOLD, PRIMARY_BUTTON } from './constants'
 import type { CanvasPoint } from './factories'
 import { useDragStore } from './dnd/drag-store'
+import { isLayersDragging } from './layers-drag-state'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget, rootHandleIdFromTarget } from './node-dom'
@@ -60,7 +61,7 @@ export function useCanvasSelect(
    */
   function onPointerMove(e: PointerEvent): void {
     // Во время перетаскивания указатель захвачен полем: цель события — viewport, ховер по ней был бы ложным
-    if (isPanning() || dragStore.isDragging) return
+    if (isPanning() || dragStore.isDragging || isLayersDragging.value) return
     layoutStore.hover(isSurface(e.target) ? nodeIdFromTarget(e.target) : layerIdFromTarget(e.target))
   }
 
@@ -77,7 +78,7 @@ export function useCanvasSelect(
   // Нажатие, ставшее перетаскиванием, кликом уже не будет, даже если указатель вернётся к точке нажатия
   // или перетаскивание отменят по Esc
   watch(
-    () => dragStore.isDragging,
+    () => dragStore.isDragging || isLayersDragging.value,
     (dragging) => {
       if (dragging) press = null
     },

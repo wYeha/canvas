@@ -223,6 +223,21 @@ export const LAYER_COLLAPSE_LABEL = 'Свернуть'
 /** Подсказка кнопки сворачивания свёрнутой ветки в «Слоях». */
 export const LAYER_EXPAND_LABEL = 'Развернуть'
 
+/** Ширина колонки шеврона строки «Слоёв», px — как SCSS `$layer-toggle-width`. */
+export const LAYER_TOGGLE_WIDTH_PX = 18
+
+/** Отступ вложенного уровня в «Слоях», px — как SCSS `$layer-indent`. */
+export const LAYER_INDENT_PX = 12
+
+/** Верхняя граница зоны «до» в строке «Слоёв» (доля высоты строки). */
+export const LAYER_DROP_ZONE_BEFORE_RATIO = 1 / 3
+
+/** Нижняя граница зоны «внутрь» (доля высоты; ниже — зона «после»). */
+export const LAYER_DROP_ZONE_AFTER_RATIO = 2 / 3
+
+/** Толщина линии вставки в «Слоях», экранные px. */
+export const LAYER_DROP_LINE_WIDTH = DROP_INSERT_LINE_WIDTH
+
 /** Пустое состояние панели «Слои». */
 export const LAYERS_EMPTY_TEXT = 'Нет блоков'
 

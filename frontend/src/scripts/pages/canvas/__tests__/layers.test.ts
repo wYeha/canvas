@@ -80,6 +80,24 @@ describe('классы и подсказки строки', () => {
     ])
   })
 
+  it('модификаторы перетаскивания в «Слоях»', () => {
+    expect(
+      layerRowClasses({
+        root: false,
+        selected: false,
+        hovered: false,
+        dragSource: true,
+        dropInside: true,
+        dropForbidden: true,
+      }),
+    ).toEqual([
+      'canvas-layer-item__row',
+      'canvas-layer-item__row--drag-source',
+      'canvas-layer-item__row--drop-inside',
+      'canvas-layer-item__row--drop-forbidden',
+    ])
+  })
+
   it('шеврон и подсказка зависят от раскрытия', () => {
     expect(layerChevronClasses(true)).toEqual(['canvas-layer-item__chevron'])
     expect(layerChevronClasses(false)).toContain('canvas-layer-item__chevron--collapsed')

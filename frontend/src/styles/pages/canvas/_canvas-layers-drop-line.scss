@@ -1,0 +1,39 @@
+// Стили фрагмента canvas-layers-drop-line: линия вставки при перетаскивании в «Слоях»
+@use 'variables' as v;
+
+.canvas-layers-drop-line-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canvas-layers-drop-line {
+  position: absolute;
+  background: var(--color-accent);
+
+  &--horizontal {
+    &::before,
+    &::after {
+      position: absolute;
+      top: 50%;
+      width: v.$drop-insert-dot-size;
+      height: v.$drop-insert-dot-size;
+      content: '';
+      background: var(--color-accent);
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+
+    &::before {
+      left: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    &::after {
+      right: 0;
+      transform: translate(50%, -50%);
+    }
+  }
+}

@@ -15,6 +15,7 @@ import {
   type EditCommand,
 } from './camera-input'
 import { useDragStore } from './dnd/drag-store'
+import { isLayersDragging } from './layers-drag-state'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
 import { useCanvasClipboard } from './use-canvas-clipboard'
@@ -120,7 +121,14 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
   function onKeyDown(e: KeyboardEvent): void {
     // Пока открыт ввод подписи, клавиши канваса не работают (фокус и так в поле, это страховка на момент до фокуса).
     // Во время перетаскивания тоже: удаление или отмена посреди жеста убрали бы перетаскиваемый блок (Esc ловит DnD).
-    if (isBlocked() || e.defaultPrevented || labelEdit.editingId !== null || dragStore.isDragging) return
+    if (
+      isBlocked() ||
+      e.defaultPrevented ||
+      labelEdit.editingId !== null ||
+      dragStore.isDragging ||
+      isLayersDragging.value
+    )
+      return
     if (e.target instanceof HTMLElement && isEditableTarget(e.target)) return
     if (matchExportHotkey(e)) {
       // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска

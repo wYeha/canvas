@@ -26,6 +26,8 @@
 @use 'canvas-root';
 @use 'canvas-node';
 @use 'canvas-layers';
+@use 'canvas-layers-drop-line';
+@use 'canvas-layers-drag-ghost';
 @use 'canvas-layer-item';
 @use 'canvas-props';
 @use 'canvas-props-preview';

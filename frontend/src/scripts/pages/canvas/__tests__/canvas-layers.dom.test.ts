@@ -5,7 +5,9 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
+import { isLayersDragging, resetLayersDragState } from '@/scripts/pages/canvas/layers-drag-state'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
+import { childIds } from '@/scripts/pages/canvas/__tests__/tree-fixture'
 import CanvasLayers from '@/views/pages/canvas/CanvasLayers.vue'
 import { makeDoc } from './tree-fixture'
 
@@ -13,6 +15,7 @@ let mounted: VueWrapper | null = null
 
 /** Монтирует панель; `withDoc` — загрузить документ фикстуры. */
 function setup(withDoc = true): VueWrapper {
+  resetLayersDragState()
   const pinia = createPinia()
   setActivePinia(pinia)
   if (withDoc) useLayoutStore().loadDocument(makeDoc())
@@ -30,9 +33,36 @@ function row(wrapper: VueWrapper, id: string) {
   return wrapper.find(`[data-layer-id="${id}"]`)
 }
 
+/** Подменяет хит-тест: `document.elementFromPoint` в любой точке возвращает `el`. */
+function hitAt(el: Element | null): void {
+  /** Хит-тест-заглушка. */
+  function elementFromPoint(): Element | null {
+    return el
+  }
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: elementFromPoint })
+}
+
+/** Отправляет pointer-событие ЛКМ в точке (x, y). */
+function pointer(target: Element, type: string, x: number, y: number, pressed = type !== 'pointerup'): void {
+  const buttons = pressed ? 1 : 0
+  const init = { bubbles: true, cancelable: true, button: 0, buttons, pointerId: 1, isPrimary: true }
+  target.dispatchEvent(new PointerEvent(type, { ...init, clientX: x, clientY: y }))
+}
+
+/** Задаёт прямоугольник элемента на странице. */
+function stubRect(el: Element, x: number, y: number, width: number, height: number): void {
+  /** Замер-заглушка. */
+  function getBoundingClientRect(): DOMRect {
+    return new DOMRect(x, y, width, height)
+  }
+  el.getBoundingClientRect = getBoundingClientRect
+}
+
 afterEach(() => {
   mounted?.unmount()
   mounted = null
+  resetLayersDragState()
+  Reflect.deleteProperty(document, 'elementFromPoint')
 })
 
 describe('CanvasLayers', () => {
@@ -168,5 +198,66 @@ describe('CanvasLayers: ввод в строке и сворачивание (р
     useLayoutStore().select('a1')
     await wrapper.vm.$nextTick()
     expect(useLabelEditStore().renamePlaceFor('a1')).toBe('canvas')
+  })
+})
+
+describe('CanvasLayers: перетаскивание (7.7)', () => {
+  it('меняет порядок детей, Esc — нет', async () => {
+    const wrapper = setup()
+    const list = wrapper.get('.canvas-layers__list').element
+    const a2Row = row(wrapper, 'a2').element
+    const a1Row = row(wrapper, 'a1').element
+    stubRect(a2Row, 40, 100, 200, 30)
+    stubRect(a1Row, 40, 60, 200, 30)
+    hitAt(a1Row)
+    pointer(a2Row, 'pointerdown', 100, 115)
+    pointer(list, 'pointermove', 108, 123)
+    pointer(list, 'pointermove', 100, 64)
+    await wrapper.vm.$nextTick()
+    expect(isLayersDragging.value).toBe(true)
+    pointer(list, 'pointerup', 100, 64)
+    await wrapper.vm.$nextTick()
+    expect(isLayersDragging.value).toBe(false)
+    expect(childIds(useLayoutStore().document.roots[0]?.node)).toEqual(['a2', 'a1', 'linkB'])
+    const beforeEsc = childIds(useLayoutStore().document.roots[0]?.node)
+    pointer(a2Row, 'pointerdown', 100, 115)
+    pointer(list, 'pointermove', 108, 123)
+    pointer(list, 'pointermove', 100, 64)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true }))
+    await wrapper.vm.$nextTick()
+    expect(childIds(useLayoutStore().document.roots[0]?.node)).toEqual(beforeEsc)
+  })
+
+  it('меняет порядок корней', async () => {
+    const wrapper = setup()
+    const list = wrapper.get('.canvas-layers__list').element
+    const cRow = row(wrapper, 'C').element
+    const aRow = row(wrapper, 'A').element
+    stubRect(cRow, 40, 280, 200, 30)
+    stubRect(aRow, 40, 40, 200, 30)
+    hitAt(aRow)
+    pointer(cRow, 'pointerdown', 100, 295)
+    pointer(list, 'pointermove', 108, 303)
+    pointer(list, 'pointermove', 100, 44)
+    pointer(list, 'pointerup', 100, 44)
+    await wrapper.vm.$nextTick()
+    expect(useLayoutStore().document.roots.map((r) => r.node.id)).toEqual(['C', 'A', 'B'])
+  })
+
+  it('нельзя отпустить на потомка — документ тот же', async () => {
+    const wrapper = setup()
+    const docBefore = useLayoutStore().document
+    const list = wrapper.get('.canvas-layers__list').element
+    const a1Row = row(wrapper, 'A').element
+    const a1xRow = row(wrapper, 'a1x').element
+    stubRect(a1Row, 40, 40, 200, 30)
+    stubRect(a1xRow, 52, 160, 180, 30)
+    hitAt(a1xRow)
+    pointer(a1Row, 'pointerdown', 100, 55)
+    pointer(list, 'pointermove', 108, 63)
+    pointer(list, 'pointermove', 100, 168)
+    pointer(list, 'pointerup', 100, 168)
+    await wrapper.vm.$nextTick()
+    expect(useLayoutStore().document).toBe(docBefore)
   })
 })

@@ -30,6 +30,20 @@
         color: var(--color-accent-text);
       }
     }
+
+    &--drag-source {
+      outline: 1px dashed var(--color-accent);
+      opacity: v.$drag-source-opacity;
+    }
+
+    &--drop-inside {
+      outline: 1px dashed var(--color-accent);
+      background-color: color-mix(in srgb, var(--color-accent) calc(var(--alpha-drop-fill) * 100%), transparent);
+    }
+
+    &--drop-forbidden {
+      opacity: v.$drag-source-opacity;
+    }
   }
 
   &__toggle,

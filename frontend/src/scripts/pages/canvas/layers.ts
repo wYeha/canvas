@@ -11,6 +11,12 @@ export interface LayerRowState {
   root: boolean
   selected: boolean
   hovered: boolean
+  /** Перетаскиваемая строка (пунктирный след). */
+  dragSource?: boolean
+  /** Подсветка приёмника «внутрь». */
+  dropInside?: boolean
+  /** Строка недоступна для отпускания (себя или потомок). */
+  dropForbidden?: boolean
 }
 
 /** Значок строки: `flex` / `grid` у блока, `link` у плашки связи. */
@@ -55,6 +61,9 @@ export function layerRowClasses(state: LayerRowState): string[] {
   if (state.root) classes.push('canvas-layer-item__row--root')
   if (state.selected) classes.push('canvas-layer-item__row--selected')
   else if (state.hovered) classes.push('canvas-layer-item__row--hovered')
+  if (state.dragSource) classes.push('canvas-layer-item__row--drag-source')
+  if (state.dropInside) classes.push('canvas-layer-item__row--drop-inside')
+  if (state.dropForbidden) classes.push('canvas-layer-item__row--drop-forbidden')
   return classes
 }
 

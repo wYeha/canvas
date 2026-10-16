@@ -1,0 +1,68 @@
+// Стили фрагмента canvas-layers-drag-ghost: призрак перетаскиваемой строки в «Слоях»
+@use 'variables' as v;
+
+.canvas-layers-drag-ghost-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.canvas-layers-drag-ghost {
+  position: absolute;
+  display: flex;
+  gap: v.$space-6;
+  align-items: center;
+  min-width: 0;
+  height: v.$segment-height;
+  padding-right: v.$space-6;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  background: var(--color-paper);
+  border-radius: v.$radius-segment;
+  outline: 1px solid var(--color-border);
+  outline-offset: -1px;
+  box-shadow: var(--shadow-popover);
+  opacity: v.$drag-ghost-opacity;
+  transform: rotate(v.$drag-ghost-tilt);
+
+  &--denied {
+    outline-color: var(--color-danger);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: v.$font-size-lg;
+      color: var(--color-danger);
+      content: '⊘';
+      background: color-mix(in srgb, var(--color-danger-soft) 55%, transparent);
+    }
+  }
+
+  &__icon {
+    flex: none;
+    margin-left: v.$layer-toggle-width;
+    color: var(--color-muted);
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: v.$font-size-sm;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__type {
+    flex: none;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-2xs;
+    color: var(--color-muted);
+  }
+}

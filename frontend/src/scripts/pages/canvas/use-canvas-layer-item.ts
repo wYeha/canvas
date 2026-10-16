@@ -18,7 +18,8 @@ import {
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
 import { nodeTypeLabel } from './selection'
-import { CANVAS_LAYERS_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
+import { CANVAS_LAYERS_CONTEXT, LAYERS_DND_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
+import { skipLayersClickAfterDrag } from './use-canvas-layers-dnd'
 import { useCanvasLayerRename, type CanvasLayerRenameState } from './use-canvas-layer-rename'
 
 /** Вид строки слоя для шаблона. */
@@ -54,6 +55,7 @@ function injectLayersContext(): CanvasLayersContext {
 /** Собирает вид строки; `rowEl` — ref строки для прокрутки к выделенной и для поля переименования. */
 export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLElement | null>): CanvasLayerItemState {
   const context = injectLayersContext()
+  const dnd = inject(LAYERS_DND_CONTEXT, null)
   const store = useLayoutStore()
   const { renaming, ...rename } = useCanvasLayerRename(() => props.node, rowEl)
 
@@ -71,7 +73,14 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
   /** Вид строки: всё, что нужно шаблону. */
   const view = computed<LayerItemView>(() => {
     const { node, depth } = props
-    const state = { root: depth === 0, selected: selected.value, hovered: hovered.value }
+    const state = {
+      root: depth === 0,
+      selected: selected.value,
+      hovered: hovered.value,
+      dragSource: dnd?.isDragSource(node.id) ?? false,
+      dropInside: dnd?.isDropInside(node.id) ?? false,
+      dropForbidden: dnd?.isRowForbidden(node.id) ?? false,
+    }
     return {
       rowClasses: layerRowClasses(state),
       chevronClasses: layerChevronClasses(expanded.value),
@@ -103,6 +112,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
 
   /** Клик по строке: выделение, у корня — ещё и центрирование. */
   function activate(): void {
+    if (skipLayersClickAfterDrag()) return
     context.activate(props.node.id)
   }
 
