@@ -38,6 +38,15 @@ function nodeEl(wrapper: VueWrapper, id: string): Element {
   return wrapper.get(`[data-node-id="${id}"]`).element
 }
 
+/** Подменяет замер элемента: прямоугольник на странице с левым верхним углом (x, y) заданного размера. */
+function stubRect(el: Element, x: number, y: number, width: number, height: number): void {
+  /** Замер-заглушка. */
+  function getBoundingClientRect(): DOMRect {
+    return new DOMRect(x, y, width, height)
+  }
+  el.getBoundingClientRect = getBoundingClientRect
+}
+
 /** Отправляет событие указателя основной кнопки в точке (x, y); `pressed` — зажата ли кнопка (маска `buttons`). */
 function pointer(target: Element, type: string, x: number, y: number, pressed = type !== 'pointerup'): void {
   const buttons = pressed ? 1 : 0
@@ -236,7 +245,7 @@ describe('поиск приёмника', () => {
     const wrapper = setup()
     hitAt(nodeEl(wrapper, 'c1'))
     await pressAndMove(wrapper, 'a2', 20, 0)
-    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'c1' })
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'c1', index: 0 })
     hitAt(wrapper.element)
     pointer(wrapper.element, 'pointermove', 50, 50)
     expect(useDragStore().dropTarget).toEqual({ kind: 'canvas' })
@@ -259,7 +268,8 @@ describe('поиск приёмника', () => {
     const wrapper = setup()
     hitAt(wrapper.get('[data-label-node-id="C"]').element)
     await pressAndMove(wrapper, 'a2', 20, 0)
-    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'C' })
+    // В happy-dom замер c1 нулевой: точка (30, 10) правее его середины — после него
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'C', index: 1 })
   })
 
   it('смена камеры без движения мыши пересчитывает приёмник', async () => {
@@ -270,7 +280,7 @@ describe('поиск приёмника', () => {
     hitAt(nodeEl(wrapper, 'b1'))
     useCameraStore().panBy(10, 0)
     await wrapper.vm.$nextTick()
-    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'b1' })
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'b1', index: 0 })
   })
 
   it('Esc сбрасывает приёмник, документ не меняется', async () => {
@@ -286,18 +296,9 @@ describe('поиск приёмника', () => {
 })
 
 describe('отпускание над пустым полем', () => {
-  /** Подменяет замер элемента узла: прямоугольник на странице от (0, 0) заданного размера. */
-  function stubRect(el: Element, width: number, height: number): void {
-    /** Замер-заглушка. */
-    function getBoundingClientRect(): DOMRect {
-      return new DOMRect(0, 0, width, height)
-    }
-    el.getBoundingClientRect = getBoundingClientRect
-  }
-
   it('вложенный блок становится корнем: точка по захвату, ширина как на экране, один шаг истории', async () => {
     const wrapper = setup()
-    stubRect(nodeEl(wrapper, 'a2'), 200, 50)
+    stubRect(nodeEl(wrapper, 'a2'), 0, 0, 200, 50)
     hitAt(wrapper.element)
     await pressAndMove(wrapper, 'a2', 20, 0)
     pointer(wrapper.element, 'pointerup', 110, 60)
@@ -348,6 +349,65 @@ describe('отпускание над пустым полем', () => {
     hitAt(nodeEl(wrapper, 'c1'))
     await pressAndMove(wrapper, 'a2', 20, 0)
     pointer(wrapper.element, 'pointerup', 40, 40)
+    expect(useLayoutStore().document).toBe(before)
+  })
+})
+
+describe('индекс вставки во flex', () => {
+  /** Ставит детей корня A (flex row) в линию: a1, a2, linkB по x 0/100/200, каждый 100×40. */
+  function layoutA(wrapper: VueWrapper): void {
+    stubRect(nodeEl(wrapper, 'a1'), 0, 0, 100, 40)
+    stubRect(nodeEl(wrapper, 'a2'), 100, 0, 100, 40)
+    stubRect(nodeEl(wrapper, 'linkB'), 200, 0, 100, 40)
+  }
+
+  it('узел из другого корня над областью A — индекс по серединам детей, смена индекса заменяет цель', async () => {
+    const wrapper = setup()
+    layoutA(wrapper)
+    hitAt(nodeEl(wrapper, 'A'))
+    await pressAndMove(wrapper, 'c1', 110, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 1 })
+    const first = useDragStore().dropTarget
+    pointer(wrapper.element, 'pointermove', 130, 10)
+    expect(useDragStore().dropTarget).toBe(first)
+    pointer(wrapper.element, 'pointermove', 260, 10)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 3 })
+  })
+
+  it('над собственным следом — «на место»; отпускание документ не меняет', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    layoutA(wrapper)
+    hitAt(nodeEl(wrapper, 'a2'))
+    await pressAndMove(wrapper, 'a2', 140, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 2 })
+    pointer(wrapper.element, 'pointerup', 150, 10)
+    expect(useLayoutStore().document).toBe(before)
+  })
+
+  it('над grid-блоком позиция не считается', async () => {
+    const wrapper = setup()
+    hitAt(nodeEl(wrapper, 'a1'))
+    await pressAndMove(wrapper, 'c1', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: null })
+  })
+
+  it('над пустым flex-блоком — 0', async () => {
+    const wrapper = setup()
+    hitAt(nodeEl(wrapper, 'b1'))
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'b1', index: 0 })
+  })
+
+  it('отпускание над flex-блоком с индексом документ не меняет (перенос — позже)', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    layoutA(wrapper)
+    hitAt(nodeEl(wrapper, 'A'))
+    await pressAndMove(wrapper, 'c1', 110, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 1 })
+    pointer(wrapper.element, 'pointerup', 120, 10)
+    expect(useDragStore().isDragging).toBe(false)
     expect(useLayoutStore().document).toBe(before)
   })
 })

@@ -61,12 +61,23 @@ describe('useDragStore: приёмник', () => {
   it('равная цель не заменяет объект: читатели не будятся', () => {
     const store = useDragStore()
     store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
-    store.setDropTarget({ kind: 'block', id: 'b1' })
+    store.setDropTarget({ kind: 'block', id: 'b1', index: null })
     const first = store.dropTarget
-    store.setDropTarget({ kind: 'block', id: 'b1' })
+    store.setDropTarget({ kind: 'block', id: 'b1', index: null })
     expect(store.dropTarget).toBe(first)
     store.setDropTarget({ kind: 'canvas' })
     expect(store.dropTarget).toEqual({ kind: 'canvas' })
+  })
+
+  it('тот же блок с другой позицией вставки заменяет цель, с той же — нет', () => {
+    const store = useDragStore()
+    store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
+    store.setDropTarget({ kind: 'block', id: 'A', index: 1 })
+    const first = store.dropTarget
+    store.setDropTarget({ kind: 'block', id: 'A', index: 1 })
+    expect(store.dropTarget).toBe(first)
+    store.setDropTarget({ kind: 'block', id: 'A', index: 2 })
+    expect(store.dropTarget).toEqual({ kind: 'block', id: 'A', index: 2 })
   })
 
   it('«нельзя» — только при перетаскивании узла без приёмника', () => {

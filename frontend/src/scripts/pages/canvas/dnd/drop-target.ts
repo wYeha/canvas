@@ -8,8 +8,12 @@ import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { canMoveNode } from '@/scripts/pages/canvas/tree-move'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
 
-/** Куда сейчас упадёт перетаскиваемый узел: в блок или на пустое поле; `null` — некуда (или нельзя). */
-export type DropTarget = { kind: 'block'; id: NodeId } | { kind: 'canvas' }
+/**
+ * Куда сейчас упадёт перетаскиваемый узел: в блок или на пустое поле; `null` — некуда (или нельзя).
+ * У блока `index` — позиция вставки среди его детей (как индекс цели `child` у `moveNode`, до изъятия узла);
+ * `null` — позиция не считается (grid, блок не отрисован).
+ */
+export type DropTarget = { kind: 'block'; id: NodeId; index: number | null } | { kind: 'canvas' }
 
 /**
  * Что под курсором: цепочка id помеченных узлов (самый глубокий первым, корень последним; `[]` — пустое поле);
@@ -38,21 +42,22 @@ function firstBlockId(doc: LayoutDocument, chain: NodeId[]): NodeId | null {
  * Приёмник для узла `draggedId` под курсором `hit`. Блок под курсором (в том числе в другом корне или его заголовок)
  * — приёмник, если в него можно вложить узел; иначе — `null` (подниматься к предкам бессмысленно: отказ из-за
  * самого узла). Блоков в цепочке нет — пустое поле, если узел может стать корнем.
+ * Позицию вставки (`index`) здесь не знают — она по DOM, её дополняет вызывающий; тут всегда `null`.
  */
 export function resolveDropTarget(doc: LayoutDocument, draggedId: NodeId, hit: DropHit): DropTarget | null {
   if (hit === null) return null
   const blockId = firstBlockId(doc, chainOutsideDragged(hit.chain, draggedId))
   if (blockId !== null) {
     const error = canMoveNode(doc, draggedId, { type: 'child', parentId: blockId, index: 0 })
-    return error === null ? { kind: 'block', id: blockId } : null
+    return error === null ? { kind: 'block', id: blockId, index: null } : null
   }
   const error = canMoveNode(doc, draggedId, { type: 'canvas', at: CANVAS_PROBE_POINT })
   return error === null ? { kind: 'canvas' } : null
 }
 
-/** `true`, если цели одинаковы (оба `null`, оба поле или один и тот же блок). */
+/** `true`, если цели одинаковы (оба `null`, оба поле или один и тот же блок с той же позицией вставки). */
 export function sameDropTarget(a: DropTarget | null, b: DropTarget | null): boolean {
   if (a === null || b === null) return a === b
-  if (a.kind === 'block' && b.kind === 'block') return a.id === b.id
+  if (a.kind === 'block' && b.kind === 'block') return a.id === b.id && a.index === b.index
   return a.kind === b.kind
 }

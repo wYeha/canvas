@@ -1,7 +1,8 @@
 /**
  * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок корня, строка «Слоёв» под курсором,
  * элемент и цепочка узлов под точкой (поиск приёмника при перетаскивании),
- * измерение прямоугольников узлов и прокрутка строки в видимую часть панели.
+ * измерение прямоугольников узлов (в том числе прямых детей приёмника для позиции вставки)
+ * и прокрутка строки в видимую часть панели.
  * DOM трогаем только здесь (правила: прямая работа с DOM — в scripts/).
  * Оверлеи поверх поля (призрак, выделение, будущие линия вставки и рамка приёмника) обязаны иметь
  * `pointer-events: none`: иначе `elementAtPoint` попадёт в них, а не в блок под курсором.
@@ -103,6 +104,25 @@ export function findNodeElement(id: string): Element | null {
 export function clientRectOf(el: Element): Rect {
   const r = el.getBoundingClientRect()
   return { x: r.left, y: r.top, width: r.width, height: r.height }
+}
+
+/**
+ * Прямоугольники прямых детей блока `parentId` в координатах страницы, в порядке `childIds` из документа
+ * (`null` — ребёнок не отрисован); `null` — нет элемента блока. Порядок берётся из документа, а не из DOM:
+ * между сменой документа и перерисовкой они могут на кадр разойтись. Чип и подпись без `data-node-id` пропускаются.
+ */
+export function measureChildClientRects(parentId: string, childIds: readonly string[]): (Rect | null)[] | null {
+  const parent = findNodeElement(parentId)
+  if (parent === null) return null
+  const byId = new Map<string, Element>()
+  for (const el of Array.from(parent.children)) {
+    const id = el.getAttribute(NODE_ID_ATTR)
+    if (id !== null) byId.set(id, el)
+  }
+  return childIds.map((id) => {
+    const el = byId.get(id)
+    return el === undefined ? null : clientRectOf(el)
+  })
 }
 
 /** Прямоугольник узла в координатах поля (`getBoundingClientRect` минус начало слоя мира, делённое на зум). */

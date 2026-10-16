@@ -181,6 +181,12 @@ export const CLICK_DRAG_THRESHOLD = 4
  */
 export const DRAG_GHOST_MAX_SIZE: Readonly<Size> = { width: 320, height: 200 }
 
+/**
+ * Допуск разбиения детей flex-блока с переносом на линии, экранные px: ребёнок начинает новую линию, только если
+ * начинается раньше конца предыдущего больше чем на допуск (субпиксельные погрешности замера — не перенос).
+ */
+export const FLEX_LINE_EPSILON = 1
+
 /** Имя атрибута, которым помечены элементы блоков и плашек связей: по нему ищется цель клика. */
 export const NODE_ID_ATTR = 'data-node-id'
 
