@@ -1,9 +1,14 @@
 /**
  * Чистая геометрия перетаскивания на канвасе: порог старта, перевод точек страницы в координаты viewport,
- * точка захвата узла, экранный прямоугольник призрака и новая точка перемещаемого корня с учётом камеры. Без Vue и DOM.
+ * точка захвата узла, экранный прямоугольник призрака, новая точка перемещаемого корня с учётом камеры
+ * и цель переноса узла на пустое поле. Без Vue и DOM.
  */
 import { screenToWorld, type Camera, type Rect, type Size } from '@/scripts/pages/canvas/camera'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
+import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
+
+/** Перенос на поле корнем (цель `moveNode`). */
+export type CanvasMove = Extract<MoveTarget, { type: 'canvas' }>
 
 /**
  * Захват узла в начале перетаскивания, в координатах поля: смещение точки захвата от левого верхнего угла
@@ -67,6 +72,16 @@ export function rootGrabOffset(pressWorld: CanvasPoint, rootAt: CanvasPoint): Ca
 export function rootDragPosition(offset: CanvasPoint, pointer: CanvasPoint, camera: Camera): CanvasPoint {
   const world = screenToWorld(camera, pointer)
   return { x: Math.round(world.x - offset.x), y: Math.round(world.y - offset.y) }
+}
+
+/**
+ * Цель переноса узла на пустое поле: точка такая, что под указателем остаётся точка захвата в натуральную величину
+ * (как у корня, а не по уменьшенному призраку). Вложенный блок сохраняет ширину, видимую на экране (округлённую;
+ * `0` — не замерилась, `moveNode` возьмёт ширину корня-источника); корень свою ширину не меняет.
+ */
+export function canvasMoveTarget(grab: DragGrab, pointer: CanvasPoint, camera: Camera, isRoot: boolean): CanvasMove {
+  const at = rootDragPosition(grab.offset, pointer, camera)
+  return isRoot ? { type: 'canvas', at } : { type: 'canvas', at, width: Math.round(grab.size.width) }
 }
 
 /**

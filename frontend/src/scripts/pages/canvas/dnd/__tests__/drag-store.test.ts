@@ -1,4 +1,4 @@
-/** Тесты хранилища перетаскивания: начало, движение указателя, завершение, предпросмотр перемещаемого корня. */
+/** Тесты хранилища перетаскивания: начало, движение указателя, завершение, предпросмотр перемещаемого корня, приёмник. */
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
@@ -54,5 +54,40 @@ describe('useDragStore', () => {
     expect(store.rootPosition).toEqual({ x: 90, y: 120 })
     camera.camera = { x: 100, y: 50, zoom: 1 }
     expect(store.rootPosition).toEqual({ x: 190, y: 220 })
+  })
+})
+
+describe('useDragStore: приёмник', () => {
+  it('равная цель не заменяет объект: читатели не будятся', () => {
+    const store = useDragStore()
+    store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
+    store.setDropTarget({ kind: 'block', id: 'b1' })
+    const first = store.dropTarget
+    store.setDropTarget({ kind: 'block', id: 'b1' })
+    expect(store.dropTarget).toBe(first)
+    store.setDropTarget({ kind: 'canvas' })
+    expect(store.dropTarget).toEqual({ kind: 'canvas' })
+  })
+
+  it('«нельзя» — только при перетаскивании узла без приёмника', () => {
+    const store = useDragStore()
+    expect(store.dropDenied).toBe(false)
+    store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
+    expect(store.dropDenied).toBe(true)
+    store.setDropTarget({ kind: 'canvas' })
+    expect(store.dropDenied).toBe(false)
+    store.begin({ kind: 'root', nodeId: 'A', offset: { x: 0, y: 0 }, pointer: { x: 0, y: 0 } })
+    expect(store.dropDenied).toBe(false)
+  })
+
+  it('begin и end сбрасывают приёмник', () => {
+    const store = useDragStore()
+    store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
+    store.setDropTarget({ kind: 'canvas' })
+    store.begin({ kind: 'node', nodeId: 'a2', grab, pointer: { x: 0, y: 0 } })
+    expect(store.dropTarget).toBeNull()
+    store.setDropTarget({ kind: 'canvas' })
+    store.end()
+    expect(store.dropTarget).toBeNull()
   })
 })

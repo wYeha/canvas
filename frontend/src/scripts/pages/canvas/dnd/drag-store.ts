@@ -1,7 +1,7 @@
 /**
- * Pinia-хранилище перетаскивания на канвасе: что тянут (узел или корень за заголовок), точка захвата и положение указателя.
- * Его читают узлы (след на месте), корни (предпросмотр новой точки), призрак, viewport (курсор), оверлей выделения
- * и хоткеи (блокировка на время перетаскивания).
+ * Pinia-хранилище перетаскивания на канвасе: что тянут (узел или корень за заголовок), точка захвата, положение указателя
+ * и приёмник под курсором. Его читают узлы (след на месте), корни (предпросмотр новой точки), призрак,
+ * viewport (курсор, в том числе «нельзя»), оверлей выделения и хоткеи (блокировка на время перетаскивания).
  */
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
@@ -9,6 +9,7 @@ import type { NodeId } from '@shared'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { rootDragPosition, type DragGrab } from './dnd-geometry'
+import { sameDropTarget, type DropTarget } from './drop-target'
 
 /** Перетаскивание узла: захват в координатах поля, указатель в экранных координатах viewport. */
 export interface NodeDragSession {
@@ -50,9 +51,24 @@ export const useDragStore = defineStore('drag', () => {
     return rootDragPosition(current.offset, current.pointer, cameraStore.camera)
   })
 
-  /** Начинает перетаскивание (предыдущее, если было, заменяется). */
+  /**
+   * Приёмник под курсором для перетаскиваемого узла; `null` — некуда или нельзя. Без точки отпускания:
+   * она меняется на каждое движение и будила бы всех читателей; точку считают при отпускании.
+   */
+  const dropTarget = ref<DropTarget | null>(null)
+
+  /** Тянут узел, а отпустить некуда: курсор «нельзя». Булев — меняется только на границах. */
+  const dropDenied = computed<boolean>(() => session.value?.kind === 'node' && dropTarget.value === null)
+
+  /** Начинает перетаскивание (предыдущее, если было, заменяется); приёмник сбрасывается. */
   function begin(next: DragSession): void {
     session.value = { ...next, pointer: { ...next.pointer } }
+    dropTarget.value = null
+  }
+
+  /** Запоминает приёмник, только если он изменился: движение внутри одного блока стор не трогает. */
+  function setDropTarget(next: DropTarget | null): void {
+    if (!sameDropTarget(dropTarget.value, next)) dropTarget.value = next
   }
 
   /** Обновляет положение указателя; без перетаскивания ничего не делает. */
@@ -64,7 +80,20 @@ export const useDragStore = defineStore('drag', () => {
   /** Завершает перетаскивание (и отпусканием, и отменой). */
   function end(): void {
     session.value = null
+    dropTarget.value = null
   }
 
-  return { session, draggingId, movingRootId, isDragging, rootPosition, begin, movePointer, end }
+  return {
+    session,
+    draggingId,
+    movingRootId,
+    isDragging,
+    rootPosition,
+    dropTarget,
+    dropDenied,
+    begin,
+    movePointer,
+    setDropTarget,
+    end,
+  }
 })

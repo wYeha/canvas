@@ -102,12 +102,13 @@ export function useCanvasViewport() {
     resizeObserver = null
   })
 
-  /** BEM-классы поля: курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока. */
+  /** BEM-классы поля: курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока, «нельзя» без приёмника. */
   const classes = computed(() => ({
     'canvas-viewport': true,
     'canvas-viewport--pan-ready': spaceHeld.value && !panning.value,
     'canvas-viewport--panning': panning.value,
     'canvas-viewport--dragging': dragStore.isDragging,
+    'canvas-viewport--drop-denied': dragStore.dropDenied,
   }))
 
   /** BEM-классы слоя мира: `--moving` на время жеста камеры. */

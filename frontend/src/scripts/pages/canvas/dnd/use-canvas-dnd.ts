@@ -1,8 +1,9 @@
 /**
  * Composable перетаскивания на канвасе (pointer events, без библиотек): нажатие ЛКМ на блоке или на заголовке корня,
  * старт после порога, захват указателя, движение (призрак узла или предпросмотр корня), отпускание и отмена
- * (Esc, потеря захвата, уход со страницы). Корень при отпускании переезжает в новую точку поля;
- * поиск приёмника и перенос узла — следующие итерации.
+ * (Esc, потеря захвата, уход со страницы). Корень за заголовок при отпускании переезжает в новую точку поля;
+ * для узла ищется приёмник под курсором (`use-drop-target.ts`), над пустым полем узел становится корнем.
+ * Перенос внутрь блока — следующие итерации.
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import type { NodeId } from '@shared'
@@ -24,8 +25,10 @@ import {
   rootHandleIdFromTarget,
 } from '@/scripts/pages/canvas/node-dom'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
+import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
 import { createGrab, isDragStart, rootGrabOffset, toViewportPoint } from './dnd-geometry'
 import { useDragStore, type DragSession } from './drag-store'
+import { useDropTarget } from './use-drop-target'
 
 /** Нажатие ЛКМ на блоке (`node`) или на заголовке корня (`root`), которое ещё может стать перетаскиванием. */
 interface PendingPress {
@@ -45,6 +48,7 @@ export function useCanvasDnd(
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
   const labelEdit = useLabelEditStore()
+  const { refreshTarget, nodeDropMove } = useDropTarget(isSurface)
   /** Нажатие до порога; `null` — не ждём. */
   let pending: PendingPress | null = null
   /** Указатель идущего перетаскивания (захвачен viewport). */
@@ -102,12 +106,19 @@ export function useCanvasDnd(
     labelEdit.pickInLayers(null)
     layoutStore.hover(null)
     window.getSelection()?.removeAllRanges()
+    refreshTarget({ x: e.clientX, y: e.clientY })
   }
 
-  /** Двигает призрак за указателем; до порога — проверяет, не пора ли начать перетаскивание. */
+  /**
+   * Двигает призрак за указателем; до порога — проверяет, не пора ли начать перетаскивание.
+   * Приёмник ищется до сдвига призрака: Vue ещё не перерисовал поле, хит-тест не форсирует раскладку.
+   */
   function onPointerMove(e: PointerEvent): void {
     if (activePointer !== null) {
-      if (e.pointerId === activePointer) dragStore.movePointer(toViewportPoint({ x: e.clientX, y: e.clientY }, origin))
+      if (e.pointerId !== activePointer) return
+      const client = { x: e.clientX, y: e.clientY }
+      refreshTarget(client)
+      dragStore.movePointer(toViewportPoint(client, origin))
       return
     }
     const press = pending
@@ -134,7 +145,8 @@ export function useCanvasDnd(
 
   /**
    * Отпускание: перемещённый корень записывается в документ одним шагом истории (та же точка — без шага);
-   * перенос узла (приёмник и drop) — в следующих итерациях, сейчас просто завершаем.
+   * узел над пустым полем становится корнем (тоже один шаг). Над блоком — пока ничего (перенос внутрь — 7.6).
+   * Приёмник пересчитывается по точке отпускания: она может отличаться от последнего `pointermove`.
    */
   function onPointerUp(e: PointerEvent): void {
     if (activePointer === null) {
@@ -142,10 +154,19 @@ export function useCanvasDnd(
       return
     }
     if (e.pointerId !== activePointer) return
-    const rootId = dragStore.movingRootId
-    const at = dragStore.rootPosition
+    const client = { x: e.clientX, y: e.clientY }
+    refreshTarget(client)
+    const id = dragStore.session?.nodeId ?? null
+    const target = releaseMove(client)
     stop()
-    if (rootId !== null && at !== null) layoutStore.moveNode(rootId, { type: 'canvas', at })
+    if (id !== null && target !== null) layoutStore.moveNode(id, target)
+  }
+
+  /** Цель переноса при отпускании в точке страницы: новая точка корня за заголовок или перенос узла на поле. */
+  function releaseMove(client: CanvasPoint): MoveTarget | null {
+    const at = dragStore.rootPosition
+    if (at !== null) return { type: 'canvas', at }
+    return nodeDropMove(toViewportPoint(client, origin))
   }
 
   /** Отмена жеста браузером или потеря захвата указателя. */

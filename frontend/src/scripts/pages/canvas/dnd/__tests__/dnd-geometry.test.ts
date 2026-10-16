@@ -1,7 +1,8 @@
-/** Тесты геометрии перетаскивания: порог старта, координаты viewport, захват узла и призрак с учётом зума. */
+/** Тесты геометрии перетаскивания: порог старта, координаты viewport, захват узла и призрак с учётом зума, перенос на поле. */
 import { describe, expect, it } from 'vitest'
 import { CLICK_DRAG_THRESHOLD, DRAG_GHOST_MAX_SIZE } from '@/scripts/pages/canvas/constants'
 import {
+  canvasMoveTarget,
   createGrab,
   ghostRect,
   ghostScale,
@@ -103,6 +104,31 @@ describe('rootGrabOffset / rootDragPosition', () => {
   it('пан камеры при неподвижном указателе сдвигает точку корня на поле', () => {
     const offset = { x: 0, y: 0 }
     expect(rootDragPosition(offset, { x: 100, y: 100 }, { x: -50, y: 0, zoom: 1 })).toEqual({ x: 150, y: 100 })
+  })
+})
+
+describe('canvasMoveTarget', () => {
+  const grab = { offset: { x: 30, y: 20 }, size: { width: 240.6, height: 100 } }
+
+  it('при 100%: точка захвата под указателем, ширина — замеренная, округлённая', () => {
+    expect(canvasMoveTarget(grab, { x: 500, y: 300 }, { x: 0, y: 0, zoom: 1 }, false)).toEqual({
+      type: 'canvas',
+      at: { x: 470, y: 280 },
+      width: 241,
+    })
+  })
+
+  it('зум и пан: указатель переводится в поле, захват — в натуральную величину', () => {
+    // указатель (300, 150) → поле ((300-100)/0.5, (150-50)/0.5) = (400, 200); минус захват → (370, 180)
+    const target = canvasMoveTarget(grab, { x: 300, y: 150.3 }, { x: 100, y: 50, zoom: 0.5 }, false)
+    expect(target).toEqual({ type: 'canvas', at: { x: 370, y: 181 }, width: 241 })
+  })
+
+  it('корень ширину не передаёт', () => {
+    expect(canvasMoveTarget(grab, { x: 500, y: 300 }, { x: 0, y: 0, zoom: 1 }, true)).toEqual({
+      type: 'canvas',
+      at: { x: 470, y: 280 },
+    })
   })
 })
 

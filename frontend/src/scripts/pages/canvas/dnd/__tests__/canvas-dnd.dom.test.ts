@@ -1,24 +1,36 @@
 /**
  * DOM-тесты перетаскивания на поле: порог, призрак и след, Esc, отпускание, совместная работа с кликом,
- * перемещение корня за заголовок.
+ * перемещение корня за заголовок, поиск приёмника и перенос на пустое поле.
  */
 import { afterEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount, type VueWrapper } from '@vue/test-utils'
+import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import { useDragStore } from '@/scripts/pages/canvas/dnd/drag-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
+import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
-import { makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
+import { childIds, makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
 
 let mounted: VueWrapper | null = null
 
-/** Монтирует поле с документом фикстуры. */
-function setup(): VueWrapper {
+/** Монтирует поле с документом фикстуры; `panel` — разметка плавающей панели в слоте (вне слоя мира). */
+function setup(panel?: string): VueWrapper {
   const pinia = createPinia()
   setActivePinia(pinia)
   useLayoutStore().loadDocument(makeDoc())
-  mounted = mount(CanvasViewport, { global: { plugins: [pinia] }, attachTo: document.body })
+  const slots = panel === undefined ? {} : { default: panel }
+  mounted = mount(CanvasViewport, { global: { plugins: [pinia] }, slots, attachTo: document.body })
   return mounted
+}
+
+/** Подменяет хит-тест: `document.elementFromPoint` в любой точке возвращает `el`. */
+function hitAt(el: Element | null): void {
+  /** Хит-тест-заглушка: всегда `el`. */
+  function elementFromPoint(): Element | null {
+    return el
+  }
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: elementFromPoint })
 }
 
 /** Элемент узла на поле по id. */
@@ -43,6 +55,7 @@ async function pressAndMove(wrapper: VueWrapper, id: string, dx: number, dy: num
 afterEach(() => {
   mounted?.unmount()
   mounted = null
+  Reflect.deleteProperty(document, 'elementFromPoint')
 })
 
 describe('перетаскивание на поле: старт', () => {
@@ -215,5 +228,126 @@ describe('перемещение корня: удаление во время ж
     useLayoutStore().removeNode('C')
     await wrapper.vm.$nextTick()
     expect(useDragStore().isDragging).toBe(false)
+  })
+})
+
+describe('поиск приёмника', () => {
+  it('над блоком другого корня — этот блок; над пустым полем — поле', async () => {
+    const wrapper = setup()
+    hitAt(nodeEl(wrapper, 'c1'))
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'c1' })
+    hitAt(wrapper.element)
+    pointer(wrapper.element, 'pointermove', 50, 50)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'canvas' })
+    expect(wrapper.classes()).not.toContain('canvas-viewport--drop-denied')
+  })
+
+  it('над панелью и вне окна — приёмника нет, курсор «нельзя»', async () => {
+    const wrapper = setup('<aside class="test-panel">Панель</aside>')
+    hitAt(wrapper.get('.test-panel').element)
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    expect(useDragStore().dropTarget).toBeNull()
+    expect(wrapper.classes()).toContain('canvas-viewport--drop-denied')
+    hitAt(null)
+    pointer(wrapper.element, 'pointermove', 50, 50)
+    await wrapper.vm.$nextTick()
+    expect(useDragStore().dropDenied).toBe(true)
+  })
+
+  it('над заголовком другого корня — приёмник этот корень', async () => {
+    const wrapper = setup()
+    hitAt(wrapper.get('[data-label-node-id="C"]').element)
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'C' })
+  })
+
+  it('смена камеры без движения мыши пересчитывает приёмник', async () => {
+    const wrapper = setup()
+    hitAt(wrapper.element)
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'canvas' })
+    hitAt(nodeEl(wrapper, 'b1'))
+    useCameraStore().panBy(10, 0)
+    await wrapper.vm.$nextTick()
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'b1' })
+  })
+
+  it('Esc сбрасывает приёмник, документ не меняется', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    hitAt(wrapper.element)
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }))
+    pointer(wrapper.element, 'pointerup', 40, 40)
+    expect(useDragStore().dropTarget).toBeNull()
+    expect(useLayoutStore().document).toBe(before)
+  })
+})
+
+describe('отпускание над пустым полем', () => {
+  /** Подменяет замер элемента узла: прямоугольник на странице от (0, 0) заданного размера. */
+  function stubRect(el: Element, width: number, height: number): void {
+    /** Замер-заглушка. */
+    function getBoundingClientRect(): DOMRect {
+      return new DOMRect(0, 0, width, height)
+    }
+    el.getBoundingClientRect = getBoundingClientRect
+  }
+
+  it('вложенный блок становится корнем: точка по захвату, ширина как на экране, один шаг истории', async () => {
+    const wrapper = setup()
+    stubRect(nodeEl(wrapper, 'a2'), 200, 50)
+    hitAt(wrapper.element)
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    pointer(wrapper.element, 'pointerup', 110, 60)
+    await wrapper.vm.$nextTick()
+    const store = useLayoutStore()
+    expect(findRootEntry(store.document, 'a2')?.canvas).toMatchObject({ x: 100, y: 50, width: 200 })
+    expect(store.document.roots.at(-1)?.node.id).toBe('a2')
+    expect(store.selectedId).toBe('a2')
+    store.undo()
+    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'a2', 'linkB'])
+    expect(store.canUndo).toBe(false)
+  })
+
+  it('без замера ширины новый корень берёт ширину корня-источника', async () => {
+    const wrapper = setup()
+    hitAt(wrapper.element)
+    await pressAndMove(wrapper, 'a1x', 20, 0)
+    pointer(wrapper.element, 'pointerup', 40, 40)
+    expect(findRootEntry(useLayoutStore().document, 'a1x')?.canvas.width).toBe(1440)
+  })
+
+  it('корень за тело переезжает одним шагом, порядок корней тот же', async () => {
+    const wrapper = setup()
+    hitAt(nodeEl(wrapper, 'c1'))
+    await pressAndMove(wrapper, 'C', 30, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'canvas' })
+    pointer(wrapper.element, 'pointerup', 40, 10)
+    const store = useLayoutStore()
+    expect(findRootEntry(store.document, 'C')?.canvas).toMatchObject({ x: 40, y: 10, width: 960 })
+    expect(store.document.roots.map((root) => root.node.id)).toEqual(['A', 'B', 'C'])
+    store.undo()
+    expect(findRootEntry(store.document, 'C')?.canvas).toMatchObject({ x: 3000, y: 0 })
+  })
+
+  it('плашка связи над полем — «нельзя», отпускание ничего не меняет', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    hitAt(wrapper.element)
+    await pressAndMove(wrapper, 'linkB', 20, 0)
+    expect(wrapper.classes()).toContain('canvas-viewport--drop-denied')
+    pointer(wrapper.element, 'pointerup', 40, 40)
+    expect(useLayoutStore().document).toBe(before)
+  })
+
+  it('отпускание над блоком документ не меняет (перенос внутрь — позже)', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    hitAt(nodeEl(wrapper, 'c1'))
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    pointer(wrapper.element, 'pointerup', 40, 40)
+    expect(useLayoutStore().document).toBe(before)
   })
 })

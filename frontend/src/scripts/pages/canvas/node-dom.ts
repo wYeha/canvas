@@ -1,7 +1,10 @@
 /**
  * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок корня, строка «Слоёв» под курсором,
+ * элемент и цепочка узлов под точкой (поиск приёмника при перетаскивании),
  * измерение прямоугольников узлов и прокрутка строки в видимую часть панели.
  * DOM трогаем только здесь (правила: прямая работа с DOM — в scripts/).
+ * Оверлеи поверх поля (призрак, выделение, будущие линия вставки и рамка приёмника) обязаны иметь
+ * `pointer-events: none`: иначе `elementAtPoint` попадёт в них, а не в блок под курсором.
  */
 import type { Rect } from './camera'
 import type { CanvasPoint } from './factories'
@@ -28,6 +31,33 @@ export function nodeIdFromTarget(target: EventTarget | null): string | null {
 export function rootHandleIdFromTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null
   return target.closest(ROOT_HANDLE_SELECTOR)?.getAttribute(ROOT_HANDLE_ATTR) ?? null
+}
+
+/**
+ * Верхний элемент, принимающий указатель, в точке страницы. Под захватом указателя цель событий — viewport,
+ * поэтому элемент под курсором ищется явно. В окружении без `elementFromPoint` (тесты) — `null`.
+ */
+export function elementAtPoint(client: CanvasPoint): Element | null {
+  if (typeof document.elementFromPoint !== 'function') return null
+  return document.elementFromPoint(client.x, client.y)
+}
+
+/**
+ * Id помеченных узлов от элемента вверх по DOM: самый глубокий первым, корень последним.
+ * Заголовок корня лежит вне элемента блока — для него цепочка `[rootId]`; вне блоков — `[]`.
+ */
+export function nodeChainFromTarget(target: EventTarget | null): string[] {
+  if (!(target instanceof Element)) return []
+  const chain: string[] = []
+  let el = target.closest(NODE_SELECTOR)
+  while (el !== null) {
+    const id = el.getAttribute(NODE_ID_ATTR)
+    if (id !== null) chain.push(id)
+    el = el.parentElement?.closest(NODE_SELECTOR) ?? null
+  }
+  if (chain.length > 0) return chain
+  const rootId = rootHandleIdFromTarget(target)
+  return rootId === null ? [] : [rootId]
 }
 
 /** Id узла строки панели «Слои» под курсором (`data-layer-id`); `null`, если цель вне строк. */
