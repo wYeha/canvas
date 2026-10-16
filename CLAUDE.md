@@ -1,6 +1,6 @@
 # Layout Canvas — инструкции для агентов
 
-Описание проекта: [README.md](README.md). План с чеклистом: [docs/PLAN.md](docs/PLAN.md). Дизайн-решения: [docs/DESIGN.md](docs/DESIGN.md), значения — [docs/TOKENS.md](docs/TOKENS.md). Сверяться с ними при любой UI-работе.
+Описание проекта: [README.md](README.md). План с чеклистом: [docs/PLAN.md](docs/PLAN.md). Дизайн-решения: [docs/DESIGN.md](docs/DESIGN.md), значения — [docs/TOKENS.md](docs/TOKENS.md). Сверяться с ними при любой UI-работе. Договорённости с пользователем, порядок работы и уроки прошлых итераций для любого агента (в том числе вне Claude Code): [.claude/rules/agent-workflow.md](.claude/rules/agent-workflow.md).
 
 ## Порядок работы
 
