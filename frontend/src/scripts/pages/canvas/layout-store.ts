@@ -207,6 +207,14 @@ export const useLayoutStore = defineStore('layout', () => {
     return commit(tree.moveNode(document.value, id, target))
   }
 
+  /** Вставляет копию узла в цель drop (Alt при отпускании); выделяет копию. `null` при отказе или no-op. */
+  function copyNodeToTarget(id: NodeId, target: MoveTarget): NodeId | null {
+    const { document: next, copyId } = tree.copyNodeToTarget(document.value, id, target)
+    if (!commit(next) || copyId === null) return null
+    selectedId.value = copyId
+    return copyId
+  }
+
   /** Склейка правок одних и тех же полей объекта подряд: ключ — префикс, id и список изменённых полей. */
   function fieldMerge(prefix: string, id: NodeId, before: object | undefined, after: object | undefined): MergeOptions {
     const fields = before && after ? changedFields(before, after).join(',') : ''
@@ -285,6 +293,7 @@ export const useLayoutStore = defineStore('layout', () => {
     removeNode,
     duplicateNode,
     moveNode,
+    copyNodeToTarget,
     updateNode,
     updateRootPlacement,
     loadDocument,

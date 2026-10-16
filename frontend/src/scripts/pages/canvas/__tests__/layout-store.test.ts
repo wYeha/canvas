@@ -121,6 +121,18 @@ describe('layout-store', () => {
     expect(store.document.roots).toHaveLength(2)
   })
 
+  it('copyNodeToTarget вставляет копию и выделяет её, исходник остаётся', () => {
+    const { store, rootId } = withRoot()
+    store.addChild(rootId, 'flex', 'Дитя')
+    const childId = firstChildId(store)
+    const copyId = store.copyNodeToTarget(childId, { type: 'canvas', at: { x: 50, y: 60 } })
+    expect(copyId).not.toBeNull()
+    expect(store.selectedId).toBe(copyId)
+    expect(store.document.roots).toHaveLength(2)
+    const root = store.document.roots[0]?.node
+    expect(root?.type === 'block' && root.children.some((child) => child.id === childId)).toBe(true)
+  })
+
   it('select игнорирует несуществующий id, hover принимает id и null', () => {
     const { store, rootId } = withRoot()
     store.select('нет-такого')

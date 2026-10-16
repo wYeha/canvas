@@ -19,9 +19,14 @@ import { resolveDropTarget, type DropHit, type DropTarget } from './drop-target'
 import { flexInsertIndex } from './flex-insert'
 import { gridInsertIndex } from './grid-insert'
 
+/** Опции пересчёта приёмника: при копии (Alt) перетаскиваемый ребёнок не исключается из расчёта индекса. */
+export interface RefreshTargetOptions {
+  forCopy?: boolean
+}
+
 /** Поиск приёмника: пересчёт по точке страницы и цель переноса на поле при отпускании. */
 export interface DropTargetApi {
-  refreshTarget: (client: CanvasPoint) => void
+  refreshTarget: (client: CanvasPoint, options?: RefreshTargetOptions) => void
   nodeDropMove: (pointer: CanvasPoint) => MoveTarget | null
 }
 
@@ -32,6 +37,8 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   const cameraStore = useCameraStore()
   /** Последняя точка указателя на странице: по ней пересчитываем цель, когда мышь стоит, а поле поменялось. */
   let lastClient: CanvasPoint = { x: 0, y: 0 }
+  /** Режим копии (Alt) с последнего `refreshTarget` — для пересчёта без движения мыши. */
+  let lastForCopy = false
 
   /** Что под точкой страницы: цепочка узлов над поверхностью поля, `null` — над панелями, хедером, вне окна. */
   function hitAt(client: CanvasPoint): DropHit {
@@ -43,14 +50,14 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
    * Позиция вставки узла `draggedId` в блок `parentId` под точкой страницы: flex и grid;
    * блок не блок, другой вид контейнера или не отрисован — `null`. Собственный ребёнок исключается из расчёта.
    */
-  function insertIndexIn(parentId: NodeId, draggedId: NodeId, client: CanvasPoint): number | null {
+  function insertIndexIn(parentId: NodeId, draggedId: NodeId, client: CanvasPoint, forCopy: boolean): number | null {
     const parent = findNode(layoutStore.document, parentId)
     if (parent?.type !== 'block') return null
     const ids = parent.children.map((child) => child.id)
     const rects = measureChildClientRects(parentId, ids)
     if (rects === null) return null
     const from = ids.indexOf(draggedId)
-    const skip = from === -1 ? null : from
+    const skip = forCopy ? null : from === -1 ? null : from
     const container = parent.container
     switch (container.kind) {
       case 'flex': {
@@ -65,23 +72,25 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   }
 
   /** Приёмник для узла `nodeId` под точкой страницы; у блока — с позицией вставки. */
-  function targetAt(nodeId: NodeId, client: CanvasPoint): DropTarget | null {
+  function targetAt(nodeId: NodeId, client: CanvasPoint, forCopy: boolean): DropTarget | null {
     const base = resolveDropTarget(layoutStore.document, nodeId, hitAt(client))
     if (base?.kind !== 'block') return base
-    return { ...base, index: insertIndexIn(base.id, nodeId, client) }
+    return { ...base, index: insertIndexIn(base.id, nodeId, client, forCopy) }
   }
 
   /** Пересчитывает приёмник для перетаскиваемого узла по точке страницы; при других жестах ничего не делает. */
-  function refreshTarget(client: CanvasPoint): void {
+  function refreshTarget(client: CanvasPoint, options?: RefreshTargetOptions): void {
     lastClient = { x: client.x, y: client.y }
+    const forCopy = options?.forCopy ?? false
+    lastForCopy = forCopy
     const session = dragStore.session
     if (session?.kind !== 'node') return
-    dragStore.setDropTarget(targetAt(session.nodeId, client))
+    dragStore.setDropTarget(targetAt(session.nodeId, client, forCopy))
   }
 
   /** Пересчёт по последней точке, если идёт перетаскивание узла (камера или документ сменились без движения мыши). */
   function refreshAtLast(): void {
-    if (dragStore.session?.kind === 'node') refreshTarget(lastClient)
+    if (dragStore.session?.kind === 'node') refreshTarget(lastClient, { forCopy: lastForCopy })
   }
 
   /**

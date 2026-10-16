@@ -150,7 +150,8 @@
   > План — `.claude/plans/2026-10-16-21-15-iteration-7-6-drop-indication.md`. `nodeDropMove` → `child` при `block` + `index`; подсветка `canvas-node--drop-target` (BEM, `--alpha-drop-fill`); линия — `insert-line.ts` + `CanvasDropInsert`, `dropInsertLineStyle`. Hit-test и «края ребёнка» не менялись (ответ A). Пустой приёмник — линия по `parentRect` (A). Проверено: `npm run check`, браузер демо Edge `%TEMP%\\lc-pw-check`, обе темы.
 - [x] **7.7 Перетаскивание в слоях.** До, после и внутрь (по зонам строки), между корневыми блоками тоже.
   > План — `.claude/plans/2026-10-16-22-00-iteration-7-7-layers-dnd.md`. Чистая логика — `layers-drop.ts`, стили — `layers-drop-style.ts` (§4.4), сессия — `layers-drag-state.ts` + `use-canvas-layers-dnd.ts` (не `drag-store`). `inside` → последний ребёнок; свёрнутую ветку не раскрываем; автопрокрутки панели нет. Оверлеи — `CanvasLayersDropLine`, `CanvasLayersDragGhost`. Проверено: `npm run check`, браузер Edge `%TEMP%\\lc-pw-check\\layers-dnd-7-7.mjs`.
-- [ ] **7.8 Модификаторы.** `Alt` при отпускании копирует вместо переноса. Автопанорамирование у краёв экрана.
+- [x] **7.8 Модификаторы.** `Alt` при отпускании копирует вместо переноса. Автопанорамирование у краёв экрана.
+  > План — `.claude/plans/2026-10-16-23-00-iteration-7-8-dnd-modifiers.md`. Alt-копия **только на канвасе** (слои без Alt); `copyNodeToTarget` в `tree-copy.ts` + `layout-store`; no-op как у переноса; превью flex/grid — `forCopy` по `altKey` на `pointermove` (`skip = null`). Автопан — `drag-autopan.ts`, rAF в `use-canvas-dnd.ts`, зона `visibleArea` + `DRAG_AUTOPAN_*`. Открытые вопросы: A / A / A / A. Проверено: `npm run check`, браузер Edge.
 
 ## Этап 8. Связи
 

@@ -3,14 +3,17 @@
  * старт после порога, захват указателя, движение (призрак узла или предпросмотр корня), отпускание и отмена
  * (Esc, потеря захвата, уход со страницы). Корень за заголовок при отпускании переезжает в новую точку поля;
  * для узла ищется приёмник под курсором (`use-drop-target.ts`): над пустым полем узел становится корнем,
- * над блоком с индексом вставки — переносится внутрь (`child`).
+ * над блоком с индексом вставки — переносится внутрь (`child`). `Alt` при отпускании — копия в цель;
+ * у края видимого поля — автопан (`drag-autopan.ts`).
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import type { NodeId } from '@shared'
-import { screenToWorld } from '@/scripts/pages/canvas/camera'
+import { screenToWorld, type Rect } from '@/scripts/pages/canvas/camera'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import {
   CLICK_DRAG_THRESHOLD,
+  DRAG_AUTOPAN_MARGIN_PX,
+  DRAG_AUTOPAN_MAX_SPEED_PX,
   ESCAPE_CODE,
   PRIMARY_BUTTON,
   PRIMARY_BUTTON_MASK,
@@ -26,6 +29,7 @@ import {
 } from '@/scripts/pages/canvas/node-dom'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
+import { dragAutopanDelta } from './drag-autopan'
 import { createGrab, isDragStart, rootGrabOffset, toViewportPoint } from './dnd-geometry'
 import { useDragStore, type DragSession } from './drag-store'
 import { useDropTarget } from './use-drop-target'
@@ -55,6 +59,47 @@ export function useCanvasDnd(
   let activePointer: number | null = null
   /** Начало viewport на странице, замеренное в начале перетаскивания. */
   let origin: CanvasPoint = { x: 0, y: 0 }
+  /** Последняя точка указателя на странице (для автопана). */
+  let lastClient: CanvasPoint = { x: 0, y: 0 }
+  /** Режим превью и отпускания: копия вместо переноса. */
+  let dropForCopy = false
+  /** Идущий кадр автопана; `null` — цикл остановлен. */
+  let autopanRaf: number | null = null
+
+  /** Видимая область поля в координатах страницы (как `clientX` / `clientY`). */
+  function clientVisibleArea(): Rect {
+    const el = viewportEl.value
+    if (el === null) return { x: 0, y: 0, width: 0, height: 0 }
+    const rect = clientRectOf(el)
+    const area = cameraStore.visibleArea
+    return { x: rect.x + area.x, y: rect.y + area.y, width: area.width, height: area.height }
+  }
+
+  /** Останавливает цикл автопана. */
+  function stopAutopan(): void {
+    if (autopanRaf === null) return
+    cancelAnimationFrame(autopanRaf)
+    autopanRaf = null
+  }
+
+  /** Один кадр автопана: сдвиг камеры и пересчёт приёмника по последней точке. */
+  function autopanFrame(): void {
+    autopanRaf = null
+    if (activePointer === null) return
+    const delta = dragAutopanDelta(lastClient, clientVisibleArea(), DRAG_AUTOPAN_MARGIN_PX, DRAG_AUTOPAN_MAX_SPEED_PX)
+    if (delta.dx === 0 && delta.dy === 0) return
+    cameraStore.panBy(delta.dx, delta.dy)
+    refreshTarget(lastClient, { forCopy: dropForCopy })
+    autopanRaf = requestAnimationFrame(autopanFrame)
+  }
+
+  /** Запускает автопан, если курсор в полосе у края видимого поля. */
+  function scheduleAutopanIfNeeded(): void {
+    if (activePointer === null || autopanRaf !== null) return
+    const delta = dragAutopanDelta(lastClient, clientVisibleArea(), DRAG_AUTOPAN_MARGIN_PX, DRAG_AUTOPAN_MAX_SPEED_PX)
+    if (delta.dx === 0 && delta.dy === 0) return
+    autopanRaf = requestAnimationFrame(autopanFrame)
+  }
 
   /** Запоминает нажатие основной кнопкой на блоке поля или на заголовке корня, если это не пан. */
   function onPointerDown(e: PointerEvent): void {
@@ -117,8 +162,11 @@ export function useCanvasDnd(
     if (activePointer !== null) {
       if (e.pointerId !== activePointer) return
       const client = { x: e.clientX, y: e.clientY }
-      refreshTarget(client)
+      lastClient = client
+      dropForCopy = e.altKey
+      refreshTarget(client, { forCopy: e.altKey })
       dragStore.movePointer(toViewportPoint(client, origin))
+      scheduleAutopanIfNeeded()
       return
     }
     const press = pending
@@ -136,9 +184,11 @@ export function useCanvasDnd(
   /** Завершает перетаскивание (и отпускание, и отмена): снимает захват указателя и очищает состояние. */
   function stop(): void {
     pending = null
+    stopAutopan()
     const el = viewportEl.value
     const id = activePointer
     activePointer = null
+    dropForCopy = false
     dragStore.end()
     if (el !== null && id !== null && el.hasPointerCapture(id)) el.releasePointerCapture(id)
   }
@@ -155,11 +205,16 @@ export function useCanvasDnd(
     }
     if (e.pointerId !== activePointer) return
     const client = { x: e.clientX, y: e.clientY }
-    refreshTarget(client)
+    lastClient = client
+    const forCopy = e.altKey
+    dropForCopy = forCopy
+    refreshTarget(client, { forCopy })
     const id = dragStore.session?.nodeId ?? null
     const target = releaseMove(client)
     stop()
-    if (id !== null && target !== null) layoutStore.moveNode(id, target)
+    if (id === null || target === null) return
+    if (forCopy) layoutStore.copyNodeToTarget(id, target)
+    else layoutStore.moveNode(id, target)
   }
 
   /** Цель переноса при отпускании в точке страницы: новая точка корня за заголовок или перенос узла на поле. */

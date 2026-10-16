@@ -20,6 +20,7 @@ import type { DuplicateResult, NodePatch, TreeError } from './tree-types'
 
 export * from './tree-query'
 export * from './tree-move'
+export * from './tree-copy'
 export * from './tree-types'
 
 /** Проверяет добавляемое поддерево: id не пересекаются с документом, связи указывают на существующие корни. */
