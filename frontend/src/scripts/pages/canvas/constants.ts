@@ -187,6 +187,12 @@ export const DRAG_GHOST_MAX_SIZE: Readonly<Size> = { width: 320, height: 200 }
  */
 export const FLEX_LINE_EPSILON = 1
 
+/** Толщина полосы линии вставки при перетаскивании, экранные px. */
+export const DROP_INSERT_LINE_WIDTH = 2
+
+/** Радиус точек на концах линии вставки, экранные px (рисуются в SCSS). */
+export const DROP_INSERT_DOT_RADIUS = 3
+
 /** Имя атрибута, которым помечены элементы блоков и плашек связей: по нему ищется цель клика. */
 export const NODE_ID_ATTR = 'data-node-id'
 

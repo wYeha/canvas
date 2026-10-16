@@ -28,7 +28,7 @@ interface FlowItem {
 }
 
 /** Линия flex-контейнера: элементы в порядке DOM и её границы по поперечной оси. */
-interface FlowLine {
+export interface FlowLine {
   items: FlowItem[]
   crossStart: number
   crossEnd: number
@@ -169,4 +169,17 @@ export function flexInsertIndex(input: FlexInsertInput): number {
   const lines = withoutSkip(splitLines(toFlowItems(input.rects, flow), input.wrap), input.skip)
   const line = pickLine(lines, input.pointer[crossOf(flow.main)])
   return line === undefined ? input.rects.length : indexInLine(line, flowCoord(input.pointer, flow))
+}
+
+/**
+ * Линии flex-контейнера для геометрии вставки: те же разбиения, что у `flexInsertIndex`, без перетаскиваемого ребёнка.
+ */
+export function flexLinesForInsert(
+  rects: readonly (Rect | null)[],
+  direction: FlexContainer['direction'],
+  wrap: boolean,
+  skip: number | null,
+): FlowLine[] {
+  const flow = flexFlow(direction)
+  return withoutSkip(splitLines(toFlowItems(rects, flow), wrap), skip)
 }

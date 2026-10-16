@@ -8,6 +8,7 @@
       <CanvasRoot v-for="root in roots" :key="root.node.id" :root="root" />
     </div>
     <CanvasSelection />
+    <CanvasDropInsert />
     <CanvasDragGhost />
     <CanvasLabelEditor />
     <p v-if="isEmpty" class="canvas-viewport__hint">Нажмите F или G, чтобы создать блок</p>
@@ -17,6 +18,7 @@
 
 <script setup lang="ts">
 import CanvasDragGhost from '@/views/pages/canvas/CanvasDragGhost.vue'
+import CanvasDropInsert from '@/views/pages/canvas/CanvasDropInsert.vue'
 import CanvasLabelEditor from '@/views/pages/canvas/CanvasLabelEditor.vue'
 import CanvasSelection from '@/views/pages/canvas/CanvasSelection.vue'
 import CanvasRoot from '@/views/pages/canvas/CanvasRoot.vue'

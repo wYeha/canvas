@@ -242,6 +242,7 @@ $empty-leaf-min-height: 48px; // редакторский min-height пусто�
 $drag-ghost-tilt: 2deg; // наклон призрака перетаскивания
 $drag-ghost-opacity: 0.9; // призрак перетаскивания
 $drag-source-opacity: 0.4; // перетаскиваемый блок на своём месте (пунктирный след)
+$drop-insert-dot-size: 6px; // диаметр точек на концах линии вставки (DROP_INSERT_DOT_RADIUS × 2)
 
 // Запас по высоте под нижние плашки: панели «Слои» и «Свойства» не заходят на них
 $floating-reserve: $panel-gap * 3 + $pill-height;

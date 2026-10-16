@@ -343,13 +343,15 @@ describe('отпускание над пустым полем', () => {
     expect(useLayoutStore().document).toBe(before)
   })
 
-  it('отпускание над блоком документ не меняет (перенос внутрь — позже)', async () => {
+  it('отпускание над блоком с индексом переносит узел внутрь', async () => {
     const wrapper = setup()
-    const before = useLayoutStore().document
     hitAt(nodeEl(wrapper, 'c1'))
     await pressAndMove(wrapper, 'a2', 20, 0)
     pointer(wrapper.element, 'pointerup', 40, 40)
-    expect(useLayoutStore().document).toBe(before)
+    const store = useLayoutStore()
+    expect(childIds(findNode(store.document, 'c1'))).toEqual(['a2'])
+    store.undo()
+    expect(childIds(findNode(store.document, 'A'))).toContain('a2')
   })
 })
 
@@ -392,16 +394,27 @@ describe('индекс вставки во flex', () => {
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'b1', index: 0 })
   })
 
-  it('отпускание над flex-блоком с индексом документ не меняет (перенос — позже)', async () => {
+  it('отпускание над flex-блоком с индексом переносит узел, один шаг истории', async () => {
     const wrapper = setup()
-    const before = useLayoutStore().document
     layoutA(wrapper)
     hitAt(nodeEl(wrapper, 'A'))
     await pressAndMove(wrapper, 'c1', 110, 0)
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 1 })
     pointer(wrapper.element, 'pointerup', 120, 10)
     expect(useDragStore().isDragging).toBe(false)
-    expect(useLayoutStore().document).toBe(before)
+    const store = useLayoutStore()
+    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'c1', 'a2', 'linkB'])
+    store.undo()
+    expect(childIds(findNode(store.document, 'C'))).toEqual(['c1'])
+  })
+
+  it('над приёмником — класс drop-target и линия вставки', async () => {
+    const wrapper = setup()
+    layoutA(wrapper)
+    hitAt(nodeEl(wrapper, 'A'))
+    await pressAndMove(wrapper, 'c1', 110, 0)
+    expect(nodeEl(wrapper, 'A').classList).toContain('canvas-node--drop-target')
+    expect(wrapper.find('.canvas-drop-insert').exists()).toBe(true)
   })
 })
 
@@ -433,19 +446,23 @@ describe('индекс вставки в grid', () => {
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 1 })
     pointer(wrapper.element, 'pointermove', 160, 10)
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 2 })
-    pointer(wrapper.element, 'pointerup', 165, 10)
+    pointer(wrapper.element, 'pointermove', 130, 10)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 1 })
+    pointer(wrapper.element, 'pointerup', 135, 10)
     expect(useLayoutStore().document).toBe(before)
   })
 
-  it('отпускание над grid с индексом документ не меняет (перенос — позже)', async () => {
+  it('отпускание над grid с индексом переносит узел внутрь', async () => {
     const wrapper = setup()
-    const before = useLayoutStore().document
     layoutA1(wrapper)
     hitAt(nodeEl(wrapper, 'a1'))
     await pressAndMove(wrapper, 'c1', 20, 0)
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 0 })
     pointer(wrapper.element, 'pointerup', 30, 10)
     expect(useDragStore().isDragging).toBe(false)
-    expect(useLayoutStore().document).toBe(before)
+    const store = useLayoutStore()
+    expect(childIds(findNode(store.document, 'a1'))).toEqual(['c1', 'a1x', 'a1y'])
+    store.undo()
+    expect(childIds(findNode(store.document, 'C'))).toEqual(['c1'])
   })
 })

@@ -62,10 +62,24 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
   /** Этот узел сейчас перетаскивают: отдельный булев computed, чтобы начало и конец жеста не пересобирали вид. */
   const isDragSource = computed<boolean>(() => dragStore.draggingId === props.node.id)
 
-  /** Классы узла: вид плюс пунктирный след на месте, пока узел перетаскивают. */
-  const classes = computed<string[]>(() =>
-    isDragSource.value ? [...view.value.classes, 'canvas-node--drag-source'] : view.value.classes,
+  /**
+   * Этот блок — приёмник drop: другой узел тянут, `dropTarget` указывает сюда (пунктир в SCSS, не оверлей).
+   * Не совпадает с `isDragSource` (след на перетаскиваемом узле).
+   */
+  const isDropReceiver = computed<boolean>(
+    () =>
+      dragStore.draggingId !== null &&
+      dragStore.dropTarget?.kind === 'block' &&
+      dragStore.dropTarget.id === props.node.id,
   )
+
+  /** Классы узла: вид, след перетаскиваемого и подсветка приёмника. */
+  const classes = computed<string[]>(() => {
+    const extra: string[] = []
+    if (isDragSource.value) extra.push('canvas-node--drag-source')
+    if (isDropReceiver.value) extra.push('canvas-node--drop-target')
+    return extra.length === 0 ? view.value.classes : [...view.value.classes, ...extra]
+  })
 
   return { view, classes }
 }

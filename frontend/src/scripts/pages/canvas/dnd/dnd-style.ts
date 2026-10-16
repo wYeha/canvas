@@ -14,3 +14,8 @@ function px(value: number): string {
 export function dragGhostStyle(rect: Rect): Record<string, string> {
   return { left: px(rect.x), top: px(rect.y), width: px(rect.width), height: px(rect.height) }
 }
+
+/** Стиль полосы линии вставки: положение и размер в экранных px viewport. */
+export function dropInsertLineStyle(rect: Rect): Record<string, string> {
+  return { left: px(rect.x), top: px(rect.y), width: px(rect.width), height: px(rect.height) }
+}

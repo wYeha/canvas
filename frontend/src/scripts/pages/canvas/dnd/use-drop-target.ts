@@ -12,7 +12,8 @@ import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import { elementAtPoint, measureChildClientRects, nodeChainFromTarget } from '@/scripts/pages/canvas/node-dom'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
-import { canvasMoveTarget, type CanvasMove } from './dnd-geometry'
+import { releaseNodeMoveTarget } from './dnd-release'
+import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
 import { useDragStore } from './drag-store'
 import { resolveDropTarget, type DropHit, type DropTarget } from './drop-target'
 import { flexInsertIndex } from './flex-insert'
@@ -21,7 +22,7 @@ import { gridInsertIndex } from './grid-insert'
 /** Поиск приёмника: пересчёт по точке страницы и цель переноса на поле при отпускании. */
 export interface DropTargetApi {
   refreshTarget: (client: CanvasPoint) => void
-  nodeDropMove: (pointer: CanvasPoint) => CanvasMove | null
+  nodeDropMove: (pointer: CanvasPoint) => MoveTarget | null
 }
 
 /** Подключает поиск приёмника; `isSurface` отличает поверхность поля от плавающих панелей. */
@@ -84,14 +85,14 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   }
 
   /**
-   * Цель переноса при отпускании в точке `pointer` (экран viewport): только если приёмник — пустое поле;
-   * над блоком (перенос внутрь по `dropTarget.index` — 7.6) и там, где нельзя, — `null`.
+   * Цель переноса при отпускании в точке `pointer` (экран viewport): поле — `canvas`, блок с индексом — `child`,
+   * иначе `null` (нет приёмника, `index === null`, панель).
    */
-  function nodeDropMove(pointer: CanvasPoint): CanvasMove | null {
+  function nodeDropMove(pointer: CanvasPoint): MoveTarget | null {
     const session = dragStore.session
-    if (session?.kind !== 'node' || dragStore.dropTarget?.kind !== 'canvas') return null
+    if (session?.kind !== 'node') return null
     const isRoot = findRootEntry(layoutStore.document, session.nodeId) !== undefined
-    return canvasMoveTarget(session.grab, pointer, cameraStore.camera, isRoot)
+    return releaseNodeMoveTarget(session, dragStore.dropTarget, pointer, cameraStore.camera, isRoot)
   }
 
   // После перерисовки: слой мира уже с новым transform, DOM — с новым документом

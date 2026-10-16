@@ -110,4 +110,10 @@
     outline: 1px dashed var(--color-accent);
     opacity: v.$drag-source-opacity;
   }
+
+  // Блок-приёмник при перетаскивании: пунктир акцентом и заливка (не border/padding — §4.4)
+  &--drop-target {
+    outline: 1px dashed var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) calc(var(--alpha-drop-fill) * 100%), transparent);
+  }
 }

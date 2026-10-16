@@ -1,0 +1,63 @@
+// Стили фрагмента canvas-drop-insert: линия вставки при перетаскивании — полоса акцентом и точки на концах
+@use 'variables' as v;
+
+.canvas-drop-insert-layer {
+  position: absolute;
+  inset: 0;
+  z-index: v.$z-link;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canvas-drop-insert {
+  position: absolute;
+  background: var(--color-accent);
+
+  &--vertical {
+    &::before,
+    &::after {
+      position: absolute;
+      left: 50%;
+      width: v.$drop-insert-dot-size;
+      height: v.$drop-insert-dot-size;
+      content: '';
+      background: var(--color-accent);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    &::before {
+      top: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    &::after {
+      bottom: 0;
+      transform: translate(-50%, 50%);
+    }
+  }
+
+  &--horizontal {
+    &::before,
+    &::after {
+      position: absolute;
+      top: 50%;
+      width: v.$drop-insert-dot-size;
+      height: v.$drop-insert-dot-size;
+      content: '';
+      background: var(--color-accent);
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+
+    &::before {
+      left: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    &::after {
+      right: 0;
+      transform: translate(50%, -50%);
+    }
+  }
+}
