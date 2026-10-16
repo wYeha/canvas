@@ -223,6 +223,12 @@ export const LAYER_ID_ATTR = 'data-layer-id'
 /** CSS-селектор строки панели «Слои», помеченной id узла. */
 export const LAYER_SELECTOR = `[${LAYER_ID_ATTR}]`
 
+/** Кнопка сворачивания ветки в строке «Слоёв» — с неё перетаскивание не начинается. */
+export const LAYER_ITEM_TOGGLE_SELECTOR = '.canvas-layer-item__toggle'
+
+/** Поле переименования в строке «Слоёв» — с него перетаскивание не начинается. */
+export const LAYER_ITEM_EDIT_SELECTOR = '.canvas-layer-item__edit'
+
 /** Подсказка кнопки сворачивания раскрытой ветки в «Слоях». */
 export const LAYER_COLLAPSE_LABEL = 'Свернуть'
 

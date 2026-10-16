@@ -83,6 +83,7 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
     lastClient = { x: client.x, y: client.y }
     const forCopy = options?.forCopy ?? false
     lastForCopy = forCopy
+    dragStore.dropForCopy = forCopy
     const session = dragStore.session
     if (session?.kind !== 'node') return
     dragStore.setDropTarget(targetAt(session.nodeId, client, forCopy))

@@ -8,6 +8,8 @@ import {
   CLICK_DRAG_THRESHOLD,
   ESCAPE_CODE,
   LAYER_ID_ATTR,
+  LAYER_ITEM_EDIT_SELECTOR,
+  LAYER_ITEM_TOGGLE_SELECTOR,
   LAYER_SELECTOR,
   PRIMARY_BUTTON,
   PRIMARY_BUTTON_MASK,
@@ -83,8 +85,8 @@ export function useCanvasLayersDnd(listEl: Ref<HTMLElement | null>): void {
   /** Можно ли начать drag с этой цели. */
   function canStartFromTarget(target: EventTarget | null): HTMLElement | null {
     if (!(target instanceof Element)) return null
-    if (target.closest('.canvas-layer-item__toggle') !== null) return null
-    if (target.closest('.canvas-layer-item__edit') !== null) return null
+    if (target.closest(LAYER_ITEM_TOGGLE_SELECTOR) !== null) return null
+    if (target.closest(LAYER_ITEM_EDIT_SELECTOR) !== null) return null
     const row = target.closest(LAYER_SELECTOR)
     if (!(row instanceof HTMLElement)) return null
     const id = row.getAttribute(LAYER_ID_ATTR)

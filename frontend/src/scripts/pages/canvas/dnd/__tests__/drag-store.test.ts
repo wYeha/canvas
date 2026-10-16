@@ -101,4 +101,14 @@ describe('useDragStore: приёмник', () => {
     store.end()
     expect(store.dropTarget).toBeNull()
   })
+
+  it('begin и end сбрасывают режим копии (Alt)', () => {
+    const store = useDragStore()
+    store.dropForCopy = true
+    store.begin({ kind: 'node', nodeId: 'a1', grab, pointer: { x: 0, y: 0 } })
+    expect(store.dropForCopy).toBe(false)
+    store.dropForCopy = true
+    store.end()
+    expect(store.dropForCopy).toBe(false)
+  })
 })

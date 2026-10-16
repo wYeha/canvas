@@ -48,9 +48,16 @@ function stubRect(el: Element, x: number, y: number, width: number, height: numb
 }
 
 /** Отправляет событие указателя основной кнопки в точке (x, y); `pressed` — зажата ли кнопка (маска `buttons`). */
-function pointer(target: Element, type: string, x: number, y: number, pressed = type !== 'pointerup'): void {
+function pointer(
+  target: Element,
+  type: string,
+  x: number,
+  y: number,
+  pressed = type !== 'pointerup',
+  altKey = false,
+): void {
   const buttons = pressed ? 1 : 0
-  const init = { bubbles: true, cancelable: true, button: 0, buttons, pointerId: 1, isPrimary: true }
+  const init = { bubbles: true, cancelable: true, button: 0, buttons, pointerId: 1, isPrimary: true, altKey }
   target.dispatchEvent(new PointerEvent(type, { ...init, clientX: x, clientY: y }))
 }
 
@@ -352,6 +359,23 @@ describe('отпускание над пустым полем', () => {
     expect(childIds(findNode(store.document, 'c1'))).toEqual(['a2'])
     store.undo()
     expect(childIds(findNode(store.document, 'A'))).toContain('a2')
+  })
+})
+
+describe('Alt-копия на канвасе', () => {
+  it('отпускание с Alt вставляет копию в блок, исходник остаёт', async () => {
+    const wrapper = setup()
+    hitAt(nodeEl(wrapper, 'b1'))
+    await pressAndMove(wrapper, 'a2', 20, 0)
+    pointer(wrapper.element, 'pointerup', 40, 40, false, true)
+    await wrapper.vm.$nextTick()
+    const store = useLayoutStore()
+    expect(childIds(findNode(store.document, 'A'))).toContain('a2')
+    const inB1 = childIds(findNode(store.document, 'b1'))
+    expect(inB1).toHaveLength(1)
+    expect(inB1[0]).not.toBe('a2')
+    store.undo()
+    expect(childIds(findNode(store.document, 'b1'))).toEqual([])
   })
 })
 

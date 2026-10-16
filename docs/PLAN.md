@@ -152,6 +152,7 @@
   > План — `.claude/plans/2026-10-16-22-00-iteration-7-7-layers-dnd.md`. Чистая логика — `layers-drop.ts`, стили — `layers-drop-style.ts` (§4.4), сессия — `layers-drag-state.ts` + `use-canvas-layers-dnd.ts` (не `drag-store`). `inside` → последний ребёнок; свёрнутую ветку не раскрываем; автопрокрутки панели нет. Оверлеи — `CanvasLayersDropLine`, `CanvasLayersDragGhost`. Проверено: `npm run check`, браузер Edge `%TEMP%\\lc-pw-check\\layers-dnd-7-7.mjs`.
 - [x] **7.8 Модификаторы.** `Alt` при отпускании копирует вместо переноса. Автопанорамирование у краёв экрана.
   > План — `.claude/plans/2026-10-16-23-00-iteration-7-8-dnd-modifiers.md`. Alt-копия **только на канвасе** (слои без Alt); `copyNodeToTarget` в `tree-copy.ts` + `layout-store`; no-op как у переноса; превью flex/grid — `forCopy` по `altKey` на `pointermove` (`skip = null`). Автопан — `drag-autopan.ts`, rAF в `use-canvas-dnd.ts`, зона `visibleArea` + `DRAG_AUTOPAN_*`. Открытые вопросы: A / A / A / A. Проверено: `npm run check`, браузер Edge.
+  > Ревью этапа 7: `npm run check`, DOM Alt-копия в `canvas-dnd.dom.test.ts`. Исправлено: линия вставки при Alt (`dropForCopy` в `drag-store`, как `insertIndexIn`); селекторы шеврона/редактирования «Слоёв» — в `constants.ts`.
 
 ## Этап 8. Связи
 

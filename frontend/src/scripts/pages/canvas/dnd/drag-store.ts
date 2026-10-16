@@ -61,10 +61,17 @@ export const useDragStore = defineStore('drag', () => {
   /** Тянут узел, а отпустить некуда: курсор «нельзя». Булев — меняется только на границах. */
   const dropDenied = computed<boolean>(() => session.value?.kind === 'node' && dropTarget.value === null)
 
+  /**
+   * Режим копии (Alt) для превью вставки: перетаскиваемый ребёнок не исключается из расчёта индекса и линии.
+   * Пишется из `use-drop-target` при `refreshTarget`, сбрасывается в `begin` / `end`.
+   */
+  const dropForCopy = ref(false)
+
   /** Начинает перетаскивание (предыдущее, если было, заменяется); приёмник сбрасывается. */
   function begin(next: DragSession): void {
     session.value = { ...next, pointer: { ...next.pointer } }
     dropTarget.value = null
+    dropForCopy.value = false
   }
 
   /** Запоминает приёмник, только если он изменился: движение в одном блоке без смены позиции вставки стор не трогает. */
@@ -82,6 +89,7 @@ export const useDragStore = defineStore('drag', () => {
   function end(): void {
     session.value = null
     dropTarget.value = null
+    dropForCopy.value = false
   }
 
   return {
@@ -92,6 +100,7 @@ export const useDragStore = defineStore('drag', () => {
     rootPosition,
     dropTarget,
     dropDenied,
+    dropForCopy,
     begin,
     movePointer,
     setDropTarget,

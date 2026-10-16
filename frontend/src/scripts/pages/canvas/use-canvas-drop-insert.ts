@@ -66,7 +66,8 @@ export function useCanvasDropInsert() {
     const parentEl = findNodeElement(target.id)
     const parentRect = parentEl === null ? null : clientRectOf(parentEl)
     const from = childIds.indexOf(session.nodeId)
-    const skip = from === -1 ? null : from
+    const forCopy = dragStore.dropForCopy
+    const skip = forCopy ? null : from === -1 ? null : from
     const clientRect = insertLineRect({
       container: lineContainer,
       rects,
@@ -86,7 +87,9 @@ export function useCanvasDropInsert() {
     }
   }
 
-  watch([doc, camera, () => dragStore.dropTarget, () => dragStore.session], recompute, { flush: 'post' })
+  watch([doc, camera, () => dragStore.dropTarget, () => dragStore.session, () => dragStore.dropForCopy], recompute, {
+    flush: 'post',
+  })
 
   onMounted(() => {
     void nextTick(recompute)
