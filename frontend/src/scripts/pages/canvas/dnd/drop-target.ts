@@ -11,7 +11,7 @@ import { findNode } from '@/scripts/pages/canvas/tree-query'
 /**
  * Куда сейчас упадёт перетаскиваемый узел: в блок или на пустое поле; `null` — некуда (или нельзя).
  * У блока `index` — позиция вставки среди его детей (как индекс цели `child` у `moveNode`, до изъятия узла);
- * `null` — позиция не считается (grid, блок не отрисован).
+ * `null` — позиция не считается (блок не flex/grid, не отрисован; у `resolveDropTarget` всегда `null`).
  */
 export type DropTarget = { kind: 'block'; id: NodeId; index: number | null } | { kind: 'canvas' }
 

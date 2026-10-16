@@ -385,13 +385,6 @@ describe('индекс вставки во flex', () => {
     expect(useLayoutStore().document).toBe(before)
   })
 
-  it('над grid-блоком позиция не считается', async () => {
-    const wrapper = setup()
-    hitAt(nodeEl(wrapper, 'a1'))
-    await pressAndMove(wrapper, 'c1', 20, 0)
-    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: null })
-  })
-
   it('над пустым flex-блоком — 0', async () => {
     const wrapper = setup()
     hitAt(nodeEl(wrapper, 'b1'))
@@ -407,6 +400,51 @@ describe('индекс вставки во flex', () => {
     await pressAndMove(wrapper, 'c1', 110, 0)
     expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'A', index: 1 })
     pointer(wrapper.element, 'pointerup', 120, 10)
+    expect(useDragStore().isDragging).toBe(false)
+    expect(useLayoutStore().document).toBe(before)
+  })
+})
+
+describe('индекс вставки в grid', () => {
+  /** Дети grid a1 в одну строку: a1x и a1y по x 0 и 110, каждый 100×40. */
+  function layoutA1(wrapper: VueWrapper): void {
+    stubRect(nodeEl(wrapper, 'a1x'), 0, 0, 100, 40)
+    stubRect(nodeEl(wrapper, 'a1y'), 110, 0, 100, 40)
+  }
+
+  it('узел из другого корня над a1 — индекс по ближайшему ребёнку и X', async () => {
+    const wrapper = setup()
+    layoutA1(wrapper)
+    hitAt(nodeEl(wrapper, 'a1'))
+    await pressAndMove(wrapper, 'c1', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 0 })
+    pointer(wrapper.element, 'pointermove', 150, 10)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 1 })
+    pointer(wrapper.element, 'pointermove', 200, 10)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 2 })
+  })
+
+  it('над собственным следом — «на место»; отпускание документ не меняет', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    layoutA1(wrapper)
+    hitAt(nodeEl(wrapper, 'a1'))
+    await pressAndMove(wrapper, 'a1x', 70, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 1 })
+    pointer(wrapper.element, 'pointermove', 160, 10)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 2 })
+    pointer(wrapper.element, 'pointerup', 165, 10)
+    expect(useLayoutStore().document).toBe(before)
+  })
+
+  it('отпускание над grid с индексом документ не меняет (перенос — позже)', async () => {
+    const wrapper = setup()
+    const before = useLayoutStore().document
+    layoutA1(wrapper)
+    hitAt(nodeEl(wrapper, 'a1'))
+    await pressAndMove(wrapper, 'c1', 20, 0)
+    expect(useDragStore().dropTarget).toEqual({ kind: 'block', id: 'a1', index: 0 })
+    pointer(wrapper.element, 'pointerup', 30, 10)
     expect(useDragStore().isDragging).toBe(false)
     expect(useLayoutStore().document).toBe(before)
   })

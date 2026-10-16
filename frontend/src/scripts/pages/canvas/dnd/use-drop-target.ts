@@ -1,7 +1,7 @@
 /**
  * Composable поиска приёмника при перетаскивании узла: хит-тест элемента под курсором, выбор приёмника
- * чистой `resolveDropTarget`, позиция вставки во flex-блок (`flexInsertIndex` по замеру прямых детей приёмника,
- * координаты страницы) и запись в стор; пересчёт при смене камеры и документа без движения мыши.
+ * чистой `resolveDropTarget`, позиция вставки во flex- и grid-блок (`flexInsertIndex` / `gridInsertIndex` по замеру
+ * прямых детей приёмника, координаты страницы) и запись в стор; пересчёт при смене камеры и документа без движения мыши.
  * Даёт цель переноса на пустое поле для отпускания. Подключается из `use-canvas-dnd.ts`.
  */
 
@@ -16,6 +16,7 @@ import { canvasMoveTarget, type CanvasMove } from './dnd-geometry'
 import { useDragStore } from './drag-store'
 import { resolveDropTarget, type DropHit, type DropTarget } from './drop-target'
 import { flexInsertIndex } from './flex-insert'
+import { gridInsertIndex } from './grid-insert'
 
 /** Поиск приёмника: пересчёт по точке страницы и цель переноса на поле при отпускании. */
 export interface DropTargetApi {
@@ -38,18 +39,28 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   }
 
   /**
-   * Позиция вставки узла `draggedId` в блок `parentId` под точкой страницы: только для flex (grid — 7.5);
-   * блок не блок, не flex или не отрисован — `null`. Собственный ребёнок-узел исключается из расчёта.
+   * Позиция вставки узла `draggedId` в блок `parentId` под точкой страницы: flex и grid;
+   * блок не блок, другой вид контейнера или не отрисован — `null`. Собственный ребёнок исключается из расчёта.
    */
   function insertIndexIn(parentId: NodeId, draggedId: NodeId, client: CanvasPoint): number | null {
     const parent = findNode(layoutStore.document, parentId)
-    if (parent?.type !== 'block' || parent.container.kind !== 'flex') return null
+    if (parent?.type !== 'block') return null
     const ids = parent.children.map((child) => child.id)
     const rects = measureChildClientRects(parentId, ids)
     if (rects === null) return null
     const from = ids.indexOf(draggedId)
-    const { direction, wrap } = parent.container
-    return flexInsertIndex({ direction, wrap, rects, pointer: client, skip: from === -1 ? null : from })
+    const skip = from === -1 ? null : from
+    const container = parent.container
+    switch (container.kind) {
+      case 'flex': {
+        const { direction, wrap } = container
+        return flexInsertIndex({ direction, wrap, rects, pointer: client, skip })
+      }
+      case 'grid':
+        return gridInsertIndex({ rects, pointer: client, skip })
+      default:
+        return null
+    }
   }
 
   /** Приёмник для узла `nodeId` под точкой страницы; у блока — с позицией вставки. */
