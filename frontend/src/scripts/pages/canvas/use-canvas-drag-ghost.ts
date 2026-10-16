@@ -42,7 +42,7 @@ export function useCanvasDragGhost() {
   /** Положение и размер призрака: пересчитываются при движении указателя и при зуме во время перетаскивания. */
   const style = computed<Record<string, string>>(() => {
     const session = dragStore.session
-    if (session === null) return {}
+    if (session?.kind !== 'node') return {}
     return dragGhostStyle(ghostRect(session.grab, session.pointer, cameraStore.camera.zoom, DRAG_GHOST_MAX_SIZE))
   })
 

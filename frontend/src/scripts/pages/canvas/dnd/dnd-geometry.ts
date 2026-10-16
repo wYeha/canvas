@@ -1,8 +1,8 @@
 /**
  * Чистая геометрия перетаскивания на канвасе: порог старта, перевод точек страницы в координаты viewport,
- * точка захвата узла и экранный прямоугольник призрака с учётом зума камеры. Без Vue и DOM.
+ * точка захвата узла, экранный прямоугольник призрака и новая точка перемещаемого корня с учётом камеры. Без Vue и DOM.
  */
-import type { Rect, Size } from '@/scripts/pages/canvas/camera'
+import { screenToWorld, type Camera, type Rect, type Size } from '@/scripts/pages/canvas/camera'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 
 /**
@@ -49,6 +49,24 @@ export function createGrab(pointerWorld: CanvasPoint, nodeRect: Rect): DragGrab 
  */
 export function ghostScale(screen: Size, max: Size): number {
   return Math.min(1, max.width / Math.max(screen.width, 1), max.height / Math.max(screen.height, 1))
+}
+
+/**
+ * Смещение точки нажатия от левого верхнего угла корня, в координатах поля. Не зажимается: корень тянут
+ * за заголовок над блоком, поэтому `y` обычно отрицательный.
+ */
+export function rootGrabOffset(pressWorld: CanvasPoint, rootAt: CanvasPoint): CanvasPoint {
+  return { x: pressWorld.x - rootAt.x, y: pressWorld.y - rootAt.y }
+}
+
+/**
+ * Новая точка корня на поле: под указателем `pointer` (экранные координаты viewport) остаётся точка захвата.
+ * Считается от указателя, а не суммой сдвигов, поэтому пан и зум во время перетаскивания не сбивают захват.
+ * Округляется до целых px поля, чтобы координаты в документе оставались читаемыми.
+ */
+export function rootDragPosition(offset: CanvasPoint, pointer: CanvasPoint, camera: Camera): CanvasPoint {
+  const world = screenToWorld(camera, pointer)
+  return { x: Math.round(world.x - offset.x), y: Math.round(world.y - offset.y) }
 }
 
 /**

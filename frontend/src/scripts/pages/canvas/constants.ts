@@ -187,6 +187,12 @@ export const NODE_ID_ATTR = 'data-node-id'
 /** CSS-селектор элемента, помеченного id узла. */
 export const NODE_SELECTOR = `[${NODE_ID_ATTR}]`
 
+/** Имя атрибута заголовка корня на поле: за него корень перетаскивают по полю, клик по нему выделяет корень. */
+export const ROOT_HANDLE_ATTR = 'data-root-handle-id'
+
+/** CSS-селектор заголовка корня на поле. */
+export const ROOT_HANDLE_SELECTOR = `[${ROOT_HANDLE_ATTR}]`
+
 /** Имя атрибута подписи блока на канвасе (заголовок корня, чип, подпись листа): двойной клик по ней переименовывает блок. */
 export const LABEL_NODE_ATTR = 'data-label-node-id'
 

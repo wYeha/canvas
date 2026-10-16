@@ -65,8 +65,9 @@ export function useCanvasSelection() {
   /** Пересчитывает рамки по текущему DOM. */
   function recompute(): void {
     const origin = overlayEl.value?.getBoundingClientRect()
-    // Во время перетаскивания рамки скрыты: сплошная рамка выделения закрыла бы пунктирный след блока на месте
-    if (origin === undefined || dragStore.isDragging) {
+    // Во время перетаскивания узла рамки скрыты: сплошная рамка выделения закрыла бы пунктирный след блока на месте.
+    // При перемещении корня за заголовок рамка едет вместе с ним (пересчёт по сессии ниже).
+    if (origin === undefined || dragStore.draggingId !== null) {
       boxes.value = []
       return
     }
@@ -91,7 +92,12 @@ export function useCanvasSelection() {
 
   // Камера, документ, выделение и наведение: после обновления DOM и в том же кадре, чтобы рамка не отставала при пане.
   // Замеры корней — размеры блоков могли поменяться без смены документа.
-  watch([camera, doc, selectedId, hoveredId, rootHeights, () => dragStore.isDragging], recompute, { flush: 'post' })
+  // Перетаскивание: начало и конец (рамки скрыть/вернуть) и новая точка перемещаемого корня (рамка едет за ним).
+  watch(
+    [camera, doc, selectedId, hoveredId, rootHeights, () => dragStore.draggingId, () => dragStore.rootPosition],
+    recompute,
+    { flush: 'post' },
+  )
 
   onMounted(() => {
     window.addEventListener('resize', schedule)

@@ -6,6 +6,8 @@ import {
   ghostRect,
   ghostScale,
   isDragStart,
+  rootDragPosition,
+  rootGrabOffset,
   toViewportPoint,
 } from '@/scripts/pages/canvas/dnd/dnd-geometry'
 import { dragGhostStyle } from '@/scripts/pages/canvas/dnd/dnd-style'
@@ -74,6 +76,33 @@ describe('ghostRect', () => {
 
   it('предел из констант — 320×200', () => {
     expect(DRAG_GHOST_MAX_SIZE).toEqual(MAX)
+  })
+})
+
+describe('rootGrabOffset / rootDragPosition', () => {
+  it('смещение от угла корня не зажимается: заголовок над блоком даёт отрицательный y', () => {
+    expect(rootGrabOffset({ x: 130, y: -12 }, { x: 100, y: 0 })).toEqual({ x: 30, y: -12 })
+  })
+
+  it('без сдвига указателя корень остаётся в той же точке', () => {
+    const camera = { x: 40, y: 60, zoom: 0.5 }
+    const rootAt = { x: 100, y: 0 }
+    const pointer = { x: 40 + 130 * 0.5, y: 60 - 12 * 0.5 }
+    const offset = rootGrabOffset({ x: 130, y: -12 }, rootAt)
+    expect(rootDragPosition(offset, pointer, camera)).toEqual(rootAt)
+  })
+
+  it('сдвиг указателя на экране делится на зум; результат округляется до целых px поля', () => {
+    const camera = { x: 0, y: 0, zoom: 0.5 }
+    const offset = { x: 30, y: -12 }
+    // указатель (100, 50) → поле (200, 100); минус смещение → (170, 112)
+    expect(rootDragPosition(offset, { x: 100, y: 50 }, camera)).toEqual({ x: 170, y: 112 })
+    expect(rootDragPosition(offset, { x: 100.3, y: 50.2 }, camera)).toEqual({ x: 171, y: 112 })
+  })
+
+  it('пан камеры при неподвижном указателе сдвигает точку корня на поле', () => {
+    const offset = { x: 0, y: 0 }
+    expect(rootDragPosition(offset, { x: 100, y: 100 }, { x: -50, y: 0, zoom: 1 })).toEqual({ x: 150, y: 100 })
   })
 })
 

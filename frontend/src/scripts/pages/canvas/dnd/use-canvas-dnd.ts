@@ -1,7 +1,8 @@
 /**
- * Composable ядра перетаскивания блоков на канвасе (pointer events, без библиотек): нажатие ЛКМ на блоке,
- * старт после порога, захват указателя, движение призрака, отпускание и отмена (Esc, потеря захвата, уход со страницы).
- * Поиск приёмника и перенос в документе — следующие итерации; сейчас отпускание ничего не меняет.
+ * Composable перетаскивания на канвасе (pointer events, без библиотек): нажатие ЛКМ на блоке или на заголовке корня,
+ * старт после порога, захват указателя, движение (призрак узла или предпросмотр корня), отпускание и отмена
+ * (Esc, потеря захвата, уход со страницы). Корень при отпускании переезжает в новую точку поля;
+ * поиск приёмника и перенос узла — следующие итерации.
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import type { NodeId } from '@shared'
@@ -16,13 +17,19 @@ import {
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
-import { clientRectOf, measureNodeWorldRect, nodeIdFromTarget } from '@/scripts/pages/canvas/node-dom'
-import { findNode } from '@/scripts/pages/canvas/tree-query'
-import { createGrab, isDragStart, toViewportPoint } from './dnd-geometry'
-import { useDragStore } from './drag-store'
+import {
+  clientRectOf,
+  measureNodeWorldRect,
+  nodeIdFromTarget,
+  rootHandleIdFromTarget,
+} from '@/scripts/pages/canvas/node-dom'
+import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
+import { createGrab, isDragStart, rootGrabOffset, toViewportPoint } from './dnd-geometry'
+import { useDragStore, type DragSession } from './drag-store'
 
-/** Нажатие ЛКМ на блоке, которое ещё может стать перетаскиванием. */
+/** Нажатие ЛКМ на блоке (`node`) или на заголовке корня (`root`), которое ещё может стать перетаскиванием. */
 interface PendingPress {
+  kind: DragSession['kind']
   pointerId: number
   nodeId: NodeId
   start: CanvasPoint
@@ -45,12 +52,32 @@ export function useCanvasDnd(
   /** Начало viewport на странице, замеренное в начале перетаскивания. */
   let origin: CanvasPoint = { x: 0, y: 0 }
 
-  /** Запоминает нажатие основной кнопкой на блоке поля, если это не пан. */
+  /** Запоминает нажатие основной кнопкой на блоке поля или на заголовке корня, если это не пан. */
   function onPointerDown(e: PointerEvent): void {
     pending = null
     if (e.button !== PRIMARY_BUTTON || !e.isPrimary || !isSurface(e.target) || isPanning()) return
+    const start = { x: e.clientX, y: e.clientY }
     const nodeId = nodeIdFromTarget(e.target)
-    if (nodeId !== null) pending = { pointerId: e.pointerId, nodeId, start: { x: e.clientX, y: e.clientY } }
+    if (nodeId !== null) {
+      pending = { kind: 'node', pointerId: e.pointerId, nodeId, start }
+      return
+    }
+    const rootId = rootHandleIdFromTarget(e.target)
+    if (rootId !== null) pending = { kind: 'root', pointerId: e.pointerId, nodeId: rootId, start }
+  }
+
+  /** Сессия перетаскивания узла: захват по замеру узла в DOM; `null`, если узел не отрисован. */
+  function nodeSession(press: PendingPress, pressWorld: CanvasPoint, pointer: CanvasPoint): DragSession | null {
+    const nodeRect = measureNodeWorldRect(press.nodeId, cameraStore.camera.zoom)
+    if (nodeRect === null) return null
+    return { kind: 'node', nodeId: press.nodeId, grab: createGrab(pressWorld, nodeRect), pointer }
+  }
+
+  /** Сессия перемещения корня: смещение точки нажатия от его угла на поле; `null`, если корня нет. */
+  function rootSession(press: PendingPress, pressWorld: CanvasPoint, pointer: CanvasPoint): DragSession | null {
+    const entry = findRootEntry(layoutStore.document, press.nodeId)
+    if (entry === undefined) return null
+    return { kind: 'root', nodeId: press.nodeId, offset: rootGrabOffset(pressWorld, entry.canvas), pointer }
   }
 
   /**
@@ -59,14 +86,15 @@ export function useCanvasDnd(
    */
   function start(press: PendingPress, e: PointerEvent): void {
     const el = viewportEl.value
-    const { camera } = cameraStore
-    const nodeRect = measureNodeWorldRect(press.nodeId, camera.zoom)
-    if (el === null || nodeRect === null) return
+    if (el === null) return
     const rect = clientRectOf(el)
     origin = { x: rect.x, y: rect.y }
-    const pressWorld = screenToWorld(camera, toViewportPoint(press.start, origin))
+    const pressWorld = screenToWorld(cameraStore.camera, toViewportPoint(press.start, origin))
     const pointer = toViewportPoint({ x: e.clientX, y: e.clientY }, origin)
-    dragStore.begin({ nodeId: press.nodeId, grab: createGrab(pressWorld, nodeRect), pointer })
+    const session =
+      press.kind === 'node' ? nodeSession(press, pressWorld, pointer) : rootSession(press, pressWorld, pointer)
+    if (session === null) return
+    dragStore.begin(session)
     activePointer = e.pointerId
     el.setPointerCapture(e.pointerId)
     // Выделяем то, что тянем: свойства показывают перетаскиваемый блок, F2 — на канвасе
@@ -104,13 +132,20 @@ export function useCanvasDnd(
     if (el !== null && id !== null && el.hasPointerCapture(id)) el.releasePointerCapture(id)
   }
 
-  /** Отпускание: пока без переноса (приёмник и drop — в следующих итерациях), просто завершаем. */
+  /**
+   * Отпускание: перемещённый корень записывается в документ одним шагом истории (та же точка — без шага);
+   * перенос узла (приёмник и drop) — в следующих итерациях, сейчас просто завершаем.
+   */
   function onPointerUp(e: PointerEvent): void {
     if (activePointer === null) {
       if (pending?.pointerId === e.pointerId) pending = null
       return
     }
-    if (e.pointerId === activePointer) stop()
+    if (e.pointerId !== activePointer) return
+    const rootId = dragStore.movingRootId
+    const at = dragStore.rootPosition
+    stop()
+    if (rootId !== null && at !== null) layoutStore.moveNode(rootId, { type: 'canvas', at })
   }
 
   /** Отмена жеста браузером или потеря захвата указателя. */
@@ -131,11 +166,11 @@ export function useCanvasDnd(
     if (document.visibilityState === 'hidden') stop()
   }
 
-  // Узел пропал из документа во время перетаскивания — тянуть больше нечего
+  // Узел или корень пропал из документа во время перетаскивания — тянуть больше нечего
   watch(
     () => layoutStore.document,
     (doc) => {
-      const id = dragStore.draggingId
+      const id = dragStore.session?.nodeId ?? null
       if (id !== null && findNode(doc, id) === undefined) stop()
     },
   )

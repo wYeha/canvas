@@ -2,10 +2,21 @@
 @use 'variables' as v;
 
 .canvas-root {
+  $b: &;
+
   position: absolute; // left/top/width/height задаёт :style (позиция и ширина превью на поле)
   z-index: v.$z-canvas;
   border-radius: v.$radius-block;
   box-shadow: var(--shadow-root);
+
+  // Корень двигают за заголовок: поверх соседних корней, курсор «сжатая рука» и над заголовком
+  &--moving {
+    z-index: v.$z-moving-root;
+
+    #{$b}__header {
+      cursor: grabbing;
+    }
+  }
 
   &__header {
     position: absolute;
@@ -22,6 +33,7 @@
     font-size: v.$font-size-sm;
     line-height: v.$line-height-base;
     white-space: nowrap;
+    cursor: grab; // за заголовок корень двигают по полю
     user-select: none;
     transform: scale(
       calc(1 / var(--camera-zoom))

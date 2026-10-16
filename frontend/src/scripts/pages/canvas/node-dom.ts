@@ -1,5 +1,5 @@
 /**
- * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, строка «Слоёв» под курсором,
+ * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок корня, строка «Слоёв» под курсором,
  * измерение прямоугольников узлов и прокрутка строки в видимую часть панели.
  * DOM трогаем только здесь (правила: прямая работа с DOM — в scripts/).
  */
@@ -12,6 +12,8 @@ import {
   LAYER_SELECTOR,
   NODE_ID_ATTR,
   NODE_SELECTOR,
+  ROOT_HANDLE_ATTR,
+  ROOT_HANDLE_SELECTOR,
   WORLD_SELECTOR,
 } from './constants'
 import { rectContains, toWorldRect } from './selection'
@@ -20,6 +22,12 @@ import { rectContains, toWorldRect } from './selection'
 export function nodeIdFromTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null
   return target.closest(NODE_SELECTOR)?.getAttribute(NODE_ID_ATTR) ?? null
+}
+
+/** Id корня, за заголовок которого взялись (`data-root-handle-id`); `null`, если цель не в заголовке корня. */
+export function rootHandleIdFromTarget(target: EventTarget | null): string | null {
+  if (!(target instanceof Element)) return null
+  return target.closest(ROOT_HANDLE_SELECTOR)?.getAttribute(ROOT_HANDLE_ATTR) ?? null
 }
 
 /** Id узла строки панели «Слои» под курсором (`data-layer-id`); `null`, если цель вне строк. */

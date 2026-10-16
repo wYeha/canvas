@@ -9,7 +9,7 @@ import type { CanvasPoint } from './factories'
 import { useDragStore } from './dnd/drag-store'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
-import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget } from './node-dom'
+import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget, rootHandleIdFromTarget } from './node-dom'
 import { findNode } from './tree-query'
 import { isClickGesture, resolveClickTarget } from './selection'
 
@@ -37,7 +37,9 @@ export function useCanvasSelect(
     press = null
     if (start === null || start.pointerId !== e.pointerId || isPanning()) return
     if (!isClickGesture(start.point, { x: e.clientX, y: e.clientY }, CLICK_DRAG_THRESHOLD)) return
-    layoutStore.select(resolveClickTarget(layoutStore.document, nodeIdFromTarget(e.target)))
+    // Заголовок корня лежит вне элемента блока: клик по нему выделяет корень
+    const id = nodeIdFromTarget(e.target) ?? rootHandleIdFromTarget(e.target)
+    layoutStore.select(resolveClickTarget(layoutStore.document, id))
     // Выбор на канвасе: F2 теперь открывает поле у блока, а не в «Слоях»
     labelEdit.pickInLayers(null)
   }
