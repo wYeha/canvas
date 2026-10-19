@@ -25,7 +25,7 @@ export function useCanvasCreate() {
   /** Создаёт блок, выделяет его и открывает ввод подписи; сначала завершает незаконченный ввод предыдущей подписи. */
   function createBlock(kind: ContainerKind): void {
     labelEdit.finish()
-    const parentId = newBlockParentId(layoutStore.selectedNode)
+    const parentId = newBlockParentId(layoutStore.document, layoutStore.selectedNode)
     const id =
       parentId === null
         ? layoutStore.createRoot(kind, newRootPoint(), NEW_ROOT_WIDTH)

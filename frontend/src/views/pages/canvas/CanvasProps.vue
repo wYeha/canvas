@@ -36,6 +36,7 @@ import CanvasPropsActions from '@/views/pages/canvas/CanvasPropsActions.vue'
 import CanvasPropsBlock from '@/views/pages/canvas/CanvasPropsBlock.vue'
 import CanvasPropsChild from '@/views/pages/canvas/CanvasPropsChild.vue'
 import CanvasPropsContainer from '@/views/pages/canvas/CanvasPropsContainer.vue'
+import CanvasPropsLink from '@/views/pages/canvas/CanvasPropsLink.vue'
 import CanvasPropsPreview from '@/views/pages/canvas/CanvasPropsPreview.vue'
 import UiEmptyState from '@/views/components/ui-empty-state/UiEmptyState.vue'
 import UiPanel from '@/views/components/ui-panel/UiPanel.vue'
@@ -51,6 +52,7 @@ const registry: Partial<Record<PropsSectionId, Component>> = {
   block: CanvasPropsBlock,
   container: CanvasPropsContainer,
   child: CanvasPropsChild,
+  link: CanvasPropsLink,
 }
 const { header, sections } = useCanvasProps(registry)
 const { isOpen, setOpen } = useCanvasPropsSections()

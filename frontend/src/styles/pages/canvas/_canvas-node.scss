@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи, редакторский отступ, копии повтора)
+// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи, редакторский отступ, копии повтора, плашка связи)
 @use 'sass:list';
 @use 'sass:map';
 @use 'variables' as v;
@@ -28,6 +28,18 @@
     &--depth-#{$i} {
       --node-color: var(--block-#{$i});
     }
+  }
+
+  // Связь: плашка на месте ребёнка — нейтральный цвет, пунктир и штриховка; при экспорте здесь встанет источник
+  &--link {
+    --node-color: var(--color-link);
+
+    outline-style: dashed;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--node-color) calc(var(--alpha-link-hatch) * 100%), transparent) 0 v.$hatch-line,
+      transparent v.$hatch-line v.$hatch-step
+    );
   }
 
   // Редакторский min-height пустого листа без заданной высоты; в экспорт не идёт

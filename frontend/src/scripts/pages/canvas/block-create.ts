@@ -1,12 +1,17 @@
 /** Чистая логика создания блоков из тулбара: куда добавить новый блок и где поставить новый корень на поле. */
-import type { LayoutNode, NodeId, RootEntry } from '@shared'
+import { isLinkBlock, type LayoutDocument, type LayoutNode, type NodeId, type RootEntry } from '@shared'
 import { areaCenter, screenToWorld, type Camera, type Rect } from './camera'
 import { NEW_ROOT_HEIGHT_ESTIMATE, NEW_ROOT_MAX_SHIFTS, NEW_ROOT_OFFSET } from './constants'
 import type { CanvasPoint } from './factories'
+import { findParent } from './tree-query'
 
-/** Родитель для нового блока: id выделенного блока; без выделения — `null` (будет новый корень). */
-export function newBlockParentId(selected: LayoutNode | undefined): NodeId | null {
-  return selected?.id ?? null
+/**
+ * Родитель для нового блока: id выделенного блока; у выделенной связи — её родитель (внутрь связи ничего не кладётся,
+ * новый блок встаёт рядом); без выделения — `null` (будет новый корень).
+ */
+export function newBlockParentId(doc: LayoutDocument, selected: LayoutNode | undefined): NodeId | null {
+  if (selected === undefined) return null
+  return isLinkBlock(selected) ? (findParent(doc, selected.id)?.id ?? null) : selected.id
 }
 
 /** Левый верхний угол нового корня шириной `width`, при котором его центр лежит в центре видимой области `area`. */

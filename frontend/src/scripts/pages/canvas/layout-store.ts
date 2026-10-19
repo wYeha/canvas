@@ -9,6 +9,7 @@ import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId
 import { HISTORY_LIMIT, HISTORY_MERGE_MS } from './constants'
 import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
 import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
+import { rootLabelMap } from './node-view'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
 
@@ -51,6 +52,12 @@ export const useLayoutStore = defineStore('layout', () => {
   const selectedNode = computed<LayoutNode | undefined>(() =>
     selectedId.value === null ? undefined : tree.findNode(document.value, selectedId.value),
   )
+
+  /**
+   * Подписи корней по id — имена источников связей. Новая карта на каждую правку документа, поэтому читать её стоит
+   * только там, где есть связь (иначе зависимыми станут все узлы).
+   */
+  const rootLabels = computed(() => rootLabelMap(document.value))
 
   /** Путь от корня до выделенного узла включительно; пусто без выделения. */
   const selectedPath = computed<LayoutNode[]>(() =>
@@ -271,6 +278,7 @@ export const useLayoutStore = defineStore('layout', () => {
     hoveredId,
     selectedNode,
     selectedPath,
+    rootLabels,
     canUndo,
     canRedo,
     rootOf,

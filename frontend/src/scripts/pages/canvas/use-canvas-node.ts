@@ -1,15 +1,17 @@
-/** Composable фрагмента CanvasNode: из узла собирает вид (классы, стили раскладки, значок, подпись, копии повтора) для шаблона. */
+/** Composable фрагмента CanvasNode: из узла собирает вид (классы, стили раскладки, значок, подпись, копии повтора) для шаблона; связь — плашка с именем источника. */
 import { computed, type ComputedRef } from 'vue'
-import type { NodeId } from '@shared'
+import { isLinkBlock, type NodeId } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
 import { REPEAT_RENDER_BUDGET } from './constants'
 import { useDragStore } from './dnd/drag-store'
+import { useLayoutStore } from './layout-store'
 import { styleEntries, toStyleObject } from './node-style'
 import {
   blockClasses,
   blockLabel,
   directionIcon,
   isLeafBlock,
+  linkSourceName,
   renderChildren,
   repeatMark,
   type RenderChild,
@@ -42,6 +44,16 @@ export interface CanvasNodeState {
 /** Возвращает вычисляемый вид узла; глубина и цвет считаются при рендере, в данных не хранятся. */
 export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
   const dragStore = useDragStore()
+  const layoutStore = useLayoutStore()
+
+  /**
+   * Подпись узла: у связи — имя источника, у блока — своя. Подписи корней читаются только у связи: иначе каждый
+   * узел зависел бы от любой правки документа.
+   */
+  function nodeLabel(): string {
+    const { node } = props
+    return isLinkBlock(node) ? linkSourceName(node.sourceId, layoutStore.rootLabels) : blockLabel(node)
+  }
 
   /** Копия повтора: id исходного блока или `null` у настоящего блока. */
   const copyOf = computed<NodeId | null>(() => props.copyOf ?? null)
@@ -55,7 +67,7 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
       classes,
       style: toStyleObject(styleEntries(node, parentKind)),
       icon: directionIcon(node),
-      label: blockLabel(node),
+      label: nodeLabel(),
       // У корня ×N не показываем: повтор корня не рисуется и не экспортируется
       repeat: copyOf.value === null && parentKind !== null ? repeatMark(node) : '',
       leaf: isLeafBlock(node),

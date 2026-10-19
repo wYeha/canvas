@@ -2,11 +2,19 @@
  * Чистая логика выделения: клик или перетаскивание, цель клика, навигация Esc/Enter по документу,
  * прямоугольники оверлея и поля, текст бейджа и плашки пути. Без Vue и DOM.
  */
-import type { LayoutDocument, LayoutNode, NodeId } from '@shared'
+import { isLinkBlock, type LayoutDocument, type LayoutNode, type NodeId } from '@shared'
 import type { Rect } from './camera'
-import { BADGE_SEPARATOR, CSS_PX_UNIT, ROOT_UNTITLED_LABEL, SELECTION_BADGE_OFFSET, SIZE_SEPARATOR } from './constants'
+import {
+  BADGE_SEPARATOR,
+  CSS_PX_UNIT,
+  LINK_ICON,
+  LINK_TYPE_LABEL,
+  ROOT_UNTITLED_LABEL,
+  SELECTION_BADGE_OFFSET,
+  SIZE_SEPARATOR,
+} from './constants'
 import type { CanvasPoint } from './factories'
-import { blockLabel } from './node-view'
+import { blockLabel, linkSourceName, type SourceLabels } from './node-view'
 import { findNode, findParent } from './tree-query'
 
 /** Сегмент плашки пути: id узла и текст кнопки. */
@@ -42,13 +50,14 @@ export function visibleHoverId(hoveredId: NodeId | null, selectedId: NodeId | nu
   return hoveredId !== null && hoveredId === selectedId ? null : hoveredId
 }
 
-/** Тип узла для бейджа: вид контейнера блока, `flex` / `grid`. */
+/** Тип узла для бейджа и строки «Слоёв»: `связь` у связи, иначе вид контейнера блока, `flex` / `grid`. */
 export function nodeTypeLabel(node: LayoutNode): string {
-  return node.container.kind
+  return isLinkBlock(node) ? LINK_TYPE_LABEL : node.container.kind
 }
 
-/** Подпись узла: подпись блока или заглушка без подписи. */
-export function nodeCaption(node: LayoutNode): string {
+/** Подпись узла: у связи — `→ Имя источника`, у блока — подпись или заглушка без подписи. */
+export function nodeCaption(node: LayoutNode, labels: SourceLabels): string {
+  if (isLinkBlock(node)) return `${LINK_ICON} ${linkSourceName(node.sourceId, labels)}`
   const label = blockLabel(node)
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
@@ -59,8 +68,8 @@ export function sizeText(rect: Rect, zoom: number): string {
 }
 
 /** Текст бейджа выделения: `подпись · тип · Ш×В`. */
-export function selectionBadgeText(node: LayoutNode, size: string): string {
-  return [nodeCaption(node), nodeTypeLabel(node), size].join(BADGE_SEPARATOR)
+export function selectionBadgeText(node: LayoutNode, size: string, labels: SourceLabels): string {
+  return [nodeCaption(node, labels), nodeTypeLabel(node), size].join(BADGE_SEPARATOR)
 }
 
 /** Переводит экранный прямоугольник страницы в локальный прямоугольник оверлея (минус его начало). */
@@ -99,6 +108,6 @@ export function overlayRectStyle(rect: Rect): Record<string, string> {
 }
 
 /** Сегменты плашки пути по цепочке узлов от корня до выделенного. */
-export function breadcrumbSegments(path: readonly LayoutNode[]): BreadcrumbSegment[] {
-  return path.map((node) => ({ id: node.id, text: nodeCaption(node) }))
+export function breadcrumbSegments(path: readonly LayoutNode[], labels: SourceLabels): BreadcrumbSegment[] {
+  return path.map((node) => ({ id: node.id, text: nodeCaption(node, labels) }))
 }

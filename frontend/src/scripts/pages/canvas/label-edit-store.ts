@@ -6,8 +6,9 @@
  */
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { NodeId } from '@shared'
+import { isLinkBlock, type NodeId } from '@shared'
 import { useLayoutStore } from './layout-store'
+import { findNode } from './tree-query'
 
 /** Режим ввода: подпись только что созданного блока или переименование существующего. */
 export type LabelEditMode = 'create' | 'rename'
@@ -62,8 +63,13 @@ export const useLabelEditStore = defineStore('label-edit', () => {
     mode.value = 'create'
   }
 
-  /** Открывает переименование блока с текущей подписью на канвасе или в «Слоях»; предыдущий ввод завершается. */
+  /**
+   * Открывает переименование блока с текущей подписью на канвасе или в «Слоях»; предыдущий ввод завершается.
+   * У связи своей подписи нет (показывается имя источника) — переименование не открывается.
+   */
   function beginRename(id: NodeId, currentLabel: string, where: LabelEditPlace = 'canvas'): void {
+    const node = findNode(useLayoutStore().document, id)
+    if (node !== undefined && isLinkBlock(node)) return
     finish()
     editingId.value = id
     draft.value = currentLabel

@@ -3,7 +3,7 @@
  * решает, куда упадёт узел — в блок, на пустое поле или никуда. Без Vue и DOM; правила переноса — `canMoveNode`.
  */
 
-import type { LayoutDocument, NodeId } from '@shared'
+import { isLinkBlock, type LayoutDocument, type NodeId } from '@shared'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { canMoveNode } from '@/scripts/pages/canvas/tree-move'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
@@ -36,9 +36,17 @@ function chainOutsideDragged(chain: NodeId[], draggedId: NodeId): NodeId[] {
   return index === -1 ? chain : chain.slice(index + 1)
 }
 
-/** Первый id цепочки, который есть в документе (устаревшие id пропускаются). */
+/**
+ * Первый id цепочки, который есть в документе и не связь (устаревшие id пропускаются). Плашка связи «прозрачна»:
+ * внутрь неё ничего не кладётся, поэтому над ней приёмник — её родитель (вставка рядом с плашкой).
+ */
 function firstBlockId(doc: LayoutDocument, chain: NodeId[]): NodeId | null {
-  return chain.find((id) => findNode(doc, id) !== undefined) ?? null
+  return (
+    chain.find((id) => {
+      const node = findNode(doc, id)
+      return node !== undefined && !isLinkBlock(node)
+    }) ?? null
+  )
 }
 
 /**

@@ -27,7 +27,7 @@ export function useCanvasTemplates() {
     if (template === undefined) return false
     labelEdit.finish()
     const node = template.build()
-    const parentId = newBlockParentId(layoutStore.selectedNode)
+    const parentId = newBlockParentId(layoutStore.document, layoutStore.selectedNode)
     if (parentId !== null) return layoutStore.pasteChild(parentId, node) !== null
     return layoutStore.pasteRoot(node, newRootPoint(), template.rootWidth) !== null
   }

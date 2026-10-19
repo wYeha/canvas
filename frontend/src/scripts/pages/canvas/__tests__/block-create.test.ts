@@ -7,18 +7,24 @@ import {
   rootShiftStep,
 } from '@/scripts/pages/canvas/block-create'
 import { NEW_ROOT_HEIGHT_ESTIMATE, NEW_ROOT_OFFSET } from '@/scripts/pages/canvas/constants'
-import { createRootEntry } from '@/scripts/pages/canvas/factories'
-import { block } from './tree-fixture'
+import { createLinkBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
+import { addChild, findNode } from '@/scripts/pages/canvas/tree'
+import { block, makeDoc } from './tree-fixture'
 
 const AREA = { x: 260, y: 0, width: 800, height: 600 }
 
 describe('newBlockParentId', () => {
   it('выделенный блок — родитель', () => {
-    expect(newBlockParentId(block('a', 'flex'))).toBe('a')
+    expect(newBlockParentId(makeDoc(), block('a', 'flex'))).toBe('a')
   })
 
   it('без выделения — новый корень (null)', () => {
-    expect(newBlockParentId(undefined)).toBeNull()
+    expect(newBlockParentId(makeDoc(), undefined)).toBeNull()
+  })
+
+  it('выделена связь — родитель связи: новый блок встаёт рядом, а не внутрь', () => {
+    const doc = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
+    expect(newBlockParentId(doc, findNode(doc, 'lC'))).toBe('a2')
   })
 })
 

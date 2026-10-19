@@ -182,6 +182,21 @@ export const DIRECTION_ICONS = {
 /** Подпись корня, если у блока нет подписи. */
 export const ROOT_UNTITLED_LABEL = 'Без подписи'
 
+/** Значок связи (плашка, бейдж, путь, заголовок свойств): пунктирная стрелка, отличная от стрелок направления flex. */
+export const LINK_ICON = '⇢'
+
+/** Тип связи в бейдже выделения и строке «Слоёв». */
+export const LINK_TYPE_LABEL = 'связь'
+
+/** Подпись связи, источника которой нет (временное состояние посреди операции). */
+export const LINK_MISSING_LABEL = 'источник не найден'
+
+/** Подпись поля источника в секции «Связь». */
+export const LINK_SOURCE_LABEL = 'Источник'
+
+/** Кнопка перехода к источнику в секции «Связь». */
+export const LINK_GO_TO_SOURCE_LABEL = 'Перейти к источнику'
+
 /** Разделитель подписи корня и ширины превью. */
 export const ROOT_TITLE_SEPARATOR = ' · '
 
@@ -332,6 +347,7 @@ export const PROPS_SECTION_TITLES = {
   block: 'Блок',
   container: 'Контейнер',
   child: 'Как ребёнок',
+  link: 'Связь',
 } as const
 
 /** Разделитель частей меты в заголовке панели свойств. */

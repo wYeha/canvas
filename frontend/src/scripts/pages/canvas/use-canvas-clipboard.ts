@@ -31,7 +31,7 @@ export function useCanvasClipboard() {
     const entry = clipboard.entry
     if (entry === null) return false
     labelEdit.finish()
-    const parentId = newBlockParentId(layoutStore.selectedNode)
+    const parentId = newBlockParentId(layoutStore.document, layoutStore.selectedNode)
     if (parentId !== null) return layoutStore.pasteChild(parentId, entry.node) !== null
     return layoutStore.pasteRoot(entry.node, newRootPoint(), entry.rootWidth ?? NEW_ROOT_WIDTH) !== null
   }

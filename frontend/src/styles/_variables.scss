@@ -8,6 +8,7 @@ $theme-light: (
   'colors': (
     'canvas': #e9ebee,
     'canvas-dot': #c3c8cf,
+    'link': #7a8597,
     'paper': #fff,
     'panel': #fff,
     'line': #e2e4e8,
@@ -49,6 +50,7 @@ $theme-dark: (
   'colors': (
     'canvas': #0e0f11,
     'canvas-dot': #22262b,
+    'link': #8a93a3,
     'paper': #16181b,
     'panel': #1b1e22,
     'line': #2a2e34,
@@ -127,6 +129,7 @@ $block-alpha-light: (
   'chip': 0.22,
   'icon': 0.22,
   'drop-fill': 0.12,
+  'link-hatch': 0.18,
 );
 $block-alpha-dark: (
   'fill': 0.11,
@@ -134,6 +137,7 @@ $block-alpha-dark: (
   'chip': 0.24,
   'icon': 0.3,
   'drop-fill': 0.12,
+  'link-hatch': 0.26,
 );
 
 // ---------- Шрифты ----------
@@ -240,6 +244,8 @@ $drag-ghost-opacity: 0.9; // призрак перетаскивания
 $drag-source-opacity: 0.4; // перетаскиваемый блок на своём месте (пунктирный след)
 $repeat-copy-opacity: 0.5; // копии повтора ×N на канвасе (сам блок — без приглушения)
 $drop-insert-dot-size: 6px; // диаметр точек на концах линии вставки (DROP_INSERT_DOT_RADIUS × 2)
+$hatch-line: 2px; // толщина штриховки плашки связи
+$hatch-step: 6px; // шаг штриховки плашки связи
 
 // Запас по высоте под нижние плашки: панели «Слои» и «Свойства» не заходят на них
 $floating-reserve: $panel-gap * 3 + $pill-height;

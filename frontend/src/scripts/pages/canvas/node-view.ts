@@ -2,12 +2,21 @@
  * Чистая логика оформления блоков на канвасе: глубина и цвет, значки, подписи, классы, позиция корня,
  * список отрисовки детей с копиями повтора (`repeat`).
  */
-import type { BlockNode, CanvasPlacement, ContainerKind, NodeId } from '@shared'
+import {
+  isLinkBlock,
+  type BlockNode,
+  type CanvasPlacement,
+  type ContainerKind,
+  type LayoutDocument,
+  type NodeId,
+} from '@shared'
 import {
   BLOCK_PALETTE_SIZE,
   CSS_PX_UNIT,
   DEFAULT_REPEAT,
   DIRECTION_ICONS,
+  LINK_ICON,
+  LINK_MISSING_LABEL,
   REPEAT_KEY_SEPARATOR,
   REPEAT_MARK,
   REPEAT_MAX,
@@ -46,9 +55,26 @@ export function depthClass(depth: number): string {
   return `canvas-node--depth-${String(paletteIndex(depth))}`
 }
 
-/** Значок направления контейнера: стрелка для flex, `#` для grid. */
+/** Значок узла: у связи — `→`, у блока — направление контейнера (стрелка для flex, `#` для grid). */
 export function directionIcon(block: BlockNode): string {
+  if (isLinkBlock(block)) return LINK_ICON
   return block.container.kind === 'grid' ? DIRECTION_ICONS.grid : DIRECTION_ICONS[block.container.direction]
+}
+
+/** Подписи корней по id: по ним связи показывают имя источника без поиска по документу. */
+export type SourceLabels = ReadonlyMap<NodeId, string>
+
+/** Пустая карта подписей: для узлов, которые точно не связи (подписи источников им не нужны). */
+export const NO_SOURCE_LABELS: SourceLabels = new Map()
+
+/** Карта «id корня → подпись» (пустая подпись — «Без подписи»). */
+export function rootLabelMap(doc: Pick<LayoutDocument, 'roots'>): Map<NodeId, string> {
+  return new Map(doc.roots.map((root) => [root.node.id, rootTitle(root.node)]))
+}
+
+/** Имя источника связи; источника нет — «источник не найден». */
+export function linkSourceName(sourceId: NodeId, labels: SourceLabels): string {
+  return labels.get(sourceId) ?? LINK_MISSING_LABEL
 }
 
 /** Блок без детей: подпись рисуется по центру, без чипа. */
@@ -70,6 +96,7 @@ export function needsLeafMinHeight(block: BlockNode, parentKind: ContainerKind |
 /** BEM-классы блока: база, цвет по глубине, лист и пустой лист. */
 export function blockClasses(block: BlockNode, depth: number, parentKind: ContainerKind | null): string[] {
   const classes = ['canvas-node', depthClass(depth)]
+  if (isLinkBlock(block)) classes.push('canvas-node--link')
   if (isLeafBlock(block)) classes.push('canvas-node--leaf')
   if (needsLeafMinHeight(block, parentKind)) classes.push('canvas-node--min-height')
   return classes

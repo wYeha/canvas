@@ -1,6 +1,7 @@
 /** Тесты props-sections: состав секций, заголовок панели, разбор и изменение состояния сворачивания. */
 import { describe, expect, it } from 'vitest'
-import { createBlock } from '@/scripts/pages/canvas/factories'
+import { createBlock, createLinkBlock } from '@/scripts/pages/canvas/factories'
+import { NO_SOURCE_LABELS } from '@/scripts/pages/canvas/node-view'
 import {
   isSectionOpen,
   parseSectionsState,
@@ -22,26 +23,38 @@ function node(id: string) {
 
 describe('propsSectionIds', () => {
   it('корневой блок: превью, блок, контейнер', () => {
-    expect(propsSectionIds(null)).toEqual(['preview', 'block', 'container'])
+    expect(propsSectionIds(node('A'), null)).toEqual(['preview', 'block', 'container'])
   })
 
   it('вложенный блок: блок, контейнер, как ребёнок', () => {
-    expect(propsSectionIds('flex')).toEqual(['block', 'container', 'child'])
-    expect(propsSectionIds('grid')).toEqual(['block', 'container', 'child'])
+    expect(propsSectionIds(node('a1'), 'flex')).toEqual(['block', 'container', 'child'])
+    expect(propsSectionIds(node('b1'), 'grid')).toEqual(['block', 'container', 'child'])
+  })
+
+  it('связь: только «Связь» и «Как ребёнок»', () => {
+    expect(propsSectionIds(createLinkBlock('C'), 'flex')).toEqual(['link', 'child'])
   })
 })
 
 describe('propsHeader', () => {
   it('корень: «корневой · flex»', () => {
-    expect(propsHeader(node('A'), null)).toMatchObject({ title: 'A', meta: 'корневой · flex' })
+    expect(propsHeader(node('A'), null, NO_SOURCE_LABELS)).toMatchObject({ title: 'A', meta: 'корневой · flex' })
   })
 
   it('вложенный блок: «grid · ребёнок flex»', () => {
-    expect(propsHeader(node('a1'), 'flex')).toMatchObject({ icon: '#', meta: 'grid · ребёнок flex' })
+    expect(propsHeader(node('a1'), 'flex', NO_SOURCE_LABELS)).toMatchObject({ icon: '#', meta: 'grid · ребёнок flex' })
+  })
+
+  it('связь: значок ⇢, имя источника, «связь · ребёнок flex»', () => {
+    expect(propsHeader(createLinkBlock('C'), 'flex', new Map([['C', 'Карточка']]))).toEqual({
+      icon: '⇢',
+      title: 'Карточка',
+      meta: 'связь · ребёнок flex',
+    })
   })
 
   it('блок без подписи получает заглушку', () => {
-    expect(propsHeader({ ...createBlock('flex', ''), id: 'x' }, null).title).toBe('Без подписи')
+    expect(propsHeader({ ...createBlock('flex', ''), id: 'x' }, null, NO_SOURCE_LABELS).title).toBe('Без подписи')
   })
 })
 

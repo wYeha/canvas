@@ -9,6 +9,8 @@ import {
   layerToggleLabel,
   toggleCollapsed,
 } from '@/scripts/pages/canvas/layers'
+import { createLinkBlock } from '@/scripts/pages/canvas/factories'
+import { NO_SOURCE_LABELS } from '@/scripts/pages/canvas/node-view'
 import { findNode, getPath } from '@/scripts/pages/canvas/tree-query'
 import { block, makeDoc } from './tree-fixture'
 
@@ -25,11 +27,20 @@ describe('layerIcon / layerCaption', () => {
   it('блок: значок по виду контейнера и подпись', () => {
     expect(layerIcon(node('A'))).toBe('flex')
     expect(layerIcon(node('a1'))).toBe('grid')
-    expect(layerCaption(node('a1'))).toBe('a1')
+    expect(layerCaption(node('a1'), NO_SOURCE_LABELS)).toBe('a1')
   })
 
   it('пустая подпись — заглушка', () => {
-    expect(layerCaption({ ...block('x', 'flex'), label: '  ' })).toBe('Без подписи')
+    expect(layerCaption({ ...block('x', 'flex'), label: '  ' }, NO_SOURCE_LABELS)).toBe('Без подписи')
+  })
+})
+
+describe('строка связи', () => {
+  it('значок link, подпись — имя источника, без источника — «источник не найден»', () => {
+    const link = { ...createLinkBlock('C'), id: 'l' }
+    expect(layerIcon(link)).toBe('link')
+    expect(layerCaption(link, new Map([['C', 'Карточка']]))).toBe('Карточка')
+    expect(layerCaption(link, NO_SOURCE_LABELS)).toBe('источник не найден')
   })
 })
 

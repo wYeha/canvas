@@ -18,6 +18,8 @@ import {
   toWorldRect,
   visibleHoverId,
 } from '@/scripts/pages/canvas/selection'
+import { createLinkBlock } from '@/scripts/pages/canvas/factories'
+import { NO_SOURCE_LABELS } from '@/scripts/pages/canvas/node-view'
 import { findNode, getPath } from '@/scripts/pages/canvas/tree-query'
 import { makeDoc } from './tree-fixture'
 
@@ -105,8 +107,10 @@ describe('selection: геометрия и тексты', () => {
   })
 
   it('бейдж: подпись · тип · размер', () => {
-    expect(selectionBadgeText(node('a1'), '10×20')).toBe('a1 · grid · 10×20')
-    expect(selectionBadgeText({ ...node('a3'), label: '' }, '1×2')).toBe('Без подписи · flex · 1×2')
+    expect(selectionBadgeText(node('a1'), '10×20', NO_SOURCE_LABELS)).toBe('a1 · grid · 10×20')
+    expect(selectionBadgeText({ ...node('a3'), label: '' }, '1×2', NO_SOURCE_LABELS)).toBe('Без подписи · flex · 1×2')
+    const link = { ...createLinkBlock('C'), id: 'l' }
+    expect(selectionBadgeText(link, '5×6', new Map([['C', 'Карточка']]))).toBe('⇢ Карточка · связь · 5×6')
     expect(nodeTypeLabel(node('A'))).toBe('flex')
   })
 
@@ -125,10 +129,10 @@ describe('selection: геометрия и тексты', () => {
   })
 
   it('плашка пути: сегменты от корня до выделенного', () => {
-    const segments = breadcrumbSegments(getPath(doc, 'a1x'))
+    const segments = breadcrumbSegments(getPath(doc, 'a1x'), NO_SOURCE_LABELS)
     expect(segments.map((s) => s.id)).toEqual(['A', 'a1', 'a1x'])
     expect(segments.map((s) => s.text)).toEqual(['A', 'a1', 'a1x'])
-    expect(breadcrumbSegments([])).toEqual([])
+    expect(breadcrumbSegments([], NO_SOURCE_LABELS)).toEqual([])
   })
 })
 

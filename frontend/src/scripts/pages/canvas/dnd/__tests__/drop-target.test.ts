@@ -1,7 +1,9 @@
-/** Тесты выбора приёмника: прозрачность перетаскиваемого поддерева, пустое поле, устаревшие id. */
+/** Тесты выбора приёмника: прозрачность перетаскиваемого поддерева и плашек связей, пустое поле, устаревшие id. */
 import { describe, expect, it } from 'vitest'
 import { resolveDropTarget, sameDropTarget } from '@/scripts/pages/canvas/dnd/drop-target'
 import { makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
+import { createLinkBlock } from '@/scripts/pages/canvas/factories'
+import { addChild } from '@/scripts/pages/canvas/tree'
 
 const doc = makeDoc()
 
@@ -74,5 +76,12 @@ describe('sameDropTarget', () => {
     expect(sameDropTarget({ kind: 'block', id: 'A', index: 1 }, { kind: 'block', id: 'A', index: 1 })).toBe(true)
     expect(sameDropTarget({ kind: 'block', id: 'A', index: 1 }, { kind: 'block', id: 'A', index: 2 })).toBe(false)
     expect(sameDropTarget({ kind: 'block', id: 'A', index: 0 }, { kind: 'block', id: 'A', index: null })).toBe(false)
+  })
+})
+
+describe('плашка связи прозрачна', () => {
+  it('над плашкой приёмник — её родитель', () => {
+    const doc = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
+    expect(resolveDropTarget(doc, 'a3', { chain: ['lC', 'a2', 'A'] })).toEqual({ kind: 'block', id: 'a2', index: null })
   })
 })

@@ -4,7 +4,7 @@
  * Состояния строки — отдельные computed: смена ховера или выделения пересчитывает только затронутые строки.
  */
 import { computed, inject, onMounted, watch, type ComputedRef, type Ref } from 'vue'
-import type { LayoutNode } from '@shared'
+import { isLinkBlock, type LayoutNode } from '@shared'
 import type { CanvasLayerItemProps } from './canvas-layer-item.types'
 import {
   layerCaption,
@@ -16,7 +16,7 @@ import {
 } from './layers'
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
-import { repeatMark } from './node-view'
+import { NO_SOURCE_LABELS, repeatMark } from './node-view'
 import { nodeTypeLabel } from './selection'
 import { CANVAS_LAYERS_CONTEXT, LAYERS_DND_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
 import { skipLayersClickAfterDrag } from './use-canvas-layers-dnd'
@@ -70,7 +70,10 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
   /** Раскрыта ли ветка: есть дети и она не свёрнута. */
   const expanded = computed(() => children.value.length > 0 && !context.collapsed.value.has(props.node.id))
   /** Подпись строки. */
-  const caption = computed(() => layerCaption(props.node))
+  // Подписи корней читаются только у связи: иначе каждая строка зависела бы от любой правки документа
+  const caption = computed(() =>
+    isLinkBlock(props.node) ? layerCaption(props.node, store.rootLabels) : layerCaption(props.node, NO_SOURCE_LABELS),
+  )
 
   /** Вид строки: всё, что нужно шаблону. */
   const view = computed<LayerItemView>(() => {

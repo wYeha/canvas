@@ -1,20 +1,23 @@
-/** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня, копии повтора. */
+/** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня, копии повтора, вид связи. */
 import { describe, expect, it } from 'vitest'
 import { REPEAT_RENDER_BUDGET } from '@/scripts/pages/canvas/constants'
-import { createBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
+import { createBlock, createLinkBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
   blockClasses,
   cloneSize,
   depthClass,
   directionIcon,
+  linkSourceName,
   needsLeafMinHeight,
   paletteIndex,
   renderChildren,
   repeatCount,
   repeatMark,
   rootCaption,
+  rootLabelMap,
   rootPlacementStyle,
 } from '@/scripts/pages/canvas/node-view'
+import { makeDoc } from './tree-fixture'
 
 describe('node-view', () => {
   it('цвет по глубине циклически: depth % 8', () => {
@@ -170,5 +173,24 @@ describe('бюджет копий повтора', () => {
     const before = JSON.stringify(tree)
     expect(renderChildren(tree, null, 7)).toEqual(renderChildren(tree, null, 7))
     expect(JSON.stringify(tree)).toBe(before)
+  })
+})
+
+describe('связь', () => {
+  const link = { ...createLinkBlock('C'), id: 'l' }
+
+  it('значок ⇢, класс плашки, лист с редакторским min-height', () => {
+    expect(directionIcon(link)).toBe('⇢')
+    expect(blockClasses(link, 2, 'flex')).toEqual(
+      expect.arrayContaining(['canvas-node', 'canvas-node--link', 'canvas-node--leaf', 'canvas-node--min-height']),
+    )
+  })
+
+  it('подписи корней и имя источника', () => {
+    const doc = makeDoc()
+    const labels = rootLabelMap(doc)
+    expect(labels.get('B')).toBe('B')
+    expect(linkSourceName('B', labels)).toBe('B')
+    expect(linkSourceName('nope', labels)).toBe('источник не найден')
   })
 })

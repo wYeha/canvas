@@ -1,0 +1,32 @@
+// Стили фрагмента canvas-props-link: имя источника связи строкой и кнопка перехода к нему
+@use 'variables' as v;
+
+.canvas-props-link {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-8;
+  align-items: flex-start;
+
+  &__source {
+    display: flex;
+    gap: v.$space-6;
+    align-items: baseline;
+    min-width: 0;
+    max-width: 100%;
+    font-size: v.$font-size-sm;
+  }
+
+  &__label {
+    flex: none;
+    color: var(--color-muted);
+  }
+
+  &__name {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: v.$font-weight-semibold;
+    color: var(--color-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

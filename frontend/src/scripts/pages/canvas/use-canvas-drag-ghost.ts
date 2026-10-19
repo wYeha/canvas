@@ -8,9 +8,9 @@ import { DRAG_GHOST_MAX_SIZE } from './constants'
 import { ghostRect } from './dnd/dnd-geometry'
 import { dragGhostStyle } from './dnd/dnd-style'
 import { useDragStore } from './dnd/drag-store'
+import { layerCaption } from './layers'
 import { useLayoutStore } from './layout-store'
 import { directionIcon, paletteIndex } from './node-view'
-import { nodeCaption } from './selection'
 import { findNode, getPath } from './tree-query'
 
 /** Содержимое призрака: классы, значок и подпись. */
@@ -32,7 +32,8 @@ export function useCanvasDragGhost() {
     const doc = layoutStore.document
     const node = id === null ? undefined : findNode(doc, id)
     if (node === undefined) return null
-    const text = nodeCaption(node)
+    // Подпись без значка: значок (у связи — `→`) рисуется отдельно
+    const text = layerCaption(node, layoutStore.rootLabels)
     const depth = getPath(doc, node.id).length - 1
     const classes = ['canvas-drag-ghost', `canvas-drag-ghost--depth-${String(paletteIndex(depth))}`]
     return { classes, icon: directionIcon(node), text }

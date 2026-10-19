@@ -48,7 +48,7 @@ export function useCanvasLayersDragGhost(overlayEl: Ref<HTMLElement | null>): {
     return {
       classes,
       icon: layerIcon(node),
-      caption: layerCaption(node),
+      caption: layerCaption(node, layoutStore.rootLabels),
       type: nodeTypeLabel(node),
       style: layerDragGhostStyle(local),
     }

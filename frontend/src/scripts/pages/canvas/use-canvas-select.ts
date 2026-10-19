@@ -1,9 +1,11 @@
 /**
  * Composable выделения мышью: клик по блоку выделяет самый глубокий блок под курсором, клик по пустому полю
  * снимает выделение, движение указателя подсвечивает блок (и над строками панели «Слои»).
- * Клик, завершивший пан или со сдвигом больше порога, не считается. Двойной клик по подписи блока — переименование.
+ * Клик, завершивший пан или со сдвигом больше порога, не считается. Двойной клик по подписи блока — переименование,
+ * по плашке связи — переход к источнику.
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
+import { isLinkBlock } from '@shared'
 import { CLICK_DRAG_THRESHOLD, PRIMARY_BUTTON } from './constants'
 import type { CanvasPoint } from './factories'
 import { useDragStore } from './dnd/drag-store'
@@ -13,6 +15,7 @@ import { useLayoutStore } from './layout-store'
 import { labelNodeIdAt, layerIdFromTarget, nodeIdFromTarget, rootHandleIdFromTarget } from './node-dom'
 import { findNode } from './tree-query'
 import { isClickGesture, resolveClickTarget } from './selection'
+import { useCanvasLinkNav } from './use-canvas-link-nav'
 
 /** Подключает выделение к viewport; `isPanning` сообщает, что пробел зажат или идёт тяга поля. */
 export function useCanvasSelect(
@@ -23,6 +26,7 @@ export function useCanvasSelect(
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
   const dragStore = useDragStore()
+  const linkNav = useCanvasLinkNav()
   /** Указатель и точка нажатия, которое может стать кликом; `null` — клика не ждём. */
   let press: { pointerId: number; point: CanvasPoint } | null = null
 
@@ -45,12 +49,19 @@ export function useCanvasSelect(
     labelEdit.pickInLayers(null)
   }
 
-  /** Двойной клик по подписи блока (заголовок корня, чип, подпись листа) открывает переименование на канвасе. */
+  /**
+   * Двойной клик по подписи блока (заголовок корня, чип, подпись листа) открывает переименование на канвасе;
+   * по плашке связи — переход к источнику.
+   */
   function onDoubleClick(e: MouseEvent): void {
     if (e.button !== PRIMARY_BUTTON || !isSurface(e.target) || isPanning()) return
     const id = labelNodeIdAt(e.target, { x: e.clientX, y: e.clientY })
     const node = id === null ? undefined : findNode(layoutStore.document, id)
     if (!node) return
+    if (isLinkBlock(node)) {
+      linkNav.goToSource(node.id)
+      return
+    }
     layoutStore.select(node.id)
     labelEdit.beginRename(node.id, node.label, 'canvas')
   }

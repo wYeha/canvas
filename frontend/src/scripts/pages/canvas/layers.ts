@@ -1,10 +1,10 @@
 /** Чистая логика панели «Слои»: значок, подпись и дети строки, свёрнутые ветки, классы строки. Без Vue и DOM. */
-import type { ContainerKind, LayoutNode, NodeId } from '@shared'
+import { isLinkBlock, type ContainerKind, type LayoutNode, type NodeId } from '@shared'
 import { LAYER_COLLAPSE_LABEL, LAYER_EXPAND_LABEL, ROOT_UNTITLED_LABEL } from './constants'
-import { blockLabel } from './node-view'
+import { blockLabel, linkSourceName, type SourceLabels } from './node-view'
 
-/** Значок строки слоя: вид контейнера блока. */
-export type LayerIcon = ContainerKind
+/** Значок строки слоя: вид контейнера блока или связь. */
+export type LayerIcon = ContainerKind | 'link'
 
 /** Состояние строки слоя для классов. */
 export interface LayerRowState {
@@ -19,13 +19,14 @@ export interface LayerRowState {
   dropForbidden?: boolean
 }
 
-/** Значок строки: `flex` / `grid` по виду контейнера блока. */
+/** Значок строки: `link` у связи, иначе `flex` / `grid` по виду контейнера блока. */
 export function layerIcon(node: LayoutNode): LayerIcon {
-  return node.container.kind
+  return isLinkBlock(node) ? 'link' : node.container.kind
 }
 
-/** Подпись строки: подпись блока или заглушка без подписи. */
-export function layerCaption(node: LayoutNode): string {
+/** Подпись строки: у связи — имя источника (значок уже говорит, что это связь), у блока — подпись или заглушка. */
+export function layerCaption(node: LayoutNode, labels: SourceLabels): string {
+  if (isLinkBlock(node)) return linkSourceName(node.sourceId, labels)
   const label = blockLabel(node)
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
