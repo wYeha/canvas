@@ -5,6 +5,7 @@ import Fastify, { type FastifyInstance } from 'fastify'
 import type { Config } from '@/config'
 import { API_PREFIX, BODY_LIMIT_BYTES } from '@/constants'
 import { registerErrorHandlers } from '@/plugins/errors'
+import { documentRoutes } from '@/routes/documents'
 import { healthRoutes } from '@/routes/health'
 
 /** Внешние зависимости сервера: открытая база (сервер закрывает её при остановке). */
@@ -20,5 +21,6 @@ export async function buildServer(config: Pick<Config, 'logLevel'>, deps: Server
   })
   registerErrorHandlers(app)
   await app.register(healthRoutes, { prefix: API_PREFIX })
+  await app.register(documentRoutes, { prefix: API_PREFIX, db: deps.db })
   return app
 }
