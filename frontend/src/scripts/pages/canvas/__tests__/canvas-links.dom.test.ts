@@ -1,16 +1,18 @@
 /**
  * DOM-тесты плашек связей: плашка на месте ребёнка с именем источника, двойной клик ведёт к источнику,
- * переименование связи не открывается, строка в «Слоях», секция «Связь» в свойствах с переходом к источнику.
+ * переименование связи не открывается, строка в «Слоях», секция «Связь» в свойствах с переходом к источнику,
+ * ширины «источник / место» и «Подогнать».
  */
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import type { Component } from 'vue'
 import { createLinkBlock } from '@/scripts/pages/canvas/factories'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { resetLayersDragState } from '@/scripts/pages/canvas/layers-drag-state'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import { addChild } from '@/scripts/pages/canvas/tree'
+import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import CanvasLayers from '@/views/pages/canvas/CanvasLayers.vue'
 import CanvasProps from '@/views/pages/canvas/CanvasProps.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
@@ -31,6 +33,7 @@ function setup(component: Component): VueWrapper {
 afterEach(() => {
   mounted?.unmount()
   mounted = null
+  vi.restoreAllMocks()
 })
 
 describe('плашка на канвасе', () => {
@@ -79,5 +82,44 @@ describe('связь в «Слоях» и свойствах', () => {
     const go = wrapper.findAll('button').find((button) => button.text().includes('Перейти к источнику'))
     await go?.trigger('click')
     expect(useLayoutStore().selectedId).toBe('C')
+  })
+})
+
+describe('ширина связи', () => {
+  /** Находит кнопку по тексту. */
+  function button(wrapper: VueWrapper, text: string) {
+    const found = wrapper.findAll('button').find((b) => b.text() === text)
+    if (!found) throw new Error(`нет кнопки «${text}»`)
+    return found
+  }
+
+  it('место не отрисовано — прочерк, «Подогнать» недоступно', async () => {
+    const wrapper = setup(CanvasProps)
+    useLayoutStore().select('lC')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('источник: 960px / место: —')
+    expect(button(wrapper, 'Подогнать').attributes('disabled')).toBeDefined()
+  })
+
+  it('«Подогнать» ставит ширину превью источника равной месту одним шагом', async () => {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 300.4, 40))
+    // Поле не смонтировано: слой мира и плашка — заглушки с тем же селектором и атрибутом
+    const world = document.createElement('div')
+    world.setAttribute('data-canvas-world', '')
+    const plaque = document.createElement('div')
+    plaque.setAttribute('data-node-id', 'lC')
+    world.appendChild(plaque)
+    document.body.appendChild(world)
+    const wrapper = setup(CanvasProps)
+    const store = useLayoutStore()
+    store.select('lC')
+    // Секция монтируется после выделения, замер — на следующем тике после монтирования
+    await flushPromises()
+    expect(wrapper.text()).toContain('источник: 960px / место: 300px')
+    await button(wrapper, 'Подогнать').trigger('click')
+    expect(findRootEntry(store.document, 'C')?.canvas.width).toBe(300)
+    store.undo()
+    expect(findRootEntry(store.document, 'C')?.canvas.width).toBe(960)
+    world.remove()
   })
 })

@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-props-link: имя источника связи строкой и кнопка перехода к нему
+// Стили фрагмента canvas-props-link: имя источника связи, кнопка перехода, строка ширин и «Подогнать»
 @use 'variables' as v;
 
 .canvas-props-link {
@@ -27,6 +27,18 @@
     font-weight: v.$font-weight-semibold;
     color: var(--color-text);
     text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__widths {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-6;
+    align-items: flex-start;
+  }
+
+  &__value {
+    color: var(--color-text);
     white-space: nowrap;
   }
 }
