@@ -1,6 +1,7 @@
 /** Тесты перемещения узлов: внутри родителя, между блоками и корнями, на канвас, запреты и no-op. */
 import { describe, expect, it } from 'vitest'
 import {
+  addChild,
   canMoveNode,
   findNode,
   findParent,
@@ -8,6 +9,7 @@ import {
   moveNode,
   type MoveTarget,
 } from '@/scripts/pages/canvas/tree'
+import { createLink } from '@/scripts/pages/canvas/factories'
 import { childIds, expectValid, makeDoc } from './tree-fixture'
 
 /** Цель «ребёнком блока». */
@@ -88,6 +90,43 @@ describe('связи', () => {
     const result = moveNode(doc, 'linkB', child('c1', 0))
     expectValid(result)
     expect(findParent(result, 'linkB')?.id).toBe('c1')
+  })
+
+  it('связь внутрь собственного источника → link-cycle', () => {
+    const doc = makeDoc()
+    expect(canMoveNode(doc, 'linkB', child('B', 0))).toBe('link-cycle')
+    expect(canMoveNode(doc, 'linkB', child('b1', 0))).toBe('link-cycle')
+    expect(moveNode(doc, 'linkB', child('b1', 0))).toBe(doc)
+  })
+
+  it('блок с плашкой внутрь источника этой плашки → link-cycle', () => {
+    const doc = makeDoc()
+    expect(canMoveNode(doc, 'A', child('b1', 0))).toBe('link-cycle')
+    expect(moveNode(doc, 'A', child('B', 0))).toBe(doc)
+  })
+
+  it('блок с плашкой в корень, который ссылается назад (C → A, перенос c1 в B) → link-cycle', () => {
+    const doc = moveNode(makeDoc(), 'linkB', child('a2', 0))
+    const withBack = addChild(doc, 'c1', createLink('A'))
+    expectValid(withBack)
+    // c1 несёт связь на A; в B она замкнёт A → B → A
+    expect(canMoveNode(withBack, 'c1', child('B', 0))).toBe('link-cycle')
+    expect(moveNode(withBack, 'c1', child('b1', 0))).toBe(withBack)
+    // a2 несёт связь на B: в C она даст C → B, а A без a2 на B уже не ссылается — цикла нет
+    const moved = moveNode(withBack, 'a2', child('C', 0))
+    expectValid(moved)
+    expect(findParent(moved, 'a2')?.id).toBe('C')
+  })
+
+  it('блок с плашкой глубже внутри своего корня или в другой корень → ок', () => {
+    const doc = makeDoc()
+    const withLink = moveNode(doc, 'linkB', child('a2', 0))
+    const deeper = moveNode(withLink, 'a2', child('a1x', 0))
+    expectValid(deeper)
+    expect(findParent(deeper, 'a2')?.id).toBe('a1x')
+    const other = moveNode(withLink, 'a2', child('c1', 0))
+    expectValid(other)
+    expect(findParent(other, 'linkB')?.id).toBe('a2')
   })
 
   it('связь на канвас → link-to-canvas', () => {

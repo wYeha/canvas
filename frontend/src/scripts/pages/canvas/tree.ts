@@ -9,10 +9,12 @@ import { DUPLICATE_ROOT_GAP } from './constants'
 import {
   collectDocIds,
   collectIds,
+  collectLinkSources,
   insertAt,
   nodeAt,
   removeAtLocation,
   removeLinksTo,
+  subtreeHasLinkCycle,
   updateAtLocation,
 } from './tree-internal'
 import { findNode, locateNode } from './tree-query'
@@ -23,32 +25,30 @@ export * from './tree-move'
 export * from './tree-copy'
 export * from './tree-types'
 
-/** Проверяет добавляемое поддерево: id не пересекаются с документом, связи указывают на существующие корни. */
-function checkSubtree(doc: LayoutDocument, node: LayoutNode): TreeError | null {
+/**
+ * Проверяет добавляемое поддерево: id не пересекаются с документом, связи указывают на существующие корни
+ * (при `parentId === null` поддерево само становится корнем и тоже считается источником) и не дают циклов.
+ */
+function checkSubtree(doc: LayoutDocument, node: LayoutNode, parentId: NodeId | null): TreeError | null {
   const docIds = collectDocIds(doc)
   const ids = collectIds(node)
   if (new Set(ids).size !== ids.length || ids.some((id) => docIds.has(id))) return 'duplicate-id'
   const rootIds = new Set(doc.roots.map((root) => root.node.id))
-  const links = findLinks(node)
+  if (parentId === null) rootIds.add(node.id)
+  const links = collectLinkSources(node)
   if (links.some((sourceId) => !rootIds.has(sourceId))) return 'dangling-link'
-  return null
-}
-
-/** Собирает `sourceId` всех связей поддерева. */
-function findLinks(node: LayoutNode): NodeId[] {
-  if (node.type === 'link') return [node.sourceId]
-  return node.children.flatMap(findLinks)
+  return subtreeHasLinkCycle(doc, node, parentId) ? 'link-cycle' : null
 }
 
 /**
  * Проверяет, можно ли добавить узел ребёнком блока `parentId`; возвращает причину отказа или `null`.
- * Циклы связей (связь внутри собственного источника) не проверяются — это 8.1.
+ * Плашки добавляемого поддерева не должны замыкать цикл связей (прямо или через цепочку источников): `link-cycle`.
  */
 export function canAddChild(doc: LayoutDocument, parentId: NodeId, node: LayoutNode): TreeError | null {
   const parent = findNode(doc, parentId)
   if (!parent) return 'target-not-found'
   if (parent.type === 'link') return 'parent-is-link'
-  return checkSubtree(doc, node)
+  return checkSubtree(doc, node, parentId)
 }
 
 /** Добавляет узел ребёнком блока на позицию `index` (по умолчанию в конец; индекс зажимается). */
@@ -63,11 +63,19 @@ export function addChild(doc: LayoutDocument, parentId: NodeId, node: LayoutNode
 }
 
 /**
- * Добавляет корневой блок в `roots` на позицию `index` (по умолчанию в конец); проверяет id и связи
- * (связи — только на уже существующие корни). Ширина превью `<= 0` — тот же `doc`.
+ * Проверяет, можно ли добавить корневой блок: id не пересекаются с документом, связи — на существующие корни
+ * или на сам новый корень (но такая связь внутри него же — `link-cycle`). Ширина превью здесь не проверяется.
+ */
+export function canAddRoot(doc: LayoutDocument, node: RootEntry['node']): TreeError | null {
+  return checkSubtree(doc, node, null)
+}
+
+/**
+ * Добавляет корневой блок в `roots` на позицию `index` (по умолчанию в конец), если его допускает `canAddRoot`.
+ * Ширина превью `<= 0` — тот же `doc`.
  */
 export function addRoot(doc: LayoutDocument, entry: RootEntry, index?: number): LayoutDocument {
-  if (entry.canvas.width <= 0 || checkSubtree(doc, entry.node) !== null) return doc
+  if (entry.canvas.width <= 0 || canAddRoot(doc, entry.node) !== null) return doc
   return { ...doc, roots: insertAt(doc.roots, index ?? doc.roots.length, entry) }
 }
 

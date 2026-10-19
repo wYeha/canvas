@@ -1,6 +1,6 @@
 /** Перемещение узлов: проверка допустимости заранее (для DnD) и сам перенос в блок или на канвас. */
-import type { CanvasPlacement, LayoutDocument, LayoutNode, NodeId } from '@shared'
-import { insertAt, isLinkSource, nodeAt, removeAtLocation, updateAtLocation } from './tree-internal'
+import { isLinkSource, type CanvasPlacement, type LayoutDocument, type LayoutNode, type NodeId } from '@shared'
+import { insertAt, nodeAt, removeAtLocation, subtreeHasLinkCycle, updateAtLocation } from './tree-internal'
 import { findNode, isDescendant, locateNode } from './tree-query'
 import type { MoveTarget, NodeLocation, TreeError } from './tree-types'
 
@@ -18,7 +18,21 @@ interface Detached {
   sourceCanvas: CanvasPlacement
 }
 
-/** Проверяет перенос ребёнком блока: цель существует, это блок, не сам узел и не потомок, не корень-источник. */
+/**
+ * Проверяет, замкнут ли цикл связей плашки переносимого поддерева на новом месте. Граф корней берётся у документа
+ * уже без узла: его плашки уходят из старого корня, а новые рёбра выходят только из корня-цели.
+ */
+function movedLinksCycle(doc: LayoutDocument, nodeId: NodeId, parentId: NodeId): boolean {
+  const loc = locateNode(doc, nodeId)
+  const node = loc && nodeAt(doc, loc)
+  if (!loc || !node) return false
+  return subtreeHasLinkCycle(removeAtLocation(doc, loc), node, parentId)
+}
+
+/**
+ * Проверяет перенос ребёнком блока: цель существует, это блок, не сам узел и не потомок, не корень-источник,
+ * и плашки переносимого поддерева не замкнут цикл связей.
+ */
 function checkChildTarget(doc: LayoutDocument, nodeId: NodeId, target: ChildTarget): TreeError | null {
   const parent = findNode(doc, target.parentId)
   if (!parent) return 'target-not-found'
@@ -26,13 +40,10 @@ function checkChildTarget(doc: LayoutDocument, nodeId: NodeId, target: ChildTarg
   if (target.parentId === nodeId || isDescendant(doc, nodeId, target.parentId)) return 'into-self-or-descendant'
   // Источник — только корневой блок (DESIGN.md): вложение тихо сломало бы связи, которых пользователь не видит
   if (doc.roots.some((root) => root.node.id === nodeId) && isLinkSource(doc, nodeId)) return 'source-into-block'
-  return null
+  return movedLinksCycle(doc, nodeId, target.parentId) ? 'link-cycle' : null
 }
 
-/**
- * Проверяет, можно ли переместить узел; возвращает причину отказа или `null`.
- * Циклы связей здесь не проверяются: это точка расширения для 8.1.
- */
+/** Проверяет, можно ли переместить узел; возвращает причину отказа или `null`. */
 export function canMoveNode(doc: LayoutDocument, nodeId: NodeId, target: MoveTarget): TreeError | null {
   const node = findNode(doc, nodeId)
   if (!node) return 'node-not-found'

@@ -2,7 +2,7 @@
  * Внутренние хелперы операций над деревом со структурным разделением: копируется только путь до изменённого узла,
  * остальные ветки остаются теми же ссылками. Наружу (из фасада `tree.ts`) не реэкспортируются.
  */
-import type { LayoutDocument, LayoutNode, NodeId } from '@shared'
+import { findRoot, linksCreateCycle, type LayoutDocument, type LayoutNode, type NodeId } from '@shared'
 import type { NodeLocation } from './tree-types'
 
 /** Преобразование узла; вернуть тот же объект — значит «ничего не менять». */
@@ -73,15 +73,22 @@ export function collectDocIds(doc: LayoutDocument): Set<NodeId> {
   return new Set(doc.roots.flatMap((root) => collectIds(root.node)))
 }
 
-/** Проверяет, есть ли в поддереве связь на `sourceId`. */
-function hasLinkTo(node: LayoutNode, sourceId: NodeId): boolean {
-  if (node.type === 'link') return node.sourceId === sourceId
-  return node.children.some((child) => hasLinkTo(child, sourceId))
+/** Собирает `sourceId` всех плашек поддерева. */
+export function collectLinkSources(node: LayoutNode): NodeId[] {
+  if (node.type === 'link') return [node.sourceId]
+  return node.children.flatMap(collectLinkSources)
 }
 
-/** Проверяет, ссылается ли на корень хотя бы одна связь документа. */
-export function isLinkSource(doc: LayoutDocument, rootId: NodeId): boolean {
-  return doc.roots.some((root) => hasLinkTo(root.node, rootId))
+/**
+ * Проверяет, появится ли цикл связей, если поддерево `node` встанет ребёнком блока `parentId` документа `doc`
+ * (`null` — само станет новым корнем). Все плашки поддерева окажутся в одном корне R (корне `parentId` или самом
+ * `node`); цикл — если источник плашки и есть R или уже включает R через цепочку связей (граф корней `doc`).
+ * При переносе в `doc` передаётся документ уже без переносимого узла: его плашки не должны считаться рёбрами старого корня.
+ */
+export function subtreeHasLinkCycle(doc: LayoutDocument, node: LayoutNode, parentId: NodeId | null): boolean {
+  const rootId = parentId === null ? node.id : findRoot(doc, parentId)
+  if (rootId === undefined) return false
+  return linksCreateCycle(doc, collectLinkSources(node), rootId)
 }
 
 /** Убирает из поддерева блока связи на `sourceId`; без изменений возвращает тот же блок. */

@@ -2,6 +2,8 @@
 import { describe, expect, it } from 'vitest'
 import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
 import { copyNodeToTarget } from '@/scripts/pages/canvas/tree-copy'
+import { addChild, duplicateNode, moveNode } from '@/scripts/pages/canvas/tree'
+import { createLink } from '@/scripts/pages/canvas/factories'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { childIds, expectValid, makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
 
@@ -57,5 +59,19 @@ describe('copyNodeToTarget', () => {
     expectValid(next)
     expect(copyId).not.toBeNull()
     expect(childIds(findNode(next, 'A'))).toEqual([copyId, 'a1', 'a2', 'linkB'])
+  })
+
+  it('копия поддерева с плашкой, замыкающей цикл, не вставляется', () => {
+    const withBack = addChild(makeDoc(), 'c1', createLink('A'))
+    const { document: next, copyId } = copyNodeToTarget(withBack, 'c1', child('B', 0))
+    expect(next).toBe(withBack)
+    expect(copyId).toBeNull()
+  })
+
+  it('дублирование блока с плашкой остаётся в том же корне и цикла не даёт', () => {
+    const { document: next } = duplicateNode(makeDoc(), 'A')
+    expectValid(next)
+    const inner = duplicateNode(moveNode(makeDoc(), 'linkB', { type: 'child', parentId: 'a2', index: 0 }), 'a2')
+    expectValid(inner.document)
   })
 })

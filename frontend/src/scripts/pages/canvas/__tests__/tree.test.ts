@@ -6,6 +6,7 @@ import {
   addChild,
   addRoot,
   canAddChild,
+  canAddRoot,
   cloneSubtree,
   duplicateNode,
   findNode,
@@ -86,6 +87,30 @@ describe('addChild', () => {
     expectValid(result)
     expect(findParent(result, link.id)?.id).toBe('a1')
   })
+
+  it('связь внутри собственного источника → link-cycle', () => {
+    const doc = makeDoc()
+    expect(canAddChild(doc, 'B', createLink('B'))).toBe('link-cycle')
+    expect(canAddChild(doc, 'b1', createLink('B'))).toBe('link-cycle')
+    expect(addChild(doc, 'b1', createLink('B'))).toBe(doc)
+    expect(canAddChild(doc, 'b1', block('n1', 'flex', [createLink('B')]))).toBe('link-cycle')
+    expect(canAddChild(doc, 'c1', block('n1', 'flex', [createLink('B')]))).toBeNull()
+  })
+
+  it('A ↔ B: связь на A внутри B, где A уже включает B → link-cycle', () => {
+    const doc = makeDoc()
+    expect(canAddChild(doc, 'b1', createLink('A'))).toBe('link-cycle')
+    expect(addChild(doc, 'B', createLink('A'))).toBe(doc)
+  })
+
+  it('A → B → C → A: замыкающая связь → link-cycle, остальные ок', () => {
+    const doc = makeDoc()
+    const bc = addChild(doc, 'b1', createLink('C'))
+    expectValid(bc)
+    expect(canAddChild(bc, 'c1', createLink('A'))).toBe('link-cycle')
+    expect(canAddChild(bc, 'c1', block('n1', 'flex', [block('n2', 'flex', [createLink('A')])]))).toBe('link-cycle')
+    expect(addChild(bc, 'c1', createLink('A'))).toBe(bc)
+  })
 })
 
 describe('addRoot', () => {
@@ -112,10 +137,22 @@ describe('addRoot', () => {
     expect(addRoot(doc, { ...entry, node: { ...entry.node, children: [createLink('нет')] } })).toBe(doc)
   })
 
-  it('связь внутри нового корня на сам этот корень → тот же doc', () => {
+  it('связь внутри нового корня на сам этот корень → link-cycle, тот же doc', () => {
     const doc = makeDoc()
     const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
-    expect(addRoot(doc, { ...entry, node: { ...entry.node, children: [createLink(entry.node.id)] } })).toBe(doc)
+    const self = { ...entry, node: { ...entry.node, children: [createLink(entry.node.id)] } }
+    expect(canAddRoot(doc, self.node)).toBe('link-cycle')
+    expect(addRoot(doc, self)).toBe(doc)
+    const deep = { ...entry, node: { ...entry.node, children: [block('d1', 'flex', [createLink(entry.node.id)])] } }
+    expect(canAddRoot(doc, deep.node)).toBe('link-cycle')
+    expect(addRoot(doc, deep)).toBe(doc)
+  })
+
+  it('новый корень со связями на существующие корни цикла не даёт', () => {
+    const doc = makeDoc()
+    const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
+    expect(canAddRoot(doc, { ...entry.node, children: [createLink('A'), createLink('B')] })).toBeNull()
+    expect(canAddRoot(doc, { ...entry.node, children: [createLink('нет')] })).toBe('dangling-link')
   })
 
   it('связь на существующий корень → ок', () => {

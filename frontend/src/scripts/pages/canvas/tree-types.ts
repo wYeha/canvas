@@ -25,7 +25,8 @@ export type MoveTarget =
  * - `link-to-canvas` — плашка связи не может стать корнем;
  * - `source-into-block` — корень, на который ссылаются связи, нельзя вложить в блок;
  * - `duplicate-id` — в добавляемом поддереве есть id, который уже есть в документе;
- * - `dangling-link` — в добавляемом поддереве есть связь на блок, который не корень документа.
+ * - `dangling-link` — в добавляемом поддереве есть связь на блок, который не корень документа;
+ * - `link-cycle` — плашка связи окажется внутри собственного источника (в нём самом или в его потомке).
  */
 export type TreeError =
   | 'node-not-found'
@@ -36,6 +37,7 @@ export type TreeError =
   | 'source-into-block'
   | 'duplicate-id'
   | 'dangling-link'
+  | 'link-cycle'
 
 /**
  * Правка полей узла: вложенные объекты (`container`, `self`, `padding`) заменяются целиком.

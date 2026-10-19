@@ -127,6 +127,32 @@ describe('parseDocument', () => {
     const error = errorOf(documentOf(block('a', [block('inner'), link('l', 'inner')])))
     expect(error).toContain('roots[0].node.children[1].sourceId')
   })
+
+  it('отклоняет связь одного корня в другой и обратно (A ↔ B)', () => {
+    const doc = documentOf(block('a', [block('slot', [link('l1', 'b')])]), block('b', [link('l2', 'a')]))
+    expect(errorOf(doc)).toContain('замыкает цикл')
+  })
+
+  it('отклоняет цепочку A → B → C → A', () => {
+    const doc = documentOf(block('a', [link('ab', 'b')]), block('b', [link('bc', 'c')]), block('c', [link('ca', 'a')]))
+    expect(errorOf(doc)).toContain('замыкает цикл')
+  })
+
+  it('принимает цепочку без замыкания и несколько связей на один источник', () => {
+    const doc = documentOf(block('a', [link('ab', 'b'), link('ac', 'c')]), block('b', [link('bc', 'c')]), block('c'))
+    expect(parseDocument(doc).ok).toBe(true)
+  })
+
+  it('отклоняет связь внутри собственного источника с путём и русским сообщением', () => {
+    const error = errorOf(documentOf(block('a', [block('inner', [link('l', 'a')])])))
+    expect(error).toContain('замыкает цикл')
+    expect(error).toContain('roots[0].node.children[0].children[0].sourceId')
+    expect(error).not.toMatch(/Invalid/i)
+  })
+
+  it('отклоняет связь корня прямо в себе', () => {
+    expect(errorOf(documentOf(block('a', [link('l', 'a')])))).toContain('замыкает цикл')
+  })
 })
 
 describe('схемы узлов', () => {
