@@ -1,0 +1,11 @@
+// Стили страницы входа: фон поля на весь экран, форма по центру
+@use 'variables' as v;
+
+.login-page {
+  display: grid;
+  place-items: center;
+  min-width: v.$min-screen-width;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-canvas);
+}

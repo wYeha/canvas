@@ -1,5 +1,6 @@
 // Главная точка входа стилей: компилируется в итоговый CSS (страницы подключаются по мере появления)
 @use 'globals';
 @use 'pages/canvas';
+@use 'pages/login';
 @use 'modals/export-modal';
 @use 'modals/hotkeys-modal';

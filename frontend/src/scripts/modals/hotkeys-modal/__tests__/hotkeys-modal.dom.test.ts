@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { HOTKEY_GROUPS, HOTKEYS_MODAL_TITLE } from '@/scripts/modals/hotkeys-modal/hotkeys-modal.constants'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import CanvasPage from '@/views/pages/canvas/CanvasPage.vue'
+import { createTestRouter } from '@/scripts/globals/__tests__/test-router'
 import HotkeysModal from '@/views/modals/hotkeys-modal/HotkeysModal.vue'
 
 let mounted: VueWrapper | null = null
@@ -23,7 +24,7 @@ function press(init: KeyboardEventInit): void {
 function mountPage(): void {
   const pinia = createPinia()
   setActivePinia(pinia)
-  mounted = mount(CanvasPage, { global: { plugins: [pinia] }, attachTo: document.body })
+  mounted = mount(CanvasPage, { global: { plugins: [pinia, createTestRouter()] }, attachTo: document.body })
 }
 
 afterEach(() => {

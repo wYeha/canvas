@@ -1,10 +1,16 @@
-/** Конфигурация Vite и Vitest: плагин Vue, алиасы импортов `@/` и `@shared`, запуск тестов только из `__tests__/`. */
+/** Конфигурация Vite и Vitest: плагин Vue, алиасы импортов `@/` и `@shared`, прокси `/api` на бэкенд в dev, запуск тестов только из `__tests__/`. */
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
+// Адрес бэкенда в dev (`npm run dev:backend`, порт по умолчанию из backend/.env.example); на сервере `/api` проксирует nginx
+const DEV_API_TARGET = 'http://127.0.0.1:3000'
+
 export default defineConfig({
   plugins: [vue()],
+  server: {
+    proxy: { '/api': DEV_API_TARGET },
+  },
   resolve: {
     // От перехвата `@shared` и scoped-пакетов вроде `@vue/...` защищают якорь `^` и обязательный `/` после `@`;
     // `@shared` стоит первым для наглядности и на случай, если find когда-нибудь станет строкой.

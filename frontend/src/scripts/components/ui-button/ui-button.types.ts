@@ -8,8 +8,12 @@ export type UiButtonVariant = (typeof UI_BUTTON_VARIANTS)[number]
 /** Размер кнопки. */
 export type UiButtonSize = (typeof UI_BUTTON_SIZES)[number]
 
-/** Пропсы кнопки: вид, размер, недоступность, иконка слева или справа и подсказка горячей клавиши. */
+/** Тип нативной кнопки: обычная или отправка формы. */
+export type UiButtonType = 'button' | 'submit'
+
+/** Пропсы кнопки: вид, размер, тип, недоступность, иконка слева или справа и подсказка горячей клавиши. */
 export interface UiButtonProps {
+  type?: UiButtonType
   variant?: UiButtonVariant
   size?: UiButtonSize
   disabled?: boolean

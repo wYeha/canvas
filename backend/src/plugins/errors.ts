@@ -1,6 +1,7 @@
 /** Единый формат ошибок API `{ error: { code, message } }`: обработчики ошибок и неизвестных маршрутов. */
 
 import type { FastifyError, FastifyInstance } from 'fastify'
+import type { ApiErrorBody } from '@shared'
 import {
   ERROR_CODES,
   ERROR_MESSAGES,
@@ -8,11 +9,6 @@ import {
   HTTP_STATUS_INTERNAL,
   HTTP_STATUS_NOT_FOUND,
 } from '@/constants'
-
-/** Тело ответа с ошибкой. */
-export interface ApiErrorBody {
-  error: { code: string; message: string }
-}
 
 /** Собирает тело ответа с ошибкой. */
 export function apiError(code: string, message: string): ApiErrorBody {

@@ -1,4 +1,4 @@
-<!-- Общий компонент: однострочное поле ввода с префиксом, суффиксом, ошибкой и недоступностью -->
+<!-- Общий компонент: однострочное поле ввода (текст или пароль) с префиксом, суффиксом, ошибкой и недоступностью -->
 <template>
   <label :class="classes">
     <span v-if="prefix" class="ui-text-input__prefix">{{ prefix }}</span>
@@ -6,7 +6,7 @@
       v-bind="inputAttrs"
       v-model="model"
       class="ui-text-input__input"
-      type="text"
+      :type="type"
       :disabled="disabled"
       :placeholder="placeholder"
       :aria-label="ariaLabel"
@@ -22,7 +22,7 @@
 import type { UiTextInputEmits, UiTextInputProps } from '@/scripts/components/ui-text-input/ui-text-input.types'
 import { useUiTextInput } from '@/scripts/components/ui-text-input/use-ui-text-input'
 
-const props = defineProps<UiTextInputProps>()
+const props = withDefaults(defineProps<UiTextInputProps>(), { type: 'text' })
 const emit = defineEmits<UiTextInputEmits>()
 const model = defineModel<string>({ default: '' })
 const { classes, ariaLabel } = useUiTextInput(props)

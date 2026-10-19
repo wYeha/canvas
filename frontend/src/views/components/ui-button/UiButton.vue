@@ -2,7 +2,7 @@
 <template>
   <button
     :class="classes"
-    type="button"
+    :type="type"
     :disabled="disabled"
     :aria-keyshortcuts="keyshortcuts"
     @mousedown="keepFocusOnMouseDown"
@@ -20,6 +20,11 @@ import type { UiButtonProps } from '@/scripts/components/ui-button/ui-button.typ
 import { useUiButton } from '@/scripts/components/ui-button/use-ui-button'
 import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 
-const props = withDefaults(defineProps<UiButtonProps>(), { variant: 'default', size: 'm', disabled: false })
+const props = withDefaults(defineProps<UiButtonProps>(), {
+  variant: 'default',
+  size: 'm',
+  type: 'button',
+  disabled: false,
+})
 const { classes } = useUiButton(props)
 </script>

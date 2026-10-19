@@ -3,9 +3,13 @@
 /** Дополнительные атрибуты нативного input (role, inputmode, aria-*). */
 export type UiInputAttrs = Record<string, string | number | undefined>
 
-/** Пропсы поля: подпись для скринридера, подсказка, префикс слева, суффикс справа, состояния. */
+/** Тип нативного поля: обычный текст или пароль (символы скрыты). */
+export type UiTextInputType = 'text' | 'password'
+
+/** Пропсы поля: подпись для скринридера, подсказка, префикс слева, суффикс справа, тип, состояния. */
 export interface UiTextInputProps {
   label: string
+  type?: UiTextInputType
   placeholder?: string
   prefix?: string
   suffix?: string

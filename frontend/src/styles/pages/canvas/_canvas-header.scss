@@ -1,6 +1,5 @@
 // Стили фрагмента canvas-header: верхняя полоса с логотипом, документом, статусом, темой и экспортом
 @use 'variables' as v;
-@use 'mixins' as mx;
 
 .canvas-header {
   display: flex;
@@ -14,14 +13,6 @@
     display: flex;
     gap: v.$space-8;
     align-items: center;
-  }
-
-  &__logo {
-    width: v.$logo-size;
-    height: v.$logo-size;
-    color: var(--color-accent);
-
-    @include mx.outline-icon;
   }
 
   &__name {

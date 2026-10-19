@@ -1,10 +1,4 @@
-<!-- Главный оркестратор приложения: подключает текущую страницу -->
+<!-- Главный оркестратор приложения: показывает страницу текущего маршрута -->
 <template>
-  <component :is="pageComponent" />
+  <router-view />
 </template>
-
-<script setup lang="ts">
-import { useAppPage } from '@/scripts/globals/use-app-page'
-
-const { pageComponent } = useAppPage()
-</script>

@@ -83,3 +83,23 @@ export const HEX_FULL_LENGTH = 6
 
 /** Длина короткой hex-записи цвета без `#`: `rgb`. */
 export const HEX_SHORT_LENGTH = 3
+
+/** Префикс адресов API: в dev Vite проксирует его на бэкенд, на сервере — nginx. */
+export const API_BASE = '/api'
+
+/** Имена маршрутов приложения (vue-router). */
+export const ROUTE_NAMES = {
+  CANVAS: 'canvas',
+  LOGIN: 'login',
+  UI_KIT: 'ui-kit',
+} as const
+
+/** Адреса маршрутов приложения. */
+export const ROUTE_PATHS = {
+  CANVAS: '/',
+  LOGIN: '/login',
+  UI_KIT: '/ui-kit',
+} as const
+
+/** Параметр адреса страницы входа: куда вернуться после входа. */
+export const LOGIN_REDIRECT_QUERY_PARAM = 'redirect'

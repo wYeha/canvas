@@ -1,0 +1,29 @@
+// Стили фрагмента login-form: карточка с логотипом, полем пароля и кнопкой
+@use 'variables' as v;
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-16;
+  width: v.$login-form-width;
+  padding: v.$space-24;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: v.$radius-modal;
+  box-shadow: var(--shadow-panel);
+
+  &__brand {
+    display: flex;
+    gap: v.$space-8;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-semibold;
+  }
+
+  &__submit {
+    align-self: stretch;
+  }
+}

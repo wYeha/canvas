@@ -65,6 +65,17 @@ layout-canvas/
   CLAUDE.md     — вход для ИИ-агентов
 ```
 
+## Разработка
+
+```
+npm install
+npm run dev            # фронтенд: http://localhost:5173 (без бэкенда работает офлайн)
+npm run dev:backend    # бэкенд: http://127.0.0.1:3000, Vite проксирует /api
+npm run check          # Prettier, Stylelint, typecheck, ESLint, Vitest
+```
+
+Бэкенду нужен `backend/.env` (образец — `backend/.env.example`). Хэш пароля входа: `npm run hash-password -w backend`.
+
 ## Документы
 
 - [План работ](docs/PLAN.md)

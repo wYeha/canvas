@@ -1,0 +1,12 @@
+// Стили общего компонента ui-logo: логотип обводкой цветом акцента
+@use 'variables' as v;
+@use 'mixins' as mx;
+
+.ui-logo {
+  flex: none;
+  width: v.$logo-size;
+  height: v.$logo-size;
+  color: var(--color-accent);
+
+  @include mx.outline-icon;
+}
