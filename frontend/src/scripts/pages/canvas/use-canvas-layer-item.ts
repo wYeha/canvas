@@ -16,6 +16,7 @@ import {
 } from './layers'
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
+import { repeatMark } from './node-view'
 import { nodeTypeLabel } from './selection'
 import { CANVAS_LAYERS_CONTEXT, LAYERS_DND_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
 import { skipLayersClickAfterDrag } from './use-canvas-layers-dnd'
@@ -27,6 +28,8 @@ export interface LayerItemView {
   chevronClasses: string[]
   icon: LayerIcon
   caption: string
+  /** Знак повтора `×N` после подписи; без повтора — пусто. */
+  repeat: string
   type: string
   /** `true` или `undefined`: `aria-current` ставится только выделенной строке. */
   current: true | undefined
@@ -85,6 +88,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
       chevronClasses: layerChevronClasses(expanded.value),
       icon: layerIcon(node),
       caption: caption.value,
+      repeat: repeatMark(node),
       type: nodeTypeLabel(node),
       current: selected.value || undefined,
       expandable: children.value.length > 0,

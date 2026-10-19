@@ -1,12 +1,31 @@
-/** Чистая логика оформления блоков на канвасе: глубина и цвет, значки, подписи, классы, позиция корня. */
-import type { BlockNode, CanvasPlacement, ContainerKind } from '@shared'
+/**
+ * Чистая логика оформления блоков на канвасе: глубина и цвет, значки, подписи, классы, позиция корня,
+ * список отрисовки детей с копиями повтора (`repeat`).
+ */
+import type { BlockNode, CanvasPlacement, ContainerKind, NodeId } from '@shared'
 import {
   BLOCK_PALETTE_SIZE,
   CSS_PX_UNIT,
+  DEFAULT_REPEAT,
   DIRECTION_ICONS,
+  REPEAT_KEY_SEPARATOR,
+  REPEAT_MARK,
+  REPEAT_MAX,
   ROOT_TITLE_SEPARATOR,
   ROOT_UNTITLED_LABEL,
 } from './constants'
+
+/**
+ * Ребёнок в списке отрисовки: сам блок или его копия повтора.
+ * `copyOf` — id исходного блока с повтором, к которому относятся клик, ховер и перетаскивание
+ * (`null` — настоящий блок); `copyRoot` — верхний элемент копии (на нём приглушение, внутри копии — нет).
+ */
+export interface RenderChild {
+  key: string
+  node: BlockNode
+  copyOf: NodeId | null
+  copyRoot: boolean
+}
 
 /** Номер цвета палитры для глубины вложенности (корень — 0). */
 export function paletteIndex(depth: number): number {
@@ -77,4 +96,34 @@ export function rootPlacementStyle(canvas: CanvasPlacement): Record<string, stri
   }
   if (canvas.height !== null) style['height'] = `${String(canvas.height)}${CSS_PX_UNIT}`
   return style
+}
+
+/** Сколько раз блок рисуется на канвасе: `repeat` в пределах 1…`REPEAT_MAX` (нецелое — вниз). */
+export function repeatCount(block: BlockNode): number {
+  const count = Math.trunc(block.repeat)
+  if (!Number.isFinite(count) || count < DEFAULT_REPEAT) return DEFAULT_REPEAT
+  return Math.min(count, REPEAT_MAX)
+}
+
+/** Знак повтора после подписи (`×3`) при `repeat > 1`, иначе пустая строка. Число — как в документе. */
+export function repeatMark(block: BlockNode): string {
+  return block.repeat > DEFAULT_REPEAT ? `${REPEAT_MARK}${String(block.repeat)}` : ''
+}
+
+/**
+ * Список отрисовки детей блока: каждый ребёнок, а сразу за ним — его копии повтора (N − 1 штук).
+ * `copyOf` — в копии ли сам родитель: тогда и дети, и их копии относятся к тому же исходному блоку.
+ * Вложенный повтор внутри повтора даёт N × M копий.
+ */
+export function renderChildren(children: readonly BlockNode[], copyOf: NodeId | null): RenderChild[] {
+  return children.flatMap((node) => {
+    const own: RenderChild = { key: node.id, node, copyOf, copyRoot: false }
+    const copies = Array.from({ length: repeatCount(node) - 1 }, (_, index) => ({
+      key: `${node.id}${REPEAT_KEY_SEPARATOR}${String(index + 1)}`,
+      node,
+      copyOf: copyOf ?? node.id,
+      copyRoot: copyOf === null,
+    }))
+    return [own, ...copies]
+  })
 }

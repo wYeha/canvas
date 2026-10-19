@@ -9,6 +9,7 @@ import {
   countGridColumns,
   normalizeChildFlex,
   normalizeChildSize,
+  normalizeRepeat,
   withSelfSpan,
   withSelfText,
 } from '@/scripts/pages/canvas/props-child'
@@ -71,6 +72,19 @@ describe('нормализация', () => {
   })
 })
 
+describe('normalizeRepeat', () => {
+  it('целое 1…24: пусто и меньше 1 — 1, больше 24 — 24, дробь — вниз', () => {
+    expect(normalizeRepeat(null)).toBe(1)
+    expect(normalizeRepeat(0)).toBe(1)
+    expect(normalizeRepeat(-5)).toBe(1)
+    expect(normalizeRepeat(3)).toBe(3)
+    expect(normalizeRepeat(3.9)).toBe(3)
+    expect(normalizeRepeat(24)).toBe(24)
+    expect(normalizeRepeat(100)).toBe(24)
+    expect(normalizeRepeat(Number.NaN)).toBe(1)
+  })
+})
+
 describe('displayChildFlex', () => {
   it('пусто, пробелы и регистр дают 0 1 auto, своё значение сохраняется', () => {
     expect(displayChildFlex(undefined)).toBe('0 1 auto')
@@ -128,6 +142,23 @@ describe('useCanvasPropsChild', () => {
     }
     return event as unknown as KeyboardEvent
   }
+
+  it('повтор: пишется в repeat узла, нормализуется, быстрые правки склеиваются в один шаг', () => {
+    const { layoutStore, props } = setup('a2')
+    expect(props.repeat.value).toBe(1)
+    props.repeat.value = 3
+    expect(findNode(layoutStore.document, 'a2')?.repeat).toBe(3)
+    props.repeat.value = 99
+    expect(props.repeat.value).toBe(24)
+    layoutStore.undo()
+    expect(findNode(layoutStore.document, 'a2')?.repeat).toBe(1)
+  })
+
+  it('повтор у корня не правится: секции нет, repeat остаётся 1', () => {
+    const { layoutStore, props } = setup('A')
+    props.repeat.value = 5
+    expect(findNode(layoutStore.document, 'A')?.repeat).toBe(1)
+  })
 
   it('корень: секции нет', () => {
     const { props } = setup('A')

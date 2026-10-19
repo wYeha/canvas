@@ -1,4 +1,4 @@
-/** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня. */
+/** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня, копии повтора. */
 import { describe, expect, it } from 'vitest'
 import { createBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
@@ -7,6 +7,9 @@ import {
   directionIcon,
   needsLeafMinHeight,
   paletteIndex,
+  renderChildren,
+  repeatCount,
+  repeatMark,
   rootCaption,
   rootPlacementStyle,
 } from '@/scripts/pages/canvas/node-view'
@@ -56,5 +59,46 @@ describe('node-view', () => {
     expect(rootCaption({ ...root.node, label: ' ' }, root.canvas)).toBe('Без подписи · 1440')
     expect(rootPlacementStyle(root.canvas)).toEqual({ left: '10px', top: '20px', width: '1440px' })
     expect(rootPlacementStyle({ ...root.canvas, height: 300 })['height']).toBe('300px')
+  })
+})
+
+describe('повтор ×N', () => {
+  /** Блок с id и числом повторов. */
+  function rep(id: string, repeat: number, children: ReturnType<typeof createBlock>[] = []) {
+    return { ...createBlock('flex', id), id, repeat, children }
+  }
+
+  it('repeatCount: целое в пределах 1…24, мусор — 1', () => {
+    expect(repeatCount(rep('a', 1))).toBe(1)
+    expect(repeatCount(rep('a', 3))).toBe(3)
+    expect(repeatCount(rep('a', 2.7))).toBe(2)
+    expect(repeatCount(rep('a', 1000))).toBe(24)
+    expect(repeatCount(rep('a', 0))).toBe(1)
+    expect(repeatCount(rep('a', Number.NaN))).toBe(1)
+  })
+
+  it('repeatMark: ×N только при repeat > 1', () => {
+    expect(repeatMark(rep('a', 1))).toBe('')
+    expect(repeatMark(rep('a', 4))).toBe('×4')
+  })
+
+  it('renderChildren: за блоком его N − 1 копий, ключи уникальны, копии ссылаются на исходный блок', () => {
+    const items = renderChildren([rep('x', 3), rep('y', 1)], null)
+    expect(items.map((item) => [item.key, item.copyOf, item.copyRoot])).toEqual([
+      ['x', null, false],
+      ['x#1', 'x', true],
+      ['x#2', 'x', true],
+      ['y', null, false],
+    ])
+    expect(items[1]?.node).toBe(items[0]?.node)
+  })
+
+  it('renderChildren внутри копии: всё относится к исходному блоку копии, приглушение не повторяется', () => {
+    const items = renderChildren([rep('inner', 2), rep('z', 1)], 'outer')
+    expect(items.map((item) => [item.key, item.copyOf, item.copyRoot])).toEqual([
+      ['inner', 'outer', false],
+      ['inner#1', 'outer', false],
+      ['z', 'outer', false],
+    ])
   })
 })

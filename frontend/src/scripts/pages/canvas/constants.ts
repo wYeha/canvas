@@ -8,6 +8,15 @@ export const DEFAULT_TAG: LayoutTag = 'div'
 /** Число повторов нового блока. */
 export const DEFAULT_REPEAT = 1
 
+/** Наибольшее число повторов в поле «Повтор» (и на канвасе: больше копий не рисуется даже у импортированных данных). */
+export const REPEAT_MAX = 24
+
+/** Знак повтора после подписи на канвасе и в «Слоях»: `×3`. */
+export const REPEAT_MARK = '×'
+
+/** Разделитель ключа копии повтора в `v-for`: `<id>#<номер копии>`. */
+export const REPEAT_KEY_SEPARATOR = '#'
+
 /** Flex-контейнер нового блока, кроме `kind`. */
 export const DEFAULT_FLEX: Omit<FlexContainer, 'kind'> = {
   direction: 'row',
@@ -207,6 +216,15 @@ export const NODE_ID_ATTR = 'data-node-id'
 
 /** CSS-селектор элемента, помеченного id узла. */
 export const NODE_SELECTOR = `[${NODE_ID_ATTR}]`
+
+/**
+ * Имя атрибута копии повтора на канвасе (копия и всё внутри неё): значение — id исходного блока с повтором.
+ * У копий нет `data-node-id`, поэтому замеры, оверлей выделения и поиск приёмника их не видят.
+ */
+export const REPEAT_OF_ATTR = 'data-repeat-of'
+
+/** CSS-селектор ближайшего блока или копии повтора: цель клика, ховера и двойного клика. */
+export const NODE_OR_REPEAT_SELECTOR = `${NODE_SELECTOR}, [${REPEAT_OF_ATTR}]`
 
 /** Имя атрибута заголовка корня на поле: за него корень перетаскивают по полю, клик по нему выделяет корень. */
 export const ROOT_HANDLE_ATTR = 'data-root-handle-id'
@@ -452,6 +470,9 @@ export const CHILD_COL_SPAN_LABEL = 'col span'
 
 /** Подпись поля `rowSpan` (на сколько строк растянут блок). */
 export const CHILD_ROW_SPAN_LABEL = 'row span'
+
+/** Подпись поля `repeat` (сколько раз блок повторяется на канвасе и `×N` в экспорте). */
+export const CHILD_REPEAT_LABEL = 'Повтор'
 
 /** Минимальный span (1 = не задан). */
 export const CHILD_SPAN_MIN = 1

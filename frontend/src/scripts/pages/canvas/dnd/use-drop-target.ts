@@ -40,7 +40,11 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   /** Режим копии (Alt) с последнего `refreshTarget` — для пересчёта без движения мыши. */
   let lastForCopy = false
 
-  /** Что под точкой страницы: цепочка узлов над поверхностью поля, `null` — над панелями, хедером, вне окна. */
+  /**
+   * Что под точкой страницы: цепочка узлов над поверхностью поля, `null` — над панелями, хедером, вне окна.
+   * Копии повтора (`data-repeat-of`) в цепочку не входят, а позиция вставки считается только по настоящим детям
+   * (`measureChildClientRects` ищет `data-node-id`): над копией вставка идёт среди соседей исходного блока.
+   */
   function hitAt(client: CanvasPoint): DropHit {
     const el = elementAtPoint(client)
     return isSurface(el) ? { chain: nodeChainFromTarget(el) } : null

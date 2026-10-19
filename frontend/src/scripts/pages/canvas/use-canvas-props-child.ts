@@ -1,4 +1,4 @@
-/** Composable секции «Как ребёнок»: flex/width/height/min-height через черновики, span и быстрые значения flex; запись заменяет `self` целиком. */
+/** Composable секции «Как ребёнок»: flex/width/height/min-height через черновики, span, быстрые значения flex и повтор; запись `self` заменяет его целиком. */
 import { computed, type WritableComputedRef } from 'vue'
 import type { ContainerKind, LayoutNode, NodeId, SelfProps } from '@shared'
 import { useLayoutStore } from './layout-store'
@@ -6,6 +6,7 @@ import {
   displayChildFlex,
   normalizeChildFlex,
   normalizeChildSize,
+  normalizeRepeat,
   withSelfSpan,
   withSelfText,
   type SelfSpanKey,
@@ -81,6 +82,16 @@ export function useCanvasPropsChild() {
     })
   }
 
+  /** Поле «Повтор»: целое 1…`REPEAT_MAX`; правка — через `updateNode` (склейка истории по полю `repeat`). */
+  const repeat: WritableComputedRef<number | null> = computed({
+    /** Читает число повторов из документа. */
+    get: () => node.value?.repeat ?? null,
+    /** Пишет нормализованное число повторов; то же значение документ не меняет. */
+    set: (value) => {
+      if (node.value) layoutStore.updateNode(node.value.id, { repeat: normalizeRepeat(value) })
+    },
+  })
+
   return {
     node,
     flexParent,
@@ -104,5 +115,6 @@ export function useCanvasPropsChild() {
     onMinHeightKeydown: minHeight.onKeydown,
     colSpan: spanField('colSpan'),
     rowSpan: spanField('rowSpan'),
+    repeat,
   }
 }

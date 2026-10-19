@@ -110,8 +110,9 @@
     color: var(--color-muted);
   }
 
+  // Подпись не растягивается: знак повтора `×N` встаёт сразу за ней, тип прижат вправо
   &__label {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     font-size: v.$font-size-sm;
@@ -119,8 +120,17 @@
     white-space: nowrap;
   }
 
+  // Знак повтора `×N` сразу после подписи
+  &__repeat {
+    flex: none;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-2xs;
+    color: var(--color-muted);
+  }
+
   &__type {
     flex: none;
+    margin-left: auto;
     font-family: v.$font-mono;
     font-size: v.$font-size-2xs;
     color: var(--color-muted);

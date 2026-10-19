@@ -11,6 +11,8 @@ import {
   CHILD_SPAN_MIN,
   CSS_DEFAULT_FLEX,
   CSS_PX_UNIT,
+  DEFAULT_REPEAT,
+  REPEAT_MAX,
 } from './constants'
 
 /** Ключи `self`, которые правятся текстом. */
@@ -110,4 +112,10 @@ export function withSelfSpan(self: SelfProps, key: SelfSpanKey, value: number | 
   const rest = omitKey(self, key)
   const span = value === null ? null : Math.trunc(value)
   return span === null || span <= CHILD_SPAN_MIN ? rest : { ...rest, [key]: span }
+}
+
+/** Число повторов из поля «Повтор»: целое (нецелое — вниз) в пределах 1…`REPEAT_MAX`; пусто — 1. */
+export function normalizeRepeat(value: number | null): number {
+  if (value === null || !Number.isFinite(value)) return DEFAULT_REPEAT
+  return Math.min(Math.max(Math.trunc(value), DEFAULT_REPEAT), REPEAT_MAX)
 }

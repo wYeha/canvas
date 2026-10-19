@@ -7,6 +7,8 @@
  * Оверлеи поверх поля (призрак, выделение, линия вставки `CanvasDropInsert`, оверлей выделения) обязаны иметь
  * `pointer-events: none`: иначе `elementAtPoint` попадёт в них, а не в блок под курсором.
  * Подсветка приёмника — класс на `canvas-node`, не оверлей.
+ * Копии повтора помечены `data-repeat-of` (id исходного блока) вместо `data-node-id`: клик, ховер, двойной клик
+ * и начало перетаскивания по копии относятся к исходному блоку, а замеры, оверлей и поиск приёмника копий не видят.
  */
 import type { Rect } from './camera'
 import type { CanvasPoint } from './factories'
@@ -16,17 +18,28 @@ import {
   LAYER_ID_ATTR,
   LAYER_SELECTOR,
   NODE_ID_ATTR,
+  NODE_OR_REPEAT_SELECTOR,
   NODE_SELECTOR,
+  REPEAT_OF_ATTR,
   ROOT_HANDLE_ATTR,
   ROOT_HANDLE_SELECTOR,
   WORLD_SELECTOR,
 } from './constants'
 import { rectContains, toWorldRect } from './selection'
 
-/** Id ближайшего помеченного узла от цели события (самый глубокий блок под курсором); `null`, если цель вне блоков. */
+/** Id блока по ближайшему помеченному элементу: свой id у блока, id исходного блока у копии повтора. */
+function markedId(el: Element): string | null {
+  return el.getAttribute(NODE_ID_ATTR) ?? el.getAttribute(REPEAT_OF_ATTR)
+}
+
+/**
+ * Id ближайшего помеченного узла от цели события (самый глубокий блок под курсором); `null`, если цель вне блоков.
+ * Копия повтора (и всё внутри неё) даёт id исходного блока с повтором.
+ */
 export function nodeIdFromTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null
-  return target.closest(NODE_SELECTOR)?.getAttribute(NODE_ID_ATTR) ?? null
+  const el = target.closest(NODE_OR_REPEAT_SELECTOR)
+  return el === null ? null : markedId(el)
 }
 
 /** Id корня, за заголовок которого взялись (`data-root-handle-id`); `null`, если цель не в заголовке корня. */
@@ -47,6 +60,8 @@ export function elementAtPoint(client: CanvasPoint): Element | null {
 /**
  * Id помеченных узлов от элемента вверх по DOM: самый глубокий первым, корень последним.
  * Заголовок корня лежит вне элемента блока — для него цепочка `[rootId]`; вне блоков — `[]`.
+ * Копии повтора без `data-node-id` в цепочку не попадают: над копией (и её содержимым) первым идёт родитель
+ * исходного блока — копия не приёмник для вставки «внутрь», вставка рядом считается по настоящим детям.
  */
 export function nodeChainFromTarget(target: EventTarget | null): string[] {
   if (!(target instanceof Element)) return []
@@ -72,12 +87,14 @@ export function layerIdFromTarget(target: EventTarget | null): string | null {
  * Id блока, по подписи которого пришёлся клик в точке `point` (координаты страницы); `null` — мимо подписей.
  * Заголовок корня ловит указатель сам. Чип и подпись листа прозрачны для указателя (клик проходит в блок),
  * поэтому у блока под курсором проверяется, попала ли точка в прямоугольник его подписи.
+ * Двойной клик в любом месте копии повтора относится к исходному блоку (у копий своих подписей для правки нет).
  */
 export function labelNodeIdAt(target: EventTarget | null, point: CanvasPoint): string | null {
   if (!(target instanceof Element)) return null
   const header = target.closest(LABEL_NODE_SELECTOR)
   if (header !== null) return header.getAttribute(LABEL_NODE_ATTR)
-  const node = target.closest(NODE_SELECTOR)
+  const node = target.closest(NODE_OR_REPEAT_SELECTOR)
+  if (node?.hasAttribute(REPEAT_OF_ATTR) === true) return node.getAttribute(REPEAT_OF_ATTR)
   const label = node === null ? undefined : Array.from(node.children).find((el) => el.hasAttribute(LABEL_NODE_ATTR))
   if (label === undefined || !rectContains(clientRectOf(label), point)) return null
   return label.getAttribute(LABEL_NODE_ATTR)

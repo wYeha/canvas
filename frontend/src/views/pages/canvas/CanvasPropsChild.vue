@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: секция «Как ребёнок» — flex и width во flex-родителе, span в grid-родителе, height и min-height -->
+<!-- Фрагмент страницы canvas: секция «Как ребёнок» — flex и width во flex-родителе, span в grid-родителе, height и min-height, повтор ×N -->
 <template>
   <div v-if="node" class="canvas-props-child">
     <template v-if="flexParent">
@@ -86,6 +86,17 @@
         @blur="applyMinHeight"
       />
     </UiField>
+    <UiField v-slot="{ id, describedBy }" :label="CHILD_REPEAT_LABEL">
+      <UiNumberInput
+        v-model="repeat"
+        :label="CHILD_REPEAT_LABEL"
+        :min="DEFAULT_REPEAT"
+        :max="REPEAT_MAX"
+        :nullable="false"
+        :prefix="REPEAT_MARK"
+        :input-attrs="{ id, 'aria-describedby': describedBy }"
+      />
+    </UiField>
   </div>
 </template>
 
@@ -101,11 +112,15 @@ import {
   CHILD_FLEX_PRESETS_LABEL,
   CHILD_HEIGHT_LABEL,
   CHILD_MIN_HEIGHT_LABEL,
+  CHILD_REPEAT_LABEL,
   CHILD_ROW_SPAN_LABEL,
   CHILD_SIZE_PLACEHOLDER,
   CHILD_SPAN_MIN,
   CHILD_VALUE_ERROR,
   CHILD_WIDTH_LABEL,
+  DEFAULT_REPEAT,
+  REPEAT_MARK,
+  REPEAT_MAX,
 } from '@/scripts/pages/canvas/constants'
 import { CHILD_FLEX_OPTIONS } from '@/scripts/pages/canvas/props-child'
 import { useCanvasPropsChild } from '@/scripts/pages/canvas/use-canvas-props-child'
@@ -133,5 +148,6 @@ const {
   onMinHeightKeydown,
   colSpan,
   rowSpan,
+  repeat,
 } = useCanvasPropsChild()
 </script>

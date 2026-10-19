@@ -36,6 +36,13 @@ describe('exportRootHtml', () => {
     `)
   })
 
+  it('повтор ×N: блок выводится один раз, число повторов — в комментарии', () => {
+    const entry = root(smallTree(), 1280, null, false)
+    const html = exportRootHtml(docOf(entry), entry)
+    expect(html.match(/<!-- card\b/g)).toHaveLength(1)
+    expect(html).toContain('<!-- card ×3 — Карточка товара -->')
+  })
+
   it('exportMaxWidth: max-width и margin после styleEntries, в заголовке «по центру»', () => {
     const entry = root(block('flex', 'Лендинг', { repeat: 2 }), 1200, null, true)
     expect(exportRootHtml(docOf(entry), entry)).toMatchInlineSnapshot(`

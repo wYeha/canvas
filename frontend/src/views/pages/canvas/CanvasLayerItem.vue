@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: рекурсивная строка панели «Слои» (шеврон сворачивания, значок типа, подпись или поле переименования, тип) и её дети -->
+<!-- Фрагмент страницы canvas: рекурсивная строка панели «Слои» (шеврон сворачивания, значок типа, подпись или поле переименования, знак повтора ×N, тип) и её дети -->
 <template>
   <li class="canvas-layer-item">
     <div ref="rowEl" :class="view.rowClasses" :data-layer-id="node.id">
@@ -36,6 +36,7 @@
       >
         <UiIcon :name="view.icon" class="canvas-layer-item__icon" />
         <span class="canvas-layer-item__label">{{ view.caption }}</span>
+        <span v-if="view.repeat !== ''" class="canvas-layer-item__repeat">{{ view.repeat }}</span>
         <span class="canvas-layer-item__type">{{ view.type }}</span>
       </button>
     </div>
