@@ -27,9 +27,9 @@ plugins/
 routes/
   health.ts        — GET /api/health
   auth.ts          — POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
-  documents.ts     — CRUD /api/documents
+  documents.ts     — CRUD /api/documents, журнал удалений GET /api/deleted-documents
 services/
-  documents.ts     — SQL-запросы к таблице documents
+  documents.ts     — SQL-запросы к таблицам documents и deleted_documents
   sessions.ts      — SQL-запросы к таблице sessions (в базе только SHA-256 токена)
 cli/
   hash-password.ts — хэш argon2 для PASSWORD_HASH (npm run hash-password -w backend)
@@ -40,7 +40,7 @@ cli/
 1. Роуты только принимают запрос, валидируют его и вызывают сервис. SQL пишется только в `services/`.
 2. Любые входные данные проверяются zod-схемой. Тело запроса ограничено 1 МБ.
 3. Все роуты, кроме `/api/auth/login` и `/api/health`, закрыты авторизацией.
-4. На вход стоит rate limit (`@fastify/rate-limit`).
+4. На вход стоит rate limit (`@fastify/rate-limit`). За прокси доверяем только адресам прокси (`trustProxy: 'loopback'`), не `true`: иначе клиент подделает IP левыми записями `X-Forwarded-For` и обойдёт лимит.
 5. Секреты лежат только в `.env`, который не коммитится. В репозитории есть `.env.example`.
 6. SQL-запросы параметризованы. Конкатенация строк в SQL запрещена.
 7. Ошибки возвращаются в едином формате `{ error: { code, message } }`. Стек-трейсы наружу не отдаются.

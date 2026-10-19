@@ -80,3 +80,9 @@ export const LOGIN_RATE_LIMIT_MAX = 10
 
 /** Окно лимита попыток входа: 15 минут. */
 export const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
+
+/**
+ * Каким прокси верить при `TRUST_PROXY=true`: nginx на той же машине (адреса loopback). IP клиента — самый правый
+ * адрес `X-Forwarded-For`, не принадлежащий доверенным (его дописал nginx); левые записи задаёт клиент, им верить нельзя.
+ */
+export const TRUSTED_PROXY = 'loopback'

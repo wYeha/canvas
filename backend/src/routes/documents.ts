@@ -1,4 +1,4 @@
-/** CRUD документов `/api/documents`: роуты только проверяют запрос zod-схемами из `@shared` и вызывают сервис. */
+/** CRUD документов `/api/documents` и журнал удалений `/api/deleted-documents`: роуты только проверяют запрос zod-схемами из `@shared` и вызывают сервис. */
 
 import type { Database } from 'better-sqlite3'
 import type { FastifyPluginCallback, FastifyReply } from 'fastify'
@@ -16,7 +16,14 @@ import {
   MAX_DOCUMENT_ID_LENGTH,
 } from '@/constants'
 import { apiError } from '@/plugins/errors'
-import { createDocument, deleteDocument, getDocument, listDocuments, saveDocument } from '@/services/documents'
+import {
+  createDocument,
+  deleteDocument,
+  getDocument,
+  listDeletedDocumentIds,
+  listDocuments,
+  saveDocument,
+} from '@/services/documents'
 
 /** Параметры маршрутов `/:id`. */
 const idParamsSchema = z.object({ id: nodeIdSchema.max(MAX_DOCUMENT_ID_LENGTH) })
@@ -47,6 +54,9 @@ function idFrom(params: unknown): string | null {
 /** Регистрирует маршруты документов (под префиксом `/api`). */
 export const documentRoutes: FastifyPluginCallback<DocumentRoutesOptions> = (app, { db }, done) => {
   app.get('/documents', () => listDocuments(db))
+
+  // Отдельный адрес, а не /documents/deleted: иначе документ с id «deleted» нельзя было бы прочитать
+  app.get('/deleted-documents', () => listDeletedDocumentIds(db))
 
   app.post('/documents', (request, reply) => {
     const parsed = parseDocument(request.body)

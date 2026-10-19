@@ -2,7 +2,7 @@
 
 import type { FastifyInstance } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildTestServer, injectWithCookie, loginCookie, TEST_PASSWORD } from '@/__tests__/fixtures'
+import { buildTestServer, injectWithCookie, loginCookie, memoryDatabase, TEST_PASSWORD } from '@/__tests__/fixtures'
 import { ERROR_CODES, LOGIN_RATE_LIMIT_MAX, SESSION_COOKIE_NAME, SESSION_COOKIE_PATH } from '@/constants'
 
 describe('API входа', () => {
@@ -63,6 +63,26 @@ describe('API входа', () => {
     expect(logout.cookies[0]).toMatchObject({ name: SESSION_COOKIE_NAME, value: '' })
     const after = await injectWithCookie(app, cookie, { method: 'GET', url: '/api/documents' })
     expect(after.statusCode).toBe(401)
+  })
+
+  it('выход без сессии тоже очищает cookie', async () => {
+    const response = await app.inject({ method: 'POST', url: '/api/auth/logout' })
+    expect(response.statusCode).toBe(204)
+    expect(response.cookies[0]).toMatchObject({ name: SESSION_COOKIE_NAME, value: '' })
+  })
+
+  it('за прокси подмена левых записей X-Forwarded-For не обходит лимит попыток', async () => {
+    const proxied = await buildTestServer(memoryDatabase(), true)
+    for (let attempt = 0; attempt <= LOGIN_RATE_LIMIT_MAX; attempt++) {
+      const response = await proxied.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        headers: { 'x-forwarded-for': `10.0.0.${String(attempt)}, 203.0.113.7` },
+        payload: { password: 'не тот' },
+      })
+      expect(response.statusCode).toBe(attempt < LOGIN_RATE_LIMIT_MAX ? 401 : 429)
+    }
+    await proxied.close()
   })
 
   it('health открыт без входа', async () => {

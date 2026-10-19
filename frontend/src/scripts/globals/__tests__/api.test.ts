@@ -46,6 +46,7 @@ describe('apiRequest', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/auth/login', {
       method: 'POST',
       credentials: 'same-origin',
+      signal: expect.any(AbortSignal),
       headers: { 'content-type': 'application/json' },
       body: '{"password":"p"}',
     })
@@ -78,6 +79,26 @@ describe('apiRequest', () => {
       ok: false,
       error: { kind: 'network', status: null, code: null, message: null },
     })
+  })
+})
+
+describe('apiRequest: таймаут', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('запрос, не уложившийся в таймаут, — network', async () => {
+    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(AbortSignal.abort(new DOMException('timeout', 'TimeoutError')))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((_url: string, init: RequestInit) =>
+        init.signal?.aborted
+          ? Promise.reject(new DOMException('timeout', 'TimeoutError'))
+          : new Promise(() => undefined),
+      ),
+    )
+    expect(await apiRequest('/x')).toMatchObject({ ok: false, error: { kind: 'network' } })
   })
 })
 

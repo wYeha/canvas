@@ -1,4 +1,4 @@
-/** Маршруты входа: `POST /api/auth/login` (открыт, с лимитом попыток), `POST /api/auth/logout` и `GET /api/auth/me` (по сессии). */
+/** Маршруты входа: `POST /api/auth/login` (открыт, с лимитом попыток), `POST /api/auth/logout` (открыт, очищает cookie) и `GET /api/auth/me` (по сессии). */
 
 import type { CookieSerializeOptions } from '@fastify/cookie'
 import argon2 from 'argon2'
@@ -73,7 +73,8 @@ export const authRoutes: FastifyPluginCallback<AuthRoutesOptions> = (app, { db, 
     },
   )
 
-  app.post('/auth/logout', { onRequest: app.requireAuth }, (request, reply) => {
+  // Выход открыт: и с истёкшей сессией cookie нужно очистить
+  app.post('/auth/logout', (request, reply) => {
     const token = sessionToken(request)
     if (token !== null) deleteSession(db, token)
     void reply.clearCookie(SESSION_COOKIE_NAME, cookieOptions(cookieSecure))

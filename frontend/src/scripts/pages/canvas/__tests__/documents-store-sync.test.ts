@@ -7,7 +7,13 @@ import { AUTOSAVE_DELAY_MS, SYNC_DELAY_MS } from '@/scripts/pages/canvas/documen
 import { useDocumentsStore } from '@/scripts/pages/canvas/documents-store'
 import { createDocument } from '@/scripts/pages/canvas/factories'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
-import { seedLocal, stubDocumentsServer, stubMemoryStorage, type FakeServer } from './fake-documents-server'
+import {
+  removeOnServer,
+  seedLocal,
+  stubDocumentsServer,
+  stubMemoryStorage,
+  type FakeServer,
+} from './fake-documents-server'
 
 const T0 = new Date('2026-01-10T00:00:00.000Z')
 const OLD = '2026-01-01T00:00:00.000Z'
@@ -70,6 +76,7 @@ describe('хранилище документов с синхронизацие�
     expect(documents.entries.map((meta) => meta.id)).toEqual(['remote'])
     expect(documents.currentId).toBe('remote')
     expect([...server.docs.keys()]).toEqual(['remote'])
+    expect(server.requests.some((request) => request.startsWith('PUT'))).toBe(false)
   })
 
   it('правленная заглушка остаётся рядом с документами с сервера', async () => {
@@ -119,7 +126,7 @@ describe('хранилище документов с синхронизацие�
     seedLocal(storage, doc('b', 'B', NEWER))
     const documents = await start()
     expect(documents.currentId).toBe('b')
-    server.docs.delete('b')
+    removeOnServer(server, 'b')
     documents.refreshSync()
     await vi.advanceTimersByTimeAsync(SYNC_DELAY_MS)
     expect(documents.currentId).toBe('a')

@@ -2,9 +2,16 @@
 
 import rateLimit from '@fastify/rate-limit'
 import type { Database } from 'better-sqlite3'
-import Fastify, { type FastifyInstance } from 'fastify'
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify'
 import type { Config } from '@/config'
-import { API_PREFIX, BODY_LIMIT_BYTES, ERROR_CODES, ERROR_MESSAGES, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/constants'
+import {
+  API_PREFIX,
+  BODY_LIMIT_BYTES,
+  ERROR_CODES,
+  ERROR_MESSAGES,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  TRUSTED_PROXY,
+} from '@/constants'
 import { authPlugin } from '@/plugins/auth'
 import { registerErrorHandlers } from '@/plugins/errors'
 import { authRoutes } from '@/routes/auth'
@@ -31,11 +38,13 @@ function rateLimitError(): { statusCode: number; code: string; message: string }
 /** Собирает сервер по конфигурации; порт не открывает. Все маршруты, кроме входа и health, закрыты сессией. */
 export async function buildServer(config: ServerConfig, deps: ServerDeps): Promise<FastifyInstance> {
   const { db } = deps
-  const app = Fastify({
+  const options: FastifyServerOptions = {
     logger: { level: config.logLevel },
     bodyLimit: BODY_LIMIT_BYTES,
-    trustProxy: config.trustProxy,
-  })
+    // Адреса прокси, а не true: true доверял бы и подделанным клиентом записям
+    trustProxy: config.trustProxy ? TRUSTED_PROXY : false,
+  }
+  const app = Fastify(options)
   app.addHook('onClose', () => {
     db.close()
   })

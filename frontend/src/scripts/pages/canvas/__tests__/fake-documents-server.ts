@@ -3,9 +3,10 @@ import { vi } from 'vitest'
 import type { LayoutDocument } from '@shared'
 import { DOCUMENT_STORAGE_PREFIX, DOCUMENTS_INDEX_STORAGE_KEY } from '@/scripts/globals/constants'
 
-/** Сервер в памяти: документы, переключатели «нет сети» и «сессия истекла», журнал запросов `МЕТОД путь`. */
+/** Сервер в памяти: документы, журнал удалений, переключатели «нет сети» и «сессия истекла», журнал запросов `МЕТОД путь`. */
 export interface FakeServer {
   docs: Map<string, LayoutDocument>
+  deletedIds: Set<string>
   offline: { value: boolean }
   unauthorized: { value: boolean }
   requests: string[]
@@ -54,11 +55,13 @@ function respond(server: FakeServer, method: string, id: string | null, body: un
   const existing = server.docs.get(id)
   if (method === 'PUT') {
     server.docs.set(id, body as LayoutDocument)
+    server.deletedIds.delete(id)
     return json(existing ? 200 : 201, body)
   }
   if (!existing) return json(404, { error: { code: 'DOCUMENT_NOT_FOUND', message: 'нет' } })
   if (method === 'DELETE') {
     server.docs.delete(id)
+    server.deletedIds.add(id)
     return json(204)
   }
   return json(200, existing)
@@ -68,6 +71,7 @@ function respond(server: FakeServer, method: string, id: string | null, body: un
 export function stubDocumentsServer(): FakeServer {
   const server: FakeServer = {
     docs: new Map(),
+    deletedIds: new Set(),
     offline: { value: false },
     unauthorized: { value: false },
     requests: [],
@@ -80,10 +84,17 @@ export function stubDocumentsServer(): FakeServer {
       server.requests.push(`${method} ${url}`)
       if (server.offline.value) return Promise.reject(new TypeError('Failed to fetch'))
       if (server.unauthorized.value) return Promise.resolve(json(401))
+      if (url === '/api/deleted-documents') return Promise.resolve(json(200, [...server.deletedIds]))
       const id = path === '' ? null : decodeURIComponent(path.slice(1))
       const body: unknown = typeof init.body === 'string' ? JSON.parse(init.body) : undefined
       return Promise.resolve(respond(server, method, id, body))
     }),
   )
   return server
+}
+
+/** Удаляет документ на сервере «с другого устройства»: с записью в журнал удалений. */
+export function removeOnServer(server: FakeServer, id: string): void {
+  server.docs.delete(id)
+  server.deletedIds.add(id)
 }

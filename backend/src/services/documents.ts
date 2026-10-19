@@ -1,4 +1,4 @@
-/** SQL-запросы к таблице documents: список, чтение, создание, сохранение (создать или заменить), удаление. */
+/** SQL-запросы к таблицам documents и deleted_documents: список, чтение, создание, сохранение (создать или заменить), удаление с записью в журнал. */
 
 import type { Database } from 'better-sqlite3'
 import { z } from 'zod'
@@ -23,7 +23,7 @@ function toRow(doc: LayoutDocument): Record<string, string | number> {
   }
 }
 
-/** Список документов, свежие первыми; испорченные строки пропускаются. */
+/** Список документов, свежие первыми; испорченные строки пропускаются (клиент без записи в журнале удалений отправит документ заново). */
 export function listDocuments(db: Database): DocumentMeta[] {
   const rows = db.prepare('SELECT id, name, updated_at, root_count FROM documents ORDER BY updated_at DESC, id').all()
   return rows.flatMap((row) => {
@@ -51,16 +51,23 @@ export function getDocument(db: Database, id: string): LayoutDocument | null {
   return result.document
 }
 
+/** Документ снова существует: убрать его из журнала удалений. */
+function forgetDeleted(db: Database, id: string): void {
+  db.prepare('DELETE FROM deleted_documents WHERE id = ?').run(id)
+}
+
 /** Создаёт документ; `false`, если документ с таким id уже есть (ничего не меняется). */
 export function createDocument(db: Database, doc: LayoutDocument): boolean {
-  const info = db
-    .prepare(
-      `INSERT INTO documents (id, name, data, schema_version, root_count, created_at, updated_at)
+  const insert = db.prepare(
+    `INSERT INTO documents (id, name, data, schema_version, root_count, created_at, updated_at)
        VALUES (@id, @name, @data, @schemaVersion, @rootCount, @createdAt, @updatedAt)
        ON CONFLICT (id) DO NOTHING`,
-    )
-    .run(toRow(doc))
-  return info.changes === 1
+  )
+  return db.transaction((): boolean => {
+    const created = insert.run(toRow(doc)).changes === 1
+    if (created) forgetDeleted(db, doc.id)
+    return created
+  })()
 }
 
 /** Сохраняет документ целиком: создаёт, если его нет, иначе заменяет. Проверка и запись — в одной транзакции. */
@@ -80,11 +87,26 @@ export function saveDocument(db: Database, doc: LayoutDocument): SaveResult {
   return db.transaction((): SaveResult => {
     const created = exists.get(doc.id) === undefined
     upsert.run(toRow(doc))
+    forgetDeleted(db, doc.id)
     return created ? 'created' : 'updated'
   })()
 }
 
-/** Удаляет документ; `false`, если его не было. */
-export function deleteDocument(db: Database, id: string): boolean {
-  return db.prepare('DELETE FROM documents WHERE id = ?').run(id).changes === 1
+/** Удаляет документ и записывает его в журнал удалений (по журналу другие устройства удалят свои копии); `false`, если его не было. */
+export function deleteDocument(db: Database, id: string, now: Date = new Date()): boolean {
+  const remove = db.prepare('DELETE FROM documents WHERE id = ?')
+  const record = db.prepare(
+    'INSERT INTO deleted_documents (id, deleted_at) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET deleted_at = excluded.deleted_at',
+  )
+  return db.transaction((): boolean => {
+    const deleted = remove.run(id).changes === 1
+    if (deleted) record.run(id, now.toISOString())
+    return deleted
+  })()
+}
+
+/** id удалённых документов из журнала. */
+export function listDeletedDocumentIds(db: Database): string[] {
+  const ids = db.prepare('SELECT id FROM deleted_documents ORDER BY id').pluck().all()
+  return ids.filter((id): id is string => typeof id === 'string')
 }

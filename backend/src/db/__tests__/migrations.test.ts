@@ -30,10 +30,10 @@ describe('миграции', () => {
     expect(versions).toEqual([...versions].sort((a, b) => a - b))
   })
 
-  it('создаёт таблицы documents, sessions и учёт миграций; повторный запуск ничего не применяет', () => {
+  it('создаёт таблицы documents, deleted_documents, sessions и учёт миграций; повторный запуск ничего не применяет', () => {
     const db = new BetterSqlite3(':memory:')
     expect(applyMigrations(db)).toEqual(readMigrations().map((migration) => migration.version))
-    expect(tables(db)).toEqual(['documents', 'schema_migrations', 'sessions'])
+    expect(tables(db)).toEqual(['deleted_documents', 'documents', 'schema_migrations', 'sessions'])
     expect(applyMigrations(db)).toEqual([])
     db.close()
   })
@@ -52,7 +52,7 @@ describe('миграции', () => {
     const path = join(dir, 'nested', 'test.db')
     openDatabase(path).close()
     const reopened = openDatabase(path)
-    expect(tables(reopened)).toEqual(['documents', 'schema_migrations', 'sessions'])
+    expect(tables(reopened)).toEqual(['deleted_documents', 'documents', 'schema_migrations', 'sessions'])
     reopened.close()
   })
 })

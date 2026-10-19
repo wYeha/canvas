@@ -1,13 +1,20 @@
-/** Запросы документов к API: список, документ целиком, сохранение (создать или заменить), удаление. */
+/** Запросы документов к API: список, журнал удалений, документ целиком, сохранение (создать или заменить), удаление. */
 import { z } from 'zod'
-import { documentMetaSchema, layoutDocumentSchema, type DocumentMeta, type LayoutDocument } from '@shared'
+import {
+  deletedDocumentIdsSchema,
+  documentMetaSchema,
+  layoutDocumentSchema,
+  type DocumentMeta,
+  type LayoutDocument,
+} from '@shared'
 import { apiRequest, type ApiResult } from '@/scripts/globals/api'
+import { HTTP_STATUS } from '@/scripts/globals/constants'
 
 /** Путь списка документов. */
 const DOCUMENTS_PATH = '/documents'
 
-/** HTTP-статус «не найден»: удаление отсутствующего документа — тоже успех. */
-const HTTP_NOT_FOUND = 404
+/** Путь журнала удалённых на сервере документов. */
+const DELETED_DOCUMENTS_PATH = '/deleted-documents'
 
 /** Путь документа по id (id кодируется: в нём могут быть любые символы). */
 function documentPath(id: string): string {
@@ -17,6 +24,11 @@ function documentPath(id: string): string {
 /** Список документов на сервере (мета, без содержимого). */
 export function fetchDocumentList(): Promise<ApiResult<DocumentMeta[]>> {
   return apiRequest(DOCUMENTS_PATH, { schema: z.array(documentMetaSchema) })
+}
+
+/** id документов, удалённых на сервере: только их клиент удаляет у себя. */
+export function fetchDeletedDocumentIds(): Promise<ApiResult<string[]>> {
+  return apiRequest(DELETED_DOCUMENTS_PATH, { schema: deletedDocumentIdsSchema })
 }
 
 /** Документ целиком; ответ проверяется схемой документа. */
@@ -32,6 +44,6 @@ export function putDocument(doc: LayoutDocument): Promise<ApiResult<LayoutDocume
 /** Удаляет документ на сервере; уже отсутствующий — успех. */
 export async function deleteRemoteDocument(id: string): Promise<ApiResult<undefined>> {
   const result = await apiRequest(documentPath(id), { method: 'DELETE' })
-  if (!result.ok && result.error.status === HTTP_NOT_FOUND) return { ok: true, data: undefined }
+  if (!result.ok && result.error.status === HTTP_STATUS.NOT_FOUND) return { ok: true, data: undefined }
   return result
 }

@@ -59,10 +59,10 @@ export function testPasswordHash(): Promise<string> {
   return passwordHashPromise
 }
 
-/** Сервер на базе в памяти с тестовым паролем; логи выключены. */
-export async function buildTestServer(db: Database = memoryDatabase()): Promise<FastifyInstance> {
+/** Сервер на базе в памяти с тестовым паролем; логи выключены, `trustProxy` — как за nginx. */
+export async function buildTestServer(db: Database = memoryDatabase(), trustProxy = false): Promise<FastifyInstance> {
   const passwordHash = await testPasswordHash()
-  return buildServer({ logLevel: 'silent', passwordHash, cookieSecure: true, trustProxy: false }, { db })
+  return buildServer({ logLevel: 'silent', passwordHash, cookieSecure: true, trustProxy }, { db })
 }
 
 /** Входит тестовым паролем и возвращает заголовок `cookie` для следующих запросов. */

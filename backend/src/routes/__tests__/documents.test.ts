@@ -82,10 +82,11 @@ describe('API документов', () => {
     }
   })
 
-  it('удаляет документ: 204, затем 404', async () => {
+  it('удаляет документ: 204, затем 404; id попадает в журнал удалений', async () => {
     await inject({ method: 'PUT', url: '/api/documents/doc-1', payload: documentFixture() })
     expect((await inject({ method: 'DELETE', url: '/api/documents/doc-1' })).statusCode).toBe(204)
     expect((await inject({ method: 'GET', url: '/api/documents/doc-1' })).statusCode).toBe(404)
+    expect((await inject({ method: 'GET', url: '/api/deleted-documents' })).json()).toEqual(['doc-1'])
   })
 
   it('слишком длинный id в адресе или в новом документе — 400', async () => {
@@ -116,6 +117,7 @@ describe('API документов без входа', () => {
       { method: 'GET', url: '/api/documents/doc-1' },
       { method: 'PUT', url: '/api/documents/doc-1', payload: documentFixture() },
       { method: 'DELETE', url: '/api/documents/doc-1' },
+      { method: 'GET', url: '/api/deleted-documents' },
     ]
     for (const options of requests) {
       const response = await app.inject(options)

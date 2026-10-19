@@ -9,7 +9,7 @@ import LoginPage from '@/views/pages/login/LoginPage.vue'
 import { isUiKitRequested } from '@/scripts/globals/app-page'
 import { resolveGuard } from '@/scripts/globals/auth-guard'
 import { useAuthStore } from '@/scripts/globals/auth-store'
-import { LOGIN_REDIRECT_QUERY_PARAM, ROUTE_NAMES, ROUTE_PATHS } from '@/scripts/globals/constants'
+import { LOGIN_REDIRECT_QUERY_PARAM, ROUTE_CATCH_ALL_PATH, ROUTE_NAMES, ROUTE_PATHS } from '@/scripts/globals/constants'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -28,7 +28,7 @@ function appRoutes(isDev: boolean): RouteRecordRaw[] {
   const routes: RouteRecordRaw[] = [
     { path: ROUTE_PATHS.CANVAS, name: ROUTE_NAMES.CANVAS, component: CanvasPage, meta: { requiresAuth: true } },
     { path: ROUTE_PATHS.LOGIN, name: ROUTE_NAMES.LOGIN, component: LoginPage },
-    { path: '/:pathMatch(.*)*', redirect: ROUTE_PATHS.CANVAS },
+    { path: ROUTE_CATCH_ALL_PATH, redirect: ROUTE_PATHS.CANVAS },
   ]
   if (isDev) {
     routes.push({

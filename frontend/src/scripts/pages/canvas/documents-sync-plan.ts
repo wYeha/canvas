@@ -1,6 +1,6 @@
 /**
- * Чистый план синхронизации: по локальному индексу, списку с сервера и состоянию синхронизации решает,
- * что отправить, скачать и удалить. Конфликт (изменились обе стороны) — побеждает более свежий `updatedAt`.
+ * Чистый план синхронизации: по локальному индексу, списку и журналу удалений с сервера и состоянию синхронизации
+ * решает, что отправить, скачать и удалить. Конфликт (изменились обе стороны) — побеждает более свежий `updatedAt`.
  */
 import type { DocumentMeta } from './documents.types'
 import type { SyncRecord } from './documents-sync-state'
@@ -45,21 +45,26 @@ function planBoth(plan: SyncPlan, local: DocumentMeta, server: DocumentMeta, syn
 }
 
 /**
- * Документ только локально: был синхронизирован и с тех пор не менялся — его удалили на другом устройстве;
- * иначе (новый, созданный до синхронизации или изменённый после удаления в другом месте) — отправить.
+ * Документ только локально: удалён на сервере (есть в журнале) и с синхронизации не менялся — удалить и здесь;
+ * иначе (новый, созданный до синхронизации, изменённый после удаления в другом месте или пропавший с сервера без
+ * записи в журнале — новая или восстановленная база) — отправить. Без записи в журнале локальная копия не удаляется никогда.
  */
-function planLocalOnly(plan: SyncPlan, local: DocumentMeta, synced: string | undefined): void {
-  if (synced === local.updatedAt) plan.deleteLocal.push(local.id)
+function planLocalOnly(plan: SyncPlan, local: DocumentMeta, synced: string | undefined, remoteDeleted: boolean): void {
+  if (remoteDeleted && synced === local.updatedAt) plan.deleteLocal.push(local.id)
   else plan.push.push(local.id)
 }
 
+/** Что известно о сервере: список документов и журнал удалённых. */
+export interface ServerSnapshot {
+  documents: readonly DocumentMeta[]
+  deletedIds: readonly string[]
+}
+
 /** Строит план; порядок шагов внутри списков — как в индексах (стабильный для тестов). */
-export function planSync(
-  local: readonly DocumentMeta[],
-  server: readonly DocumentMeta[],
-  record: SyncRecord,
-): SyncPlan {
+export function planSync(local: readonly DocumentMeta[], snapshot: ServerSnapshot, record: SyncRecord): SyncPlan {
   const plan = emptyPlan()
+  const server = snapshot.documents
+  const remoteDeleted = new Set(snapshot.deletedIds)
   const deleted = new Set(record.deleted)
   const serverById = new Map(server.map((meta) => [meta.id, meta]))
   const localIds = new Set(local.map((meta) => meta.id))
@@ -72,7 +77,7 @@ export function planSync(
     const remote = serverById.get(meta.id)
     const synced = record.synced[meta.id]
     if (remote) planBoth(plan, meta, remote, synced)
-    else planLocalOnly(plan, meta, synced)
+    else planLocalOnly(plan, meta, synced, remoteDeleted.has(meta.id))
   }
   for (const meta of server) {
     if (!localIds.has(meta.id) && !deleted.has(meta.id)) plan.pull.push(meta.id)

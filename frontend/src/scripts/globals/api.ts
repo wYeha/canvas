@@ -4,12 +4,7 @@
  */
 import type { z } from 'zod'
 import { apiErrorBodySchema } from '@shared'
-import { API_BASE } from '@/scripts/globals/constants'
-
-/** HTTP-статусы, которые клиент различает. */
-const HTTP_NO_CONTENT = 204
-const HTTP_UNAUTHORIZED = 401
-const HTTP_SERVER_ERROR = 500
+import { API_BASE, API_TIMEOUT_MS, HTTP_STATUS } from '@/scripts/globals/constants'
 
 /**
  * Вид ошибки: `network` — сервер не ответил (нет сети, бэкенд не запущен), `server` — ответ 5xx,
@@ -65,14 +60,14 @@ async function failureFrom(response: Response): Promise<ApiFailure> {
   const body = apiErrorBodySchema.safeParse(await readJson(response))
   const code = body.success ? body.data.error.code : null
   const message = body.success ? body.data.error.message : null
-  if (response.status === HTTP_UNAUTHORIZED) return failure('unauthorized', response.status, code, message)
-  const kind = response.status >= HTTP_SERVER_ERROR ? 'server' : 'rejected'
+  if (response.status === HTTP_STATUS.UNAUTHORIZED) return failure('unauthorized', response.status, code, message)
+  const kind = response.status >= HTTP_STATUS.SERVER_ERROR ? 'server' : 'rejected'
   return failure(kind, response.status, code, message)
 }
 
-/** Выполняет `fetch`; `null`, если сервер не ответил. */
+/** Выполняет `fetch`; `null`, если сервер не ответил или не уложился в `API_TIMEOUT_MS`. */
 async function send(path: string, method: ApiMethod, body: unknown): Promise<Response | null> {
-  const init: RequestInit = { method, credentials: 'same-origin' }
+  const init: RequestInit = { method, credentials: 'same-origin', signal: AbortSignal.timeout(API_TIMEOUT_MS) }
   if (body !== undefined) {
     init.headers = { 'content-type': 'application/json' }
     init.body = JSON.stringify(body)
@@ -93,7 +88,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
   if (response === null) return { ok: false, error: failure('network', null) }
   if (!response.ok) return { ok: false, error: await failureFrom(response) }
   const { schema } = options
-  if (schema === undefined || response.status === HTTP_NO_CONTENT) {
+  if (schema === undefined || response.status === HTTP_STATUS.NO_CONTENT) {
     return schema === undefined
       ? { ok: true, data: undefined as ApiData<S> }
       : { ok: false, error: failure('invalid-response', response.status) }

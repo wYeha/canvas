@@ -73,8 +73,18 @@ export const useDocumentsStore = defineStore('documents', () => {
     auth.markAnonymous()
   }
 
+  /**
+   * Документ можно отправлять на сервер. Нетронутую заглушку — нет: иначе другие устройства успели бы скачать пустой
+   * «Без названия» до того, как он заменится документами с сервера (сравнение по `updatedAt` — любая правка его меняет).
+   */
+  function isPushable(id: string): boolean {
+    if (placeholder?.id !== id) return true
+    return entries.value.find((meta) => meta.id === id)?.updatedAt !== placeholder.updatedAt
+  }
+
   const sync = createDocumentsSync({
     isEnabled: isSyncEnabled,
+    isPushable,
     onRemoteChanges: applyRemoteChanges,
     onUnauthorized: onSyncUnauthorized,
   })

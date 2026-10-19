@@ -16,6 +16,8 @@ export type LoginOutcome = { ok: true } | { ok: false; message: string }
 /** Хранилище сессии. */
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<SessionState>('unknown')
+  /** Сессия истекла во время работы (сервер ответил 401 не на выход): страница уводит на вход. Ручной выход не в счёт. */
+  const expired = ref(false)
   let pending: Promise<SessionState> | null = null
 
   /** Спрашивает сервер о сессии. Сбой, кроме «не вошли», считается недоступностью сервера: локальная работа не блокируется. */
@@ -40,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     const result = await requestLogin(password)
     if (result.ok) {
       state.value = 'authenticated'
+      expired.value = false
       return { ok: true }
     }
     if (isUnavailable(result.error)) state.value = 'offline'
@@ -61,7 +64,8 @@ export const useAuthStore = defineStore('auth', () => {
   /** Сервер ответил «нужно войти» на другой запрос (например, при синхронизации): сессия истекла. */
   function markAnonymous(): void {
     state.value = 'anonymous'
+    expired.value = true
   }
 
-  return { state, ensureChecked, recheck, login, logout, markAnonymous }
+  return { state, expired, ensureChecked, recheck, login, logout, markAnonymous }
 })

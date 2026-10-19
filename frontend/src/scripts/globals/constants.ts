@@ -90,6 +90,20 @@ export const HEX_SHORT_LENGTH = 3
 /** Префикс адресов API: в dev Vite проксирует его на бэкенд, на сервере — nginx. */
 export const API_BASE = '/api'
 
+/** Предельное время запроса к API, мс: зависший запрос считается сбоем сети (иначе синхронизация ждала бы его вечно). */
+export const API_TIMEOUT_MS = 15_000
+
+/** HTTP-статусы, которые различает фронтенд. */
+export const HTTP_STATUS = {
+  NO_CONTENT: 204,
+  UNAUTHORIZED: 401,
+  NOT_FOUND: 404,
+  SERVER_ERROR: 500,
+} as const
+
+/** Маршрут «любой другой адрес» (vue-router): ведёт в редактор. */
+export const ROUTE_CATCH_ALL_PATH = '/:pathMatch(.*)*'
+
 /** Имена маршрутов приложения (vue-router). */
 export const ROUTE_NAMES = {
   CANVAS: 'canvas',

@@ -3,7 +3,14 @@
 import type { Database } from 'better-sqlite3'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { documentFixture, memoryDatabase } from '@/__tests__/fixtures'
-import { createDocument, deleteDocument, getDocument, listDocuments, saveDocument } from '@/services/documents'
+import {
+  createDocument,
+  deleteDocument,
+  getDocument,
+  listDeletedDocumentIds,
+  listDocuments,
+  saveDocument,
+} from '@/services/documents'
 
 describe('сервис документов', () => {
   let db: Database
@@ -55,6 +62,23 @@ describe('сервис документов', () => {
     expect(deleteDocument(db, 'doc-1')).toBe(true)
     expect(deleteDocument(db, 'doc-1')).toBe(false)
     expect(listDocuments(db)).toEqual([])
+  })
+
+  it('удаление пишет журнал; повторное сохранение того же id убирает запись из журнала', () => {
+    saveDocument(db, documentFixture())
+    expect(listDeletedDocumentIds(db)).toEqual([])
+    deleteDocument(db, 'doc-1')
+    expect(listDeletedDocumentIds(db)).toEqual(['doc-1'])
+    saveDocument(db, documentFixture())
+    expect(listDeletedDocumentIds(db)).toEqual([])
+    deleteDocument(db, 'doc-1')
+    createDocument(db, documentFixture())
+    expect(listDeletedDocumentIds(db)).toEqual([])
+  })
+
+  it('удаление отсутствующего документа журнал не пишет', () => {
+    deleteDocument(db, 'nope')
+    expect(listDeletedDocumentIds(db)).toEqual([])
   })
 
   it('испорченные данные в базе — исключение при чтении и пропуск в списке', () => {
