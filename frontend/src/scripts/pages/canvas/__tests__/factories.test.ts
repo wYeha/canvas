@@ -51,7 +51,7 @@ describe('createBlock', () => {
       label: 'Карточки',
       description: '',
       tag: 'div',
-      self: {},
+      self: { flex: '0 1 auto' },
       repeat: 1,
       children: [],
     })

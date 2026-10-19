@@ -15,6 +15,7 @@ import {
 } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
+  CSS_DEFAULT_FLEX,
   CSS_DEFAULT_GRID_ROWS,
   CSS_DEFAULT_JUSTIFY_CONTENT,
   CSS_FLEX_WRAP,
@@ -215,6 +216,12 @@ function selfPart(property: string, value: string | undefined): string {
   return text === '' ? '' : `${property}:${text}`
 }
 
+/** `flex` не задан или равен значению CSS по умолчанию `0 1 auto`: в контексте, как и в экспорте, не упоминается. */
+function isDefaultFlex(value: string | undefined): boolean {
+  const text = (value ?? '').trim().replace(/\s+/g, ' ')
+  return text === '' || text === CSS_DEFAULT_FLEX
+}
+
 /** Текст растяжения по поперечной оси flex: на весь родитель или (при переносе) на свою строку. */
 function flexStretchText(isRow: boolean, wrap: boolean): string {
   if (wrap) return isRow ? EXPORT_CONTEXT_STRETCH_LINE_HEIGHT : EXPORT_CONTEXT_STRETCH_LINE_WIDTH
@@ -230,7 +237,7 @@ function flexAxes(self: SelfProps, parent: FlexContainer): AxisTexts {
   const isRow = parent.direction === 'row' || parent.direction === 'row-reverse'
   const crossFallback =
     parent.align === CSS_DEFAULT_ALIGN ? flexStretchText(isRow, parent.wrap) : EXPORT_CONTEXT_BY_CONTENT
-  const flex = selfPart(CSS.flex, self.flex)
+  const flex = isDefaultFlex(self.flex) ? '' : selfPart(CSS.flex, self.flex)
   const width = selfPart(CSS.width, self.width)
   const height = selfPart(CSS.height, self.height)
   const minHeight = selfPart(CSS.minHeight, self.minHeight)

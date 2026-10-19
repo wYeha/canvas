@@ -2,6 +2,7 @@
 import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, SelfProps } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
+  CSS_DEFAULT_FLEX,
   CSS_DEFAULT_FLEX_DIRECTION,
   CSS_DEFAULT_GRID_ROWS,
   CSS_DEFAULT_JUSTIFY_CONTENT,
@@ -16,6 +17,9 @@ import {
 
 /** Одно CSS-свойство: имя в kebab-case и значение. */
 export type StyleEntry = readonly [property: string, value: string]
+
+/** Последовательность пробельных символов: в `flex` схлопывается до одного пробела перед сравнением. */
+const WHITESPACE_RUN = /\s+/g
 
 /** Число px как CSS-значение: `16` → `16px`. */
 function px(value: number): string {
@@ -71,7 +75,8 @@ function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEn
   if (parentKind === null) return []
   const entries: StyleEntry[] = []
   if (parentKind === 'flex') {
-    push(entries, 'flex', clean(self.flex))
+    const flex = clean(self.flex)?.replace(WHITESPACE_RUN, ' ') ?? null
+    if (flex !== CSS_DEFAULT_FLEX) push(entries, 'flex', flex)
     push(entries, 'width', clean(self.width))
   } else {
     if (self.colSpan !== undefined && self.colSpan > CSS_MIN_SPAN) {

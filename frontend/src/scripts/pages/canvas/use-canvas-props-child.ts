@@ -3,6 +3,7 @@ import { computed, type WritableComputedRef } from 'vue'
 import type { ContainerKind, LayoutNode, NodeId, SelfProps } from '@shared'
 import { useLayoutStore } from './layout-store'
 import {
+  displayChildFlex,
   normalizeChildFlex,
   normalizeChildSize,
   withSelfSpan,
@@ -39,9 +40,13 @@ export function useCanvasPropsChild() {
   }
 
   /** Текстовое поле с черновиком, Enter/blur и валидацией. */
-  function textField(key: SelfTextKey, normalize: (value: string) => string | null) {
+  function textField(
+    key: SelfTextKey,
+    normalize: (value: string) => string | null,
+    show: (value: string | undefined) => string = (value) => value ?? '',
+  ) {
     return useBlockTextDraft(
-      () => (node.value ? { id: node.value.id, value: node.value.self[key] ?? '' } : null),
+      () => (node.value ? { id: node.value.id, value: show(node.value.self[key]) } : null),
       { multiline: false, normalize },
       (id, value) => {
         writeSelf(id, (self) => withSelfText(self, key, value))
@@ -49,15 +54,15 @@ export function useCanvasPropsChild() {
     )
   }
 
-  const flexCustom = textField('flex', normalizeChildFlex)
+  const flexCustom = textField('flex', normalizeChildFlex, displayChildFlex)
   const width = textField('width', normalizeChildSize)
   const height = textField('height', normalizeChildSize)
   const minHeight = textField('minHeight', normalizeChildSize)
 
-  /** Быстрое значение `flex`: пустая строка — «не задано»; применяется сразу. */
+  /** Быстрое значение `flex`: у пустого значения показывается `0 1 auto`; применяется сразу. */
   const flexPreset: WritableComputedRef<string | null> = computed({
-    /** Читает текущее значение `flex` (пусто, если не задано). */
-    get: () => (node.value ? (node.value.self.flex ?? '') : null),
+    /** Читает текущее значение `flex` (не задано — значение по умолчанию). */
+    get: () => (node.value ? displayChildFlex(node.value.self.flex) : null),
     /** Пишет значение сразу в документ. */
     set: (value) => {
       if (node.value && value !== null) writeSelf(node.value.id, (self) => withSelfText(self, 'flex', value))

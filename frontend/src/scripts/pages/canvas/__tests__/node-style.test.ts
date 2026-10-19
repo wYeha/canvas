@@ -115,6 +115,15 @@ describe('self', () => {
     })
   })
 
+  it('flex по умолчанию 0 1 auto не выводится (и с лишними пробелами), другое значение выводится', () => {
+    expect(styles(make('flex', {}, { self: { flex: '0 1 auto' } }), 'flex')).toEqual({ display: 'flex' })
+    expect(styles(make('flex', {}, { self: { flex: ' 0  1 auto ' } }), 'flex')).toEqual({ display: 'flex' })
+    expect(styles(make('flex', {}, { self: { flex: '0 0 auto' } }), 'flex')).toEqual({
+      display: 'flex',
+      flex: '0 0 auto',
+    })
+  })
+
   it('span 1 не выводится', () => {
     expect(styles(make('flex', {}, { self: { colSpan: 1, rowSpan: 1 } }), 'grid')).toEqual({ display: 'flex' })
   })

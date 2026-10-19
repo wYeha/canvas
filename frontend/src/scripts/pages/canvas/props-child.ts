@@ -3,12 +3,12 @@ import { parseCssValue, type Container, type SelfProps } from '@shared'
 import type { UiChipOption } from '@/scripts/components/ui-chips/ui-chips.types'
 import {
   CHILD_AUTO_VALUE,
-  CHILD_FLEX_NONE_LABEL,
   CHILD_FLEX_QUICK_VALUES,
   CHILD_HINT_ARROWS,
   CHILD_HINT_PREFIX,
   CHILD_HINT_TIMES,
   CHILD_SPAN_MIN,
+  CSS_DEFAULT_FLEX,
   CSS_PX_UNIT,
 } from './constants'
 
@@ -21,9 +21,9 @@ export type SelfSpanKey = 'colSpan' | 'rowSpan'
 /** Чистое число без единицы: `120`, `12.5`. */
 const BARE_NUMBER = /^\d+(\.\d+)?$/
 
-/** Быстрые значения `flex`: чип «—» (пустое значение = не задано) и `1 / auto / none`. */
+/** Быстрые значения `flex`: чип со значением по умолчанию `0 1 auto` и `1 / auto / none`. */
 export const CHILD_FLEX_OPTIONS: readonly UiChipOption[] = [
-  { value: '', label: CHILD_FLEX_NONE_LABEL },
+  { value: CSS_DEFAULT_FLEX, label: CSS_DEFAULT_FLEX },
   ...CHILD_FLEX_QUICK_VALUES.map((value) => ({ value, label: value })),
 ]
 
@@ -74,9 +74,16 @@ export function childHint(parent: Container): string {
   return columns === null ? base : `${base} ${CHILD_HINT_TIMES}${String(columns)}`
 }
 
-/** Нормализует `flex`: пробелы схлопываются, пусто допустимо, небезопасное — `null`. */
+/** Нормализует `flex`: пробелы схлопываются, пусто означает значение по умолчанию `0 1 auto`, небезопасное — `null`. */
 export function normalizeChildFlex(value: string): string | null {
-  return parseCssValue(value, true)
+  const parsed = parseCssValue(value, true)
+  return parsed === '' ? CSS_DEFAULT_FLEX : parsed
+}
+
+/** Значение `flex` для показа в поле и чипах: пустое или отсутствующее (старые документы) — `0 1 auto`. */
+export function displayChildFlex(value: string | undefined): string {
+  const trimmed = value?.trim() ?? ''
+  return trimmed === '' ? CSS_DEFAULT_FLEX : trimmed
 }
 
 /** Нормализует размер: пусто и `auto` — нет значения; чистое число — `Npx`; небезопасное — `null`. */

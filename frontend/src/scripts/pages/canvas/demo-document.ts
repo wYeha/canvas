@@ -7,7 +7,8 @@ type BlockSpec = Partial<Omit<BlockNode, 'id' | 'type' | 'label' | 'children'>>
 
 /** Блок с подписью, настройками и детьми. */
 function block(label: string, spec: BlockSpec, children: LayoutNode[] = []): BlockNode {
-  return { ...createBlock('flex', label), ...spec, children }
+  const base = createBlock('flex', label)
+  return { ...base, ...spec, self: { ...base.self, ...spec.self }, children }
 }
 
 /** Flex-контейнер демо. */

@@ -18,6 +18,7 @@ import {
   DEFAULT_ROOT_FLEX_DIRECTION,
   DEFAULT_ROOT_WIDTH,
   DEFAULT_TAG,
+  CSS_DEFAULT_FLEX,
 } from './constants'
 
 /** Точка на поле. */
@@ -42,7 +43,7 @@ export function createGridContainer(): GridContainer {
   return { kind: 'grid', ...DEFAULT_GRID }
 }
 
-/** Создаёт пустой блок с flex- или grid-контейнером. */
+/** Создаёт пустой блок с flex- или grid-контейнером; «как ребёнок» `flex` сразу равен `0 1 auto`. */
 export function createBlock(kind: ContainerKind, label: string): BlockNode {
   return {
     id: createId(),
@@ -51,7 +52,7 @@ export function createBlock(kind: ContainerKind, label: string): BlockNode {
     description: '',
     tag: DEFAULT_TAG,
     container: kind === 'flex' ? createFlexContainer() : createGridContainer(),
-    self: {},
+    self: { flex: CSS_DEFAULT_FLEX },
     repeat: DEFAULT_REPEAT,
     children: [],
   }

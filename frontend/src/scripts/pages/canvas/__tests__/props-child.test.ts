@@ -50,7 +50,8 @@ describe('childHint', () => {
 describe('нормализация', () => {
   it('flex: пробелы, пусто, небезопасное', () => {
     expect(normalizeChildFlex('  0   0  280px ')).toBe('0 0 280px')
-    expect(normalizeChildFlex('')).toBe('')
+    expect(normalizeChildFlex('')).toBe('0 1 auto')
+    expect(normalizeChildFlex('   ')).toBe('0 1 auto')
     expect(normalizeChildFlex('1; color:red')).toBeNull()
   })
 
@@ -64,8 +65,8 @@ describe('нормализация', () => {
     expect(normalizeChildSize('10px}')).toBeNull()
   })
 
-  it('быстрые значения flex: —, 1, auto, none', () => {
-    expect(CHILD_FLEX_OPTIONS.map((o) => o.value)).toEqual(['', '1', 'auto', 'none'])
+  it('быстрые значения flex: 0 1 auto, 1, auto, none', () => {
+    expect(CHILD_FLEX_OPTIONS.map((o) => o.value)).toEqual(['0 1 auto', '1', 'auto', 'none'])
   })
 })
 
@@ -128,11 +129,15 @@ describe('useCanvasPropsChild', () => {
     const { layoutStore, props } = setup('a2')
     expect(props.flexParent.value).toBe(true)
     expect(props.gridParent.value).toBe(false)
-    expect(props.flexPreset.value).toBe('')
+    expect(props.flexPreset.value).toBe('0 1 auto')
+    expect(props.flexCustom.value).toBe('0 1 auto')
     props.flexPreset.value = '1'
     expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '1' })
-    props.flexPreset.value = ''
-    expect(selfOf(layoutStore, 'a2')).toEqual({})
+    props.flexPreset.value = '0 1 auto'
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto' })
+    props.flexCustom.value = ''
+    props.onFlexKeydown(key('Enter'))
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto' })
     props.flexCustom.value = ' 0  0 280px '
     props.onFlexKeydown(key('Enter'))
     expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 0 280px' })
@@ -143,7 +148,7 @@ describe('useCanvasPropsChild', () => {
     const { layoutStore, props } = setup('a2')
     props.width.value = '240'
     props.applyWidth()
-    expect(selfOf(layoutStore, 'a2')).toEqual({ width: '240px' })
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', width: '240px' })
     expect(props.width.value).toBe('240px')
     props.width.value = '1px; x'
     props.applyWidth()
@@ -151,7 +156,7 @@ describe('useCanvasPropsChild', () => {
     expect(props.width.value).toBe('240px')
     props.width.value = 'auto'
     props.applyWidth()
-    expect(selfOf(layoutStore, 'a2')).toEqual({})
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto' })
   })
 
   it('height и min-height работают и в grid-родителе', () => {
@@ -161,17 +166,17 @@ describe('useCanvasPropsChild', () => {
     props.applyHeight()
     props.minHeight.value = '40vh'
     props.onMinHeightKeydown(key('Enter'))
-    expect(selfOf(layoutStore, 'a1x')).toEqual({ height: '100px', minHeight: '40vh' })
+    expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '0 1 auto', height: '100px', minHeight: '40vh' })
   })
 
   it('span в grid-родителе: 1 и пусто удаляют ключ', () => {
     const { layoutStore, props } = setup('a1x')
     props.colSpan.value = 3
     props.rowSpan.value = 2
-    expect(selfOf(layoutStore, 'a1x')).toEqual({ colSpan: 3, rowSpan: 2 })
+    expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '0 1 auto', colSpan: 3, rowSpan: 2 })
     props.colSpan.value = 1
     props.rowSpan.value = null
-    expect(selfOf(layoutStore, 'a1x')).toEqual({})
+    expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '0 1 auto' })
   })
 
   it('чужие свойства не стираются при правке: flex остаётся при правке span', () => {
@@ -179,6 +184,13 @@ describe('useCanvasPropsChild', () => {
     layoutStore.updateNode('a1x', { self: { flex: '1', width: '5px' } })
     props.colSpan.value = 2
     expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '1', width: '5px', colSpan: 2 })
+  })
+
+  it('пустое flex старого документа показывается как 0 1 auto', () => {
+    const { layoutStore, props } = setup('a3')
+    layoutStore.updateNode('a3', { self: {} })
+    expect(props.flexPreset.value).toBe('0 1 auto')
+    expect(props.flexCustom.value).toBe('0 1 auto')
   })
 
   it('пресет flex правит self вложенного листа', () => {

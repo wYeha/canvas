@@ -124,6 +124,9 @@ export const CSS_DEFAULT_FLEX_DIRECTION = 'row'
 /** Значение `justify-content` по умолчанию в CSS. */
 export const CSS_DEFAULT_JUSTIFY_CONTENT = 'flex-start'
 
+/** Значение `flex` «как ребёнок» по умолчанию в CSS: у новых блоков задано сразу, в стили не выводится. */
+export const CSS_DEFAULT_FLEX = '0 1 auto'
+
 /** Значение `align-items` / `justify-items` по умолчанию в CSS. */
 export const CSS_DEFAULT_ALIGN = 'stretch'
 
@@ -459,11 +462,8 @@ export const CHILD_VALUE_ERROR = 'Недопустимое значение: е�
 /** Значение `auto` в полях размеров: равно «не задано». */
 export const CHILD_AUTO_VALUE = 'auto'
 
-/** Быстрые значения `flex`: пустое значение (чип «—») значит «не задано». */
+/** Быстрые значения `flex`, кроме значения по умолчанию (оно идёт первым чипом). */
 export const CHILD_FLEX_QUICK_VALUES = ['1', 'auto', 'none'] as const
-
-/** Подпись чипа «не задано» у `flex`. */
-export const CHILD_FLEX_NONE_LABEL = '—'
 
 /** Префикс подсказки секции «Как ребёнок»: «в flex →», «в grid ×N». */
 export const CHILD_HINT_PREFIX = 'в'
