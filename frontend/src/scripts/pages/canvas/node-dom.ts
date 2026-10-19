@@ -23,6 +23,7 @@ import {
   REPEAT_OF_ATTR,
   ROOT_HANDLE_ATTR,
   ROOT_HANDLE_SELECTOR,
+  VIEWPORT_LABELS_HIDDEN_SELECTOR,
   WORLD_SELECTOR,
 } from './constants'
 import { rectContains, toWorldRect } from './selection'
@@ -87,6 +88,7 @@ export function layerIdFromTarget(target: EventTarget | null): string | null {
  * Id блока, по подписи которого пришёлся клик в точке `point` (координаты страницы); `null` — мимо подписей.
  * Заголовок корня ловит указатель сам. Чип и подпись листа прозрачны для указателя (клик проходит в блок),
  * поэтому у блока под курсором проверяется, попала ли точка в прямоугольник его подписи.
+ * Скрытые подписи (поле с модификатором «подписи скрыты») не ловят двойной клик; заголовок корня остаётся.
  * Двойной клик в любом месте копии повтора относится к исходному блоку (у копий своих подписей для правки нет).
  */
 export function labelNodeIdAt(target: EventTarget | null, point: CanvasPoint): string | null {
@@ -95,6 +97,7 @@ export function labelNodeIdAt(target: EventTarget | null, point: CanvasPoint): s
   if (header !== null) return header.getAttribute(LABEL_NODE_ATTR)
   const node = target.closest(NODE_OR_REPEAT_SELECTOR)
   if (node?.hasAttribute(REPEAT_OF_ATTR) === true) return node.getAttribute(REPEAT_OF_ATTR)
+  if (node?.closest(VIEWPORT_LABELS_HIDDEN_SELECTOR) != null) return null
   const label = node === null ? undefined : Array.from(node.children).find((el) => el.hasAttribute(LABEL_NODE_ATTR))
   if (label === undefined || !rectContains(clientRectOf(label), point)) return null
   return label.getAttribute(LABEL_NODE_ATTR)

@@ -18,3 +18,20 @@ describe('UiIconButton', () => {
     expect(wrapper.emitted('click')).toBeUndefined()
   })
 })
+
+describe('UiIconButton: переключатель', () => {
+  it('без pressed атрибута aria-pressed нет', () => {
+    const wrapper = mount(UiIconButton, { props: { icon: 'tag', label: 'Подписи' } })
+    expect(wrapper.attributes('aria-pressed')).toBeUndefined()
+    expect(wrapper.classes()).not.toContain('ui-icon-button--pressed')
+  })
+
+  it('pressed выставляет aria-pressed и модификатор', async () => {
+    const wrapper = mount(UiIconButton, { props: { icon: 'tag', label: 'Подписи', pressed: true } })
+    expect(wrapper.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.classes()).toContain('ui-icon-button--pressed')
+    await wrapper.setProps({ pressed: false })
+    expect(wrapper.attributes('aria-pressed')).toBe('false')
+    expect(wrapper.classes()).not.toContain('ui-icon-button--pressed')
+  })
+})

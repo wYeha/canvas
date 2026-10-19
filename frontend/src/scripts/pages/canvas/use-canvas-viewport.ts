@@ -6,11 +6,13 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCameraStore } from './camera-store'
+import { VIEWPORT_LABELS_HIDDEN_CLASS } from './constants'
 import { createCameraSettle } from './camera-settle'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
+import { useViewSettingsStore } from './view-settings-store'
 import { useDragStore } from './dnd/drag-store'
 import { useCanvasDnd } from './dnd/use-canvas-dnd'
 
@@ -41,6 +43,7 @@ export function useCanvasViewport() {
 
   const { spaceHeld, panning } = useCanvasPan(viewportEl, isSurface)
   const dragStore = useDragStore()
+  const viewSettings = useViewSettingsStore()
 
   /** Пробел зажат или идёт тяга поля: ЛКМ двигает поле, а не выделяет и не тянет блок. */
   function isPanning(): boolean {
@@ -102,13 +105,14 @@ export function useCanvasViewport() {
     resizeObserver = null
   })
 
-  /** BEM-классы поля: курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока, «нельзя» без приёмника. */
+  /** BEM-классы поля: скрытые подписи, курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока, «нельзя» без приёмника. */
   const classes = computed(() => ({
     'canvas-viewport': true,
     'canvas-viewport--pan-ready': spaceHeld.value && !panning.value,
     'canvas-viewport--panning': panning.value,
     'canvas-viewport--dragging': dragStore.isDragging,
     'canvas-viewport--drop-denied': dragStore.dropDenied,
+    [VIEWPORT_LABELS_HIDDEN_CLASS]: !viewSettings.labelsVisible,
   }))
 
   /** BEM-классы слоя мира: `--moving` на время жеста камеры. */

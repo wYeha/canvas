@@ -21,6 +21,7 @@ export const ICON_PATHS = {
   check: ['M3.5 8.5l3 3 6-6.5'],
   edit: ['M3 13v-3l7-7 3 3-7 7z', 'M9 4l3 3'],
   trash: ['M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.5 8.5h6l.5-8.5'],
+  tag: ['M2 2h6l6 6-5 5-6-6z', 'M5.2 5.2v.1'],
   fit: ['M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4'],
   'arrow-right': ['M3 8h10M9 4l4 4-4 4'],
   'arrow-down': ['M8 3v10M4 9l4 4 4-4'],

@@ -56,6 +56,11 @@
 
     transform-origin: left top;
     overflow: hidden;
+
+    // Переключатель «Показывать подписи» выключен (модификатор поля)
+    .canvas-viewport--labels-hidden & {
+      display: none;
+    }
   }
 
   &__text {
@@ -83,11 +88,20 @@
     user-select: none;
     transform: translate(-50%, -50%) scale(calc(1 / var(--camera-zoom))); // постоянный экранный размер, центр на месте
     transform-origin: center;
+
+    .canvas-viewport--labels-hidden & {
+      display: none;
+    }
   }
 
   &__icon {
     font-family: v.$font-mono;
     color: var(--color-muted);
+
+    // На чипе фон темнее подложки блока: muted там не дотягивает до 4.5:1, значок читается основным цветом текста
+    &--chip {
+      color: var(--color-text);
+    }
   }
 
   // Знак повтора `×N` после подписи у самого блока (у копий его нет)
@@ -95,6 +109,10 @@
     flex: none;
     font-family: v.$font-mono;
     color: var(--color-muted);
+
+    &--chip {
+      color: var(--color-text);
+    }
   }
 
   // Копия повтора: приглушена целиком (вместе с содержимым), выделяется и тянется как исходный блок

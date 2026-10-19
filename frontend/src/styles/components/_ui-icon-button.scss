@@ -1,4 +1,4 @@
-// Стили общего компонента ui-icon-button: квадратная кнопка с иконкой (размеры m, l; disabled)
+// Стили общего компонента ui-icon-button: квадратная кнопка с иконкой (размеры m, l; disabled; pressed — нажатый переключатель)
 @use 'variables' as v;
 @use 'mixins' as mx;
 
@@ -15,6 +15,12 @@
   &:hover:not(:disabled) {
     color: var(--color-text);
     background: var(--color-hover);
+  }
+
+  // Нажатый переключатель (aria-pressed=true): акцентный мягкий фон, как у выбранного
+  &--pressed {
+    color: var(--color-accent-text);
+    background: var(--color-accent-soft);
   }
 
   &:disabled {

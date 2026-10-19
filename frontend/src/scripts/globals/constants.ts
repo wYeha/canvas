@@ -38,3 +38,6 @@ export const DOCUMENT_STORAGE_PREFIX = 'layout-canvas:document:'
 
 /** Ключ localStorage для id текущего (открытого) документа. */
 export const CURRENT_DOCUMENT_STORAGE_KEY = 'layout-canvas:current-document'
+
+/** Ключ localStorage для настройки редактора «показывать подписи блоков на канвасе» (`'true'` / `'false'`; общая для всех документов). */
+export const LABELS_VISIBLE_STORAGE_KEY = 'layout-canvas:labels-visible'

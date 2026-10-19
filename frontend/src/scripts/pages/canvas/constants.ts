@@ -238,6 +238,18 @@ export const LABEL_NODE_ATTR = 'data-label-node-id'
 /** CSS-селектор подписи блока на канвасе. */
 export const LABEL_NODE_SELECTOR = `[${LABEL_NODE_ATTR}]`
 
+/** BEM-модификатор поля: подписи блоков (чипы и подписи листов) скрыты; заголовки корней остаются. */
+export const VIEWPORT_LABELS_HIDDEN_CLASS = 'canvas-viewport--labels-hidden'
+
+/** CSS-селектор поля со скрытыми подписями: по нему двойной клик не попадает в скрытую подпись. */
+export const VIEWPORT_LABELS_HIDDEN_SELECTOR = `.${VIEWPORT_LABELS_HIDDEN_CLASS}`
+
+/** Подсказка кнопки-переключателя подписей, когда подписи показаны (нажатие скрывает). */
+export const LABELS_HIDE_TITLE = 'Скрыть подписи'
+
+/** Подсказка кнопки-переключателя подписей, когда подписи скрыты (нажатие показывает). */
+export const LABELS_SHOW_TITLE = 'Показать подписи'
+
 /** Имя атрибута строки панели «Слои»: по нему наведение на строку подсвечивает блок на канвасе. */
 export const LAYER_ID_ATTR = 'data-layer-id'
 

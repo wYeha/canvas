@@ -7,9 +7,9 @@
       <span v-if="view.repeat !== ''" class="canvas-node__repeat">{{ view.repeat }}</span>
     </span>
     <span v-else-if="repeatAttr === null" class="canvas-node__chip" :data-label-node-id="labelAttr">
-      <span class="canvas-node__icon">{{ view.icon }}</span>
+      <span class="canvas-node__icon canvas-node__icon--chip">{{ view.icon }}</span>
       <span v-if="view.label !== ''" class="canvas-node__text">{{ view.label }}</span>
-      <span v-if="view.repeat !== ''" class="canvas-node__repeat">{{ view.repeat }}</span>
+      <span v-if="view.repeat !== ''" class="canvas-node__repeat canvas-node__repeat--chip">{{ view.repeat }}</span>
     </span>
     <CanvasNode
       v-for="child in view.children"

@@ -6,6 +6,7 @@
     :disabled="disabled"
     :aria-label="label"
     :title="label"
+    :aria-pressed="pressed"
     @mousedown="keepFocusOnMouseDown"
   >
     <UiIcon :name="icon" class="ui-icon-button__icon" />
@@ -18,6 +19,6 @@ import type { UiIconButtonProps } from '@/scripts/components/ui-icon-button/ui-i
 import { useUiIconButton } from '@/scripts/components/ui-icon-button/use-ui-icon-button'
 import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 
-const props = withDefaults(defineProps<UiIconButtonProps>(), { size: 'm', disabled: false })
+const props = withDefaults(defineProps<UiIconButtonProps>(), { size: 'm', disabled: false, pressed: undefined })
 const { classes } = useUiIconButton(props)
 </script>
