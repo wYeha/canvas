@@ -1,6 +1,6 @@
 /** Zod-схемы и типы документа: корневые блоки на поле и сам документ с проверками целостности. */
 import { z } from 'zod'
-import { SCHEMA_VERSION } from './constants'
+import { ROOT_REPEAT, SCHEMA_VERSION } from './constants'
 import { blockNodeSchema, nodeIdSchema, type LayoutNode } from './node'
 
 /** Положение и размер корневого блока на поле. `width` — ширина превью, в CSS как `width` не экспортируется. */
@@ -13,10 +13,13 @@ export const canvasPlacementSchema = z.object({
 })
 
 /** Корневой блок: лежит прямо на поле, без родителя. */
-export const rootEntrySchema = z.object({
-  canvas: canvasPlacementSchema,
-  node: blockNodeSchema,
-})
+export const rootEntrySchema = z
+  .object({
+    canvas: canvasPlacementSchema,
+    node: blockNodeSchema,
+  })
+  // У корня повтора нет (поле «Повтор» только у вложенных блоков): значение из импорта сводим к 1
+  .transform((entry) => ({ ...entry, node: { ...entry.node, repeat: ROOT_REPEAT } }))
 
 /** Структура документа без проверок целостности (уникальность id). */
 export const layoutDocumentShapeSchema = z.object({

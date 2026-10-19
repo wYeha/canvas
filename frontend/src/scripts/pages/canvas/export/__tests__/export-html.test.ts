@@ -43,10 +43,10 @@ describe('exportRootHtml', () => {
     expect(html).toContain('<!-- card ×3 — Карточка товара -->')
   })
 
-  it('exportMaxWidth: max-width и margin после styleEntries, в заголовке «по центру»', () => {
+  it('exportMaxWidth: max-width и margin после styleEntries, в заголовке «по центру» и без ×N у корня', () => {
     const entry = root(block('flex', 'Лендинг', { repeat: 2 }), 1200, null, true)
     expect(exportRootHtml(docOf(entry), entry)).toMatchInlineSnapshot(`
-      "<!-- Корневой блок «Лендинг» ×2, max-width 1200px по центру -->
+      "<!-- Корневой блок «Лендинг», max-width 1200px по центру -->
       <div style="max-width:1200px; margin:0 auto"></div>
       "
     `)

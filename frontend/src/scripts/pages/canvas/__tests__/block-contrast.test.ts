@@ -5,7 +5,8 @@
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { WCAG_AA_TEXT_RATIO, blend, contrastRatio, parseHex, type Rgb } from '@/scripts/globals/contrast'
+import { WCAG_AA_TEXT_RATIO } from '@/scripts/globals/constants'
+import { blend, contrastRatio, parseHex, type Rgb } from '@/scripts/globals/contrast'
 
 const SCSS = readFileSync(new URL('../../../../styles/_variables.scss', import.meta.url), 'utf8')
 

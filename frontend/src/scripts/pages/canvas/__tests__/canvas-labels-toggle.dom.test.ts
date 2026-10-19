@@ -40,9 +40,10 @@ afterEach(() => {
 })
 
 describe('кнопка «Показывать подписи» в плашке зума', () => {
-  it('первая в плашке, нажата по умолчанию, подсказка «Скрыть подписи»', () => {
+  it('первая в плашке, нажата по умолчанию, имя постоянное, подсказка «Скрыть подписи»', () => {
     const wrapper = setup(CanvasZoom)
     const first = wrapper.find('button')
+    expect(first.attributes('aria-label')).toBe('Показывать подписи')
     expect(first.attributes('aria-pressed')).toBe('true')
     expect(first.attributes('title')).toBe('Скрыть подписи')
   })
@@ -52,6 +53,7 @@ describe('кнопка «Показывать подписи» в плашке �
     await wrapper.find('button').trigger('click')
     const first = wrapper.find('button')
     expect(first.attributes('aria-pressed')).toBe('false')
+    expect(first.attributes('aria-label')).toBe('Показывать подписи')
     expect(first.attributes('title')).toBe('Показать подписи')
   })
 
@@ -93,6 +95,25 @@ describe('подписи на канвасе', () => {
     useLabelEditStore().finish()
     await zoom.find('button').trigger('click')
     dblclick(block)
+    expect(useLabelEditStore().editingId).toBeNull()
+    zoom.unmount()
+    viewport.unmount()
+  })
+
+  it('при скрытых подписях двойной клик по копии повтора тоже не открывает переименование', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const layoutStore = useLayoutStore()
+    layoutStore.loadDocument(makeDoc())
+    layoutStore.updateNode('a2', { repeat: 2 })
+    const viewport = mount(CanvasViewport, { global: { plugins: [pinia] }, attachTo: document.body })
+    const zoom = mount(CanvasZoom, { global: { plugins: [pinia] } })
+    const copy = viewport.find('[data-repeat-of="a2"]').element
+    dblclick(copy)
+    expect(useLabelEditStore().editingId).toBe('a2')
+    useLabelEditStore().finish()
+    await zoom.find('button').trigger('click')
+    dblclick(copy)
     expect(useLabelEditStore().editingId).toBeNull()
     zoom.unmount()
     viewport.unmount()

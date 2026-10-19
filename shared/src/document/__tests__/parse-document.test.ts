@@ -101,6 +101,14 @@ describe('parseDocument', () => {
     expect(errorOf({ ...doc, roots: [{ ...root, canvas: { ...root.canvas, height: -5 } }] })).toContain('canvas.height')
   })
 
+  it('repeat корня из импорта сводится к 1 при разборе; вложенные блоки не затрагиваются', () => {
+    const result = parseDocument(documentOf({ ...block('page', [{ ...block('kid'), repeat: 4 }]), repeat: 5 }))
+    if (!result.ok) throw new Error(result.error)
+    const [entry] = result.document.roots
+    expect(entry?.node.repeat).toBe(1)
+    expect(entry?.node.children[0]?.repeat).toBe(4)
+  })
+
   it('отклоняет дату не в формате ISO с русским сообщением', () => {
     const error = errorOf({ ...documentOf(), createdAt: 'вчера' })
     expect(error).toContain('createdAt')

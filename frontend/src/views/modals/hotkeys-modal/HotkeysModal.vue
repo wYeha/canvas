@@ -7,7 +7,7 @@
         <tbody>
           <tr v-for="row in group.rows" :key="row.keys">
             <td class="hotkeys-modal__keys">
-              <template v-for="(part, index) in row.parts" :key="index">
+              <template v-for="part in row.parts" :key="part.key">
                 <kbd v-if="part.kind === 'key'" class="hotkeys-modal__key">{{ part.text }}</kbd>
                 <span v-else class="hotkeys-modal__sep">{{ part.text }}</span>
               </template>

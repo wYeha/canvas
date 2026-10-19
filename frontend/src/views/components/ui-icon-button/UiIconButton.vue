@@ -1,11 +1,11 @@
-<!-- Общий компонент: квадратная кнопка с иконкой; подпись уходит в aria-label и подсказку -->
+<!-- Общий компонент: квадратная кнопка с иконкой; подпись уходит в aria-label, подсказка (title) — tooltip или та же подпись -->
 <template>
   <button
     :class="classes"
     type="button"
     :disabled="disabled"
     :aria-label="label"
-    :title="label"
+    :title="tooltip ?? label"
     :aria-pressed="pressed"
     @mousedown="keepFocusOnMouseDown"
   >

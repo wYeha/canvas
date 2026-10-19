@@ -2,6 +2,7 @@
 import { computed, type ComputedRef } from 'vue'
 import type { NodeId } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
+import { REPEAT_RENDER_BUDGET } from './constants'
 import { useDragStore } from './dnd/drag-store'
 import { styleEntries, toStyleObject } from './node-style'
 import {
@@ -55,9 +56,10 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
       style: toStyleObject(styleEntries(node, parentKind)),
       icon: directionIcon(node),
       label: blockLabel(node),
-      repeat: copyOf.value === null ? repeatMark(node) : '',
+      // У корня ×N не показываем: повтор корня не рисуется и не экспортируется
+      repeat: copyOf.value === null && parentKind !== null ? repeatMark(node) : '',
       leaf: isLeafBlock(node),
-      children: renderChildren(node.children, copyOf.value),
+      children: renderChildren(node.children, copyOf.value, props.copyBudget ?? REPEAT_RENDER_BUDGET),
     }
   })
 

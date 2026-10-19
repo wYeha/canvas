@@ -1,23 +1,20 @@
 /** Чистые функции WCAG-контраста: разбор hex, смешивание с альфой и отношение яркостей. Без Vue и DOM. */
+import {
+  CHANNEL_MAX,
+  HEX_FULL_LENGTH,
+  HEX_RADIX,
+  HEX_SHORT_LENGTH,
+  LUMINANCE_OFFSET,
+  LUMINANCE_WEIGHTS,
+  SRGB_GAMMA_DIVISOR,
+  SRGB_GAMMA_OFFSET,
+  SRGB_GAMMA_POWER,
+  SRGB_LINEAR_DIVISOR,
+  SRGB_LINEAR_THRESHOLD,
+} from './constants'
 
 /** Цвет в каналах sRGB, 0–255. */
 export type Rgb = readonly [number, number, number]
-
-/** Порог WCAG AA для обычного текста. */
-export const WCAG_AA_TEXT_RATIO = 4.5
-
-/** Основание степени и константы перевода sRGB-канала в линейный (формула WCAG 2.x). */
-const SRGB_LINEAR_THRESHOLD = 0.04045
-const SRGB_LINEAR_DIVISOR = 12.92
-const SRGB_GAMMA_OFFSET = 0.055
-const SRGB_GAMMA_DIVISOR = 1.055
-const SRGB_GAMMA_POWER = 2.4
-const CHANNEL_MAX = 255
-const LUMINANCE_WEIGHTS = [0.2126, 0.7152, 0.0722] as const
-const LUMINANCE_OFFSET = 0.05
-const HEX_RADIX = 16
-const HEX_FULL_LENGTH = 6
-const HEX_SHORT_LENGTH = 3
 
 /** Разбирает `#rrggbb` или `#rgb` в каналы; бросает ошибку на другом формате. */
 export function parseHex(hex: string): Rgb {

@@ -24,6 +24,7 @@ import {
   CSS_PX_UNIT,
   ROOT_UNTITLED_LABEL,
 } from '@/scripts/pages/canvas/constants'
+import { repeatMark } from '@/scripts/pages/canvas/node-view'
 import { isDefaultFlex } from '@/scripts/pages/canvas/node-style'
 import { countGridColumns } from '@/scripts/pages/canvas/props-child'
 import { getPath, locateNode } from '@/scripts/pages/canvas/tree-query'
@@ -347,12 +348,12 @@ function placeLine(place: NodePlace, options: ExportOptions): string {
   )
   const { container } = parent
   const axes = container.kind === 'flex' ? flexAxes(node.self, container) : gridAxes(node.self, container)
-  const repeat = node.repeat > 1 ? node.repeat : null
+  const repeat = repeatMark(node, EXPORT_REPEAT_MARK)
   const parts = [
     position,
     axisPart(EXPORT_CONTEXT_WIDTH_LABEL, `${axes.width}${measuredText(place, options)}`),
     axisPart(EXPORT_CONTEXT_HEIGHT_LABEL, axes.height),
-    repeat === null ? '' : `${EXPORT_CONTEXT_REPEATED} ${EXPORT_REPEAT_MARK}${String(repeat)}`,
+    repeat === '' ? '' : `${EXPORT_CONTEXT_REPEATED} ${repeat}`,
   ]
   return `${EXPORT_CONTEXT_PLACE} ${joinParts(parts, EXPORT_CONTEXT_PLACE_SEPARATOR)}`
 }

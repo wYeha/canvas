@@ -98,6 +98,14 @@ describe('повтор на канвасе: отрисовка', () => {
     expect(wrapper.get('[data-node-id="a2"] > .canvas-node__caption').text()).toContain('×3')
     expect(wrapper.get('[data-node-id="a3"] > .canvas-node__caption').text()).not.toContain('×')
   })
+
+  it('у корня с repeat > 1 (из импорта) на чипе нет ×N, у вложенного блока есть', async () => {
+    const wrapper = setup(CanvasViewport)
+    useLayoutStore().updateNode('A', { repeat: 3 })
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[data-node-id="A"] > .canvas-node__chip').text()).not.toContain('×')
+    expect(wrapper.get('[data-node-id="a1"] > .canvas-node__chip').text()).toContain('×2')
+  })
 })
 
 describe('повтор на канвасе: выделение и ховер', () => {

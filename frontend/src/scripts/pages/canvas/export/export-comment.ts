@@ -1,6 +1,7 @@
 /** Комментарии экспорта: подпись и описание узла, предупреждения защиты, заголовок корневого блока. */
 import type { BlockNode, RootEntry } from '@shared'
 import { CSS_PX_UNIT, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
+import { repeatMark } from '@/scripts/pages/canvas/node-view'
 import { escapeCommentText, toCommentLines, toSingleLine } from './export-escape'
 import type { CommentParts, RootOrder } from './export-types'
 import {
@@ -40,17 +41,12 @@ function pxText(value: number): string {
   return `${String(value)}${CSS_PX_UNIT}`
 }
 
-/** Знак повтора `×N` при `repeat > 1`, иначе пустая строка. */
-function repeatMark(block: BlockNode): string {
-  return block.repeat > 1 ? `${EXPORT_REPEAT_MARK}${String(block.repeat)}` : ''
-}
-
 /**
  * Части комментария узла: голова — подпись, `×N` и однострочное описание через « — »;
  * многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
  */
 export function nodeCommentParts(block: BlockNode): CommentParts {
-  const name = joinParts([toSingleLine(block.label), repeatMark(block)], EXPORT_WORD_SEPARATOR)
+  const name = joinParts([toSingleLine(block.label), repeatMark(block, EXPORT_REPEAT_MARK)], EXPORT_WORD_SEPARATOR)
   const lines = toCommentLines(block.description)
   const [first] = lines
   if (lines.length === 1 && first !== undefined) {
@@ -91,13 +87,13 @@ export function rootSizeText(entry: RootEntry): string {
 }
 
 /**
- * Заголовок корня: `Корневой блок «{подпись}» ×N, {размер}`; описание корня — следующими строками этого же комментария. `order` (несколько корней) —
+ * Заголовок корня: `Корневой блок «{подпись}», {размер}` (у корня повтора нет); описание корня — следующими строками этого же комментария. `order` (несколько корней) —
  * префикс `{i} из {n}. `.
  */
 export function rootHeaderComment(entry: RootEntry, indent: string, order?: RootOrder): string[] {
   const label = toSingleLine(entry.node.label)
   const title = joinParts(
-    [EXPORT_ROOT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label), repeatMark(entry.node)],
+    [EXPORT_ROOT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label)],
     EXPORT_WORD_SEPARATOR,
   )
   const head = `${title}${EXPORT_LIST_SEPARATOR}${rootSizeText(entry)}`

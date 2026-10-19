@@ -19,6 +19,7 @@
       :parent-kind="kind"
       :copy-of="child.copyOf"
       :copy-root="child.copyRoot"
+      :copy-budget="child.budget"
     />
   </div>
 </template>

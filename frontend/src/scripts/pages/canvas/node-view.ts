@@ -11,6 +11,7 @@ import {
   REPEAT_KEY_SEPARATOR,
   REPEAT_MARK,
   REPEAT_MAX,
+  REPEAT_RENDER_BUDGET,
   ROOT_TITLE_SEPARATOR,
   ROOT_UNTITLED_LABEL,
 } from './constants'
@@ -18,13 +19,21 @@ import {
 /**
  * Ребёнок в списке отрисовки: сам блок или его копия повтора.
  * `copyOf` — id исходного блока с повтором, к которому относятся клик, ховер и перетаскивание
- * (`null` — настоящий блок); `copyRoot` — верхний элемент копии (на нём приглушение, внутри копии — нет).
+ * (`null` — настоящий блок); `copyRoot` — верхний элемент копии (на нём приглушение, внутри копии — нет);
+ * `budget` — остаток бюджета копий, доступный поддереву настоящего блока (у копии не используется: она принята целиком).
  */
 export interface RenderChild {
   key: string
   node: BlockNode
   copyOf: NodeId | null
   copyRoot: boolean
+  budget: number
+}
+
+/** План отрисовки детей: список и сколько бюджета копий он израсходовал (вместе с поддеревьями настоящих детей). */
+export interface RenderPlan {
+  items: RenderChild[]
+  used: number
 }
 
 /** Номер цвета палитры для глубины вложенности (корень — 0). */
@@ -105,25 +114,61 @@ export function repeatCount(block: BlockNode): number {
   return Math.min(count, REPEAT_MAX)
 }
 
-/** Знак повтора после подписи (`×3`) при `repeat > 1`, иначе пустая строка. Число — как в документе. */
-export function repeatMark(block: BlockNode): string {
-  return block.repeat > DEFAULT_REPEAT ? `${REPEAT_MARK}${String(block.repeat)}` : ''
+/** Знак повтора (`×3`) при `repeat > 1`, иначе пустая строка. Число — как в документе; `mark` — знак (в экспорте свой). */
+export function repeatMark(block: BlockNode, mark: string = REPEAT_MARK): string {
+  return block.repeat > DEFAULT_REPEAT ? `${mark}${String(block.repeat)}` : ''
+}
+
+/** Сколько блоков рисует копия узла: он сам и его поддерево со всеми копиями повтора внутри (N × M для вложенных). */
+export function cloneSize(node: BlockNode): number {
+  return node.children.reduce((sum, child) => sum + repeatCount(child) * cloneSize(child), 1)
+}
+
+/** Копия `index` (с 1) блока `node`; `copyOf` родителя — внутри копии всё относится к её исходному блоку. */
+function copyItem(node: BlockNode, index: number, copyOf: NodeId | null): RenderChild {
+  return {
+    key: `${node.id}${REPEAT_KEY_SEPARATOR}${String(index)}`,
+    node,
+    copyOf: copyOf ?? node.id,
+    copyRoot: copyOf === null,
+    budget: 0,
+  }
+}
+
+/**
+ * Список отрисовки детей настоящего блока с бюджетом копий: за каждым ребёнком идут его копии, пока они
+ * помещаются в остаток `budget`; поддерево ребёнка получает остаток после предыдущих братьев (обход по порядку,
+ * без общего изменяемого счётчика между компонентами). Исходные блоки рисуются всегда.
+ */
+function planOwnChildren(children: readonly BlockNode[], budget: number): RenderPlan {
+  const items: RenderChild[] = []
+  let remaining = budget
+  for (const node of children) {
+    items.push({ key: node.id, node, copyOf: null, copyRoot: false, budget: remaining })
+    remaining -= planOwnChildren(node.children, remaining).used
+    const size = cloneSize(node)
+    for (let index = 1; index < repeatCount(node) && size <= remaining; index += 1) {
+      items.push(copyItem(node, index, null))
+      remaining -= size
+    }
+  }
+  return { items, used: budget - remaining }
 }
 
 /**
  * Список отрисовки детей блока: каждый ребёнок, а сразу за ним — его копии повтора (N − 1 штук).
- * `copyOf` — в копии ли сам родитель: тогда и дети, и их копии относятся к тому же исходному блоку.
- * Вложенный повтор внутри повтора даёт N × M копий.
+ * `copyOf` — в копии ли сам родитель: тогда и дети, и их копии относятся к тому же исходному блоку, а бюджет
+ * не тратится (копию приняли целиком, её размер учтён у владельца). Вложенный повтор даёт N × M копий,
+ * но не больше `budget` блоков на всё дерево корня (`REPEAT_RENDER_BUDGET`).
  */
-export function renderChildren(children: readonly BlockNode[], copyOf: NodeId | null): RenderChild[] {
-  return children.flatMap((node) => {
-    const own: RenderChild = { key: node.id, node, copyOf, copyRoot: false }
-    const copies = Array.from({ length: repeatCount(node) - 1 }, (_, index) => ({
-      key: `${node.id}${REPEAT_KEY_SEPARATOR}${String(index + 1)}`,
-      node,
-      copyOf: copyOf ?? node.id,
-      copyRoot: copyOf === null,
-    }))
-    return [own, ...copies]
-  })
+export function renderChildren(
+  children: readonly BlockNode[],
+  copyOf: NodeId | null,
+  budget: number = REPEAT_RENDER_BUDGET,
+): RenderChild[] {
+  if (copyOf === null) return planOwnChildren(children, budget).items
+  return children.flatMap((node) => [
+    { key: node.id, node, copyOf, copyRoot: false, budget: 0 },
+    ...Array.from({ length: repeatCount(node) - 1 }, (_, index) => copyItem(node, index + 1, copyOf)),
+  ])
 }

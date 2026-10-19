@@ -7,7 +7,11 @@ export function splitHotkeyKeys(keys: string): HotkeyKeyPart[] {
   // Нечётные куски после split по маркеру лежат внутри кавычек, чётные — снаружи
   return keys
     .split(HOTKEY_KEY_MARKER)
-    .map((text, index): HotkeyKeyPart => ({ kind: index % 2 === 1 ? 'key' : 'text', text }))
+    .map((text, index): HotkeyKeyPart => ({
+      kind: index % 2 === 1 ? 'key' : 'text',
+      text,
+      key: `${keys}:${String(index)}`,
+    }))
     .filter((part) => part.text.trim() !== '')
     .map((part) => (part.kind === 'text' ? { ...part, text: part.text.trim() } : part))
 }

@@ -41,3 +41,45 @@ export const CURRENT_DOCUMENT_STORAGE_KEY = 'layout-canvas:current-document'
 
 /** Ключ localStorage для настройки редактора «показывать подписи блоков на канвасе» (`'true'` / `'false'`; общая для всех документов). */
 export const LABELS_VISIBLE_STORAGE_KEY = 'layout-canvas:labels-visible'
+
+/** Строка localStorage для включённого флага. */
+export const FLAG_TRUE = 'true'
+
+/** Строка localStorage для выключенного флага. */
+export const FLAG_FALSE = 'false'
+
+/** Порог контраста WCAG AA для обычного текста. */
+export const WCAG_AA_TEXT_RATIO = 4.5
+
+/** Порог sRGB-канала (доля от 1), ниже которого перевод в линейный вид идёт делением (формула WCAG 2.x). */
+export const SRGB_LINEAR_THRESHOLD = 0.04045
+
+/** Делитель линейного участка перевода sRGB-канала (формула WCAG 2.x). */
+export const SRGB_LINEAR_DIVISOR = 12.92
+
+/** Смещение гамма-участка перевода sRGB-канала (формула WCAG 2.x). */
+export const SRGB_GAMMA_OFFSET = 0.055
+
+/** Делитель гамма-участка перевода sRGB-канала (формула WCAG 2.x). */
+export const SRGB_GAMMA_DIVISOR = 1.055
+
+/** Показатель степени гамма-участка перевода sRGB-канала (формула WCAG 2.x). */
+export const SRGB_GAMMA_POWER = 2.4
+
+/** Наибольшее значение канала sRGB. */
+export const CHANNEL_MAX = 255
+
+/** Веса красного, зелёного и синего каналов в относительной яркости (WCAG 2.x). */
+export const LUMINANCE_WEIGHTS = [0.2126, 0.7152, 0.0722] as const
+
+/** Добавка к яркости в формуле отношения контраста (WCAG 2.x). */
+export const LUMINANCE_OFFSET = 0.05
+
+/** Основание системы счисления hex-цвета. */
+export const HEX_RADIX = 16
+
+/** Длина полной hex-записи цвета без `#`: `rrggbb`. */
+export const HEX_FULL_LENGTH = 6
+
+/** Длина короткой hex-записи цвета без `#`: `rgb`. */
+export const HEX_SHORT_LENGTH = 3

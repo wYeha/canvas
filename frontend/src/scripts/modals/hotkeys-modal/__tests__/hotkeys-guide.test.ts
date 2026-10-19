@@ -14,6 +14,9 @@ const DONE_MARK = '✅'
 /** Заголовок группы в таблице: «**Блоки**». */
 const GROUP_HEADING = /^\*\*(.+)\*\*$/
 
+/** Разделитель ячеек markdown-таблицы: `|`, кроме экранированного `\|` внутри ячейки. */
+const CELL_SEPARATOR = /(?<!\\)\|/
+
 /** Убирает маркер ✅ (вместе с пробелом перед ним) и лишние пробелы. */
 function clean(text: string): string {
   return text.replaceAll(` ${DONE_MARK}`, '').replaceAll(DONE_MARK, '').replace(/\s+/g, ' ').trim()
@@ -35,8 +38,8 @@ function parseGuide(markdown: string): HotkeyGroup[] {
   const groups: { title: string; rows: { keys: string; action: string }[] }[] = []
   // Первые две строки — шапка и разделитель
   for (const line of tableLines(markdown).slice(2)) {
-    const [keysCell = '', actionCell = ''] = line.split('|').slice(1, 3)
-    const keys = keysCell.trim()
+    const [keysCell = '', actionCell = ''] = line.split(CELL_SEPARATOR).slice(1, 3)
+    const keys = clean(keysCell)
     const heading = GROUP_HEADING.exec(keys)
     if (heading?.[1] !== undefined) groups.push({ title: heading[1], rows: [] })
     else groups.at(-1)?.rows.push({ keys, action: clean(actionCell) })

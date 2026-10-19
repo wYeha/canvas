@@ -11,7 +11,7 @@ export const HOTKEYS_MODAL_TITLE = 'Горячие клавиши'
 export const HOTKEYS_BUTTON_LABEL = 'Горячие клавиши'
 
 /** Значение `aria-keyshortcuts` кнопки «?». */
-export const HOTKEYS_KEYSHORTCUTS = 'Shift+/'
+export const HOTKEYS_KEYSHORTCUTS = '?'
 
 /** Символ-обрамление клавиши в ячейке «Клавиши» (markdown-код). */
 export const HOTKEY_KEY_MARKER = '`'

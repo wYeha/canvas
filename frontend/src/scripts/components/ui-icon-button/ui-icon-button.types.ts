@@ -6,6 +6,8 @@ import type { UiButtonSize } from '@/scripts/components/ui-button/ui-button.type
 export interface UiIconButtonProps {
   icon: UiIconName
   label: string
+  /** Текст всплывающей подсказки (`title`); по умолчанию равен `label`. Нужен переключателям: имя постоянное, подсказка — о действии. */
+  tooltip?: string
   size?: UiButtonSize
   disabled?: boolean
   /** Состояние переключателя; `undefined` — обычная кнопка без aria-pressed. */

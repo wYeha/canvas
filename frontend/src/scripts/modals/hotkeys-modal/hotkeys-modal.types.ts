@@ -16,6 +16,8 @@ export interface HotkeyGroup {
 export interface HotkeyKeyPart {
   kind: 'key' | 'text'
   text: string
+  /** Стабильный ключ для `v-for`: исходная ячейка + номер куска (уникален внутри группы). */
+  key: string
 }
 
 /** Строка таблицы для шаблона: действие и разобранная ячейка клавиш. */

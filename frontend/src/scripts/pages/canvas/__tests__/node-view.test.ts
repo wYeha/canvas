@@ -1,8 +1,10 @@
 /** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня, копии повтора. */
 import { describe, expect, it } from 'vitest'
+import { REPEAT_RENDER_BUDGET } from '@/scripts/pages/canvas/constants'
 import { createBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
   blockClasses,
+  cloneSize,
   depthClass,
   directionIcon,
   needsLeafMinHeight,
@@ -80,6 +82,7 @@ describe('повтор ×N', () => {
   it('repeatMark: ×N только при repeat > 1', () => {
     expect(repeatMark(rep('a', 1))).toBe('')
     expect(repeatMark(rep('a', 4))).toBe('×4')
+    expect(repeatMark(rep('a', 4), 'x')).toBe('x4')
   })
 
   it('renderChildren: за блоком его N − 1 копий, ключи уникальны, копии ссылаются на исходный блок', () => {
@@ -100,5 +103,72 @@ describe('повтор ×N', () => {
       ['inner#1', 'outer', false],
       ['z', 'outer', false],
     ])
+  })
+})
+
+describe('бюджет копий повтора', () => {
+  /** Блок с id, повтором и детьми. */
+  function rep(id: string, repeat: number, children: ReturnType<typeof createBlock>[] = []) {
+    return { ...createBlock('flex', id), id, repeat, children }
+  }
+
+  /** Считает, сколько блоков нарисуют вложенные компоненты: обход как у `CanvasNode` (пропсы `copyOf`/`budget` от родителя). */
+  function drawn(children: ReturnType<typeof createBlock>[], copyOf: string | null, budget: number) {
+    let total = 0
+    let copies = 0
+    for (const item of renderChildren(children, copyOf, budget)) {
+      total += 1
+      if (item.copyOf !== null) copies += 1
+      const inner = drawn(item.node.children, item.copyOf, item.budget)
+      total += inner.total
+      copies += inner.copies
+    }
+    return { total, copies }
+  }
+
+  it('cloneSize: блок плюс поддерево с учётом повторов внутри', () => {
+    expect(cloneSize(rep('a', 1))).toBe(1)
+    expect(cloneSize(rep('a', 1, [rep('b', 3)]))).toBe(4)
+    expect(cloneSize(rep('a', 1, [rep('b', 3, [rep('c', 2)])]))).toBe(1 + 3 * (1 + 2))
+  })
+
+  it('сверх бюджета копии не рисуются, исходные блоки — всегда', () => {
+    const items = renderChildren([rep('x', 24), rep('y', 1)], null, 5)
+    expect(items.map((item) => item.key)).toEqual(['x', 'x#1', 'x#2', 'x#3', 'x#4', 'x#5', 'y'])
+    expect(renderChildren([rep('x', 24)], null, 0).map((item) => item.key)).toEqual(['x'])
+  })
+
+  it('бюджет по умолчанию — REPEAT_RENDER_BUDGET', () => {
+    expect(renderChildren([rep('x', 24)], null)).toHaveLength(24)
+    const many = renderChildren([rep('x', 24), rep('y', 24), rep('z', 24)], null)
+    expect(many.filter((item) => item.copyOf !== null)).toHaveLength(69)
+  })
+
+  it('вложенные 24 × 24 × 24: копий не больше бюджета, все исходные блоки на месте', () => {
+    const tree = [rep('a', 24, [rep('b', 24, [rep('c', 24)])])]
+    const { copies, total } = drawn(tree, null, REPEAT_RENDER_BUDGET)
+    expect(copies).toBeLessThanOrEqual(REPEAT_RENDER_BUDGET)
+    expect(total).toBeLessThan(24 * 24 * 24)
+    expect(total).toBeGreaterThanOrEqual(3)
+  })
+
+  it('поддерево настоящего блока получает остаток после братьев и своих копий', () => {
+    const tree = [rep('a', 3, [rep('b', 2)]), rep('c', 2)]
+    const items = renderChildren(tree, null, 10)
+    // a: поддерево тратит 1 (копия b), копии a по 3 блока каждая; c получает остаток
+    expect(items.map((item) => [item.key, item.budget])).toEqual([
+      ['a', 10],
+      ['a#1', 0],
+      ['a#2', 0],
+      ['c', 10 - 1 - 3 - 3],
+      ['c#1', 0],
+    ])
+  })
+
+  it('функция чистая: вход не меняется, результат повторяем', () => {
+    const tree = [rep('a', 4, [rep('b', 4)])]
+    const before = JSON.stringify(tree)
+    expect(renderChildren(tree, null, 7)).toEqual(renderChildren(tree, null, 7))
+    expect(JSON.stringify(tree)).toBe(before)
   })
 })

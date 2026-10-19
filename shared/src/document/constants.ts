@@ -30,3 +30,6 @@ export const GRID_ALIGN_VALUES = ['start', 'center', 'end', 'stretch'] as const
  * поэтому версия схемы не меняется: старые сохранения и `.json` открываются без них.
  */
 export const LEGACY_LINK_NODE_TYPE = 'link'
+
+/** Число повторов корневого блока: у корня повтора нет, при разборе документа `repeat` корня приводится к этому значению. */
+export const ROOT_REPEAT = 1

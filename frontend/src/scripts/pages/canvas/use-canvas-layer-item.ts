@@ -88,7 +88,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
       chevronClasses: layerChevronClasses(expanded.value),
       icon: layerIcon(node),
       caption: caption.value,
-      repeat: repeatMark(node),
+      repeat: depth === 0 ? '' : repeatMark(node),
       type: nodeTypeLabel(node),
       current: selected.value || undefined,
       expandable: children.value.length > 0,

@@ -11,6 +11,8 @@ export interface CanvasNodeProps {
   parentKind: ContainerKind | null
   copyOf?: NodeId | null
   copyRoot?: boolean
+  /** Остаток бюджета копий повтора для поддерева настоящего блока; по умолчанию — весь бюджет (`REPEAT_RENDER_BUDGET`). */
+  copyBudget?: number
 }
 
 /** Пропсы корня на поле. */
