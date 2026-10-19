@@ -44,12 +44,7 @@
 
 <script setup lang="ts">
 import { LINK_END_TITLE } from '@/scripts/pages/canvas/constants'
-import { LINK_ARROW_MARKERS, useCanvasLinks } from '@/scripts/pages/canvas/use-canvas-links'
+import { useCanvasLinks } from '@/scripts/pages/canvas/use-canvas-links'
 
-const { arrows, headSize, handleRadius, layerClasses } = useCanvasLinks()
-/** Наконечники: обычный и акцентный (цвет — классом, маркер не наследует цвет линии). */
-const markers = [
-  { id: LINK_ARROW_MARKERS.idle, classes: ['canvas-links__head'] },
-  { id: LINK_ARROW_MARKERS.active, classes: ['canvas-links__head', 'canvas-links__head--active'] },
-]
+const { arrows, headSize, handleRadius, layerClasses, markers } = useCanvasLinks()
 </script>

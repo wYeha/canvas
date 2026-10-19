@@ -7,7 +7,8 @@
   gap: v.$space-8;
   align-items: flex-start;
 
-  &__source {
+  &__source,
+  &__row {
     display: flex;
     gap: v.$space-6;
     align-items: baseline;

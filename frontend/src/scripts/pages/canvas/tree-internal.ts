@@ -70,26 +70,35 @@ export function rootIdOf(doc: LayoutDocument, nodeId: NodeId): NodeId | undefine
   return doc.roots[index]?.node.id
 }
 
-/** Поддерево без связей на `sourceId`; ветки без изменений остаются теми же ссылками. */
-function withoutLinksTo(node: LayoutNode, sourceId: NodeId): LayoutNode {
+/** Убирает из поддерева связи, источник которых подходит под `drop` (структурное разделение: без изменений — тот же узел). */
+function withoutLinks(node: LayoutNode, drop: (sourceId: NodeId) => boolean): LayoutNode {
   let changed = false
   const children: LayoutNode[] = []
   for (const child of node.children) {
-    if (child.sourceId === sourceId) {
+    if (child.sourceId !== undefined && drop(child.sourceId)) {
       changed = true
       continue
     }
-    const next = withoutLinksTo(child, sourceId)
+    const next = withoutLinks(child, drop)
     if (next !== child) changed = true
     children.push(next)
   }
   return changed ? { ...node, children } : node
 }
 
+/**
+ * Поддерево без связей на корни, которых нет в `doc`: вставка из буфера после удаления источника не должна
+ * отказывать целиком из-за повисшей связи. Сам узел-связь не убирается (его вставку отклонит проверка дерева).
+ */
+export function withoutDanglingLinks(node: LayoutNode, doc: LayoutDocument): LayoutNode {
+  const roots = new Set(doc.roots.map((root) => root.node.id))
+  return withoutLinks(node, (sourceId) => !roots.has(sourceId))
+}
+
 /** Документ без всех связей на корень `sourceId` (его удалили); без связей — тот же `doc`. */
 export function removeLinksTo(doc: LayoutDocument, sourceId: NodeId): LayoutDocument {
   const roots = doc.roots.map((root) => {
-    const node = withoutLinksTo(root.node, sourceId)
+    const node = withoutLinks(root.node, (id) => id === sourceId)
     return node === root.node ? root : { ...root, node }
   })
   return roots.some((root, index) => root !== doc.roots[index]) ? { ...doc, roots } : doc

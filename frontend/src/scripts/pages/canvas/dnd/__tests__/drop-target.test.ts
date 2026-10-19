@@ -107,3 +107,11 @@ describe('resolveLinkTarget', () => {
     expect(resolveLinkTarget(linked, 'B', null)).toEqual({ target: null, deniedId: null })
   })
 })
+
+describe('resolveDropTarget: копия корня-источника', () => {
+  it('переносить корень-источник в блок нельзя, копировать (Alt) — можно', () => {
+    const doc = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
+    expect(resolveDropTarget(doc, 'C', { chain: ['b1', 'B'] })).toBeNull()
+    expect(resolveDropTarget(doc, 'C', { chain: ['b1', 'B'] }, true)).toEqual({ kind: 'block', id: 'b1', index: null })
+  })
+})

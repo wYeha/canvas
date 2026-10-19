@@ -52,15 +52,23 @@ function firstBlockId(doc: LayoutDocument, chain: NodeId[]): NodeId | null {
 /**
  * Приёмник для узла `draggedId` под курсором `hit`. Блок под курсором (в том числе в другом корне или его заголовок)
  * — приёмник, если в него можно вложить узел; иначе — `null` (подниматься к предкам бессмысленно: отказ из-за
- * самого узла). Блоков в цепочке нет — пустое поле, если узел может стать корнем.
+ * самого узла). Блоков в цепочке нет — пустое поле, если узел может стать корнем. `forCopy` (Alt) — копия: корень-источник
+ * связей можно положить в блок.
  * Позицию вставки (`index`) здесь не знают — она по DOM, её дополняет вызывающий; тут всегда `null`.
  */
-export function resolveDropTarget(doc: LayoutDocument, draggedId: NodeId, hit: DropHit): DropTarget | null {
+export function resolveDropTarget(
+  doc: LayoutDocument,
+  draggedId: NodeId,
+  hit: DropHit,
+  forCopy = false,
+): DropTarget | null {
   if (hit === null) return null
   const blockId = firstBlockId(doc, chainOutsideDragged(hit.chain, draggedId))
   if (blockId !== null) {
     const error = canMoveNode(doc, draggedId, { type: 'child', parentId: blockId, index: 0 })
-    return error === null ? { kind: 'block', id: blockId, index: null } : null
+    // Копия корня-источника в блок допустима (исходник остаётся корнем), как в `copyNodeToTarget`
+    const allowed = error === null || (forCopy && error === 'source-into-block')
+    return allowed ? { kind: 'block', id: blockId, index: null } : null
   }
   const error = canMoveNode(doc, draggedId, { type: 'canvas', at: CANVAS_PROBE_POINT })
   return error === null ? { kind: 'canvas' } : null

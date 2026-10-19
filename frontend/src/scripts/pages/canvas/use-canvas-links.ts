@@ -8,10 +8,11 @@
 import { computed, nextTick, onMounted, shallowRef, watch, type ComputedRef } from 'vue'
 import { buildLinkIndex, type NodeId } from '@shared'
 import { useCameraStore } from './camera-store'
-import { LINK_ARROW_HEAD_PX, LINK_END_HANDLE_PX } from './constants'
+import { LINK_ARROW_HEAD_PX, LINK_ARROW_MARKERS, LINK_END_HANDLE_PX } from './constants'
 import { useDragStore } from './dnd/drag-store'
 import { arrowSegment, type ArrowSegment } from './link-arrows'
 import { useLayoutStore } from './layout-store'
+import { useViewSettingsStore } from './view-settings-store'
 import { measureNodeWorldRect } from './node-dom'
 
 /** Стрелка до отрисовки классов: связь, её источник и отрезок. */
@@ -29,8 +30,22 @@ export interface LinkArrowView extends ArrowSegment {
   marker: string
 }
 
-/** Id маркеров-наконечников (обычный и акцентный) в разметке слоя. */
-export const LINK_ARROW_MARKERS = { idle: 'canvas-links-head', active: 'canvas-links-head-active' } as const
+/** Наконечник для разметки: id маркера и классы (цвет — классом, маркер не наследует цвет линии). */
+export interface LinkArrowMarker {
+  id: string
+  classes: string[]
+}
+
+/** Наконечники: обычный и акцентный. */
+const MARKERS: readonly LinkArrowMarker[] = [
+  { id: LINK_ARROW_MARKERS.idle, classes: ['canvas-links__head'] },
+  { id: LINK_ARROW_MARKERS.active, classes: ['canvas-links__head', 'canvas-links__head--active'] },
+]
+
+/** Ссылка на маркер для атрибута `marker-end`. */
+function markerUrl(id: string): string {
+  return `url(#${id})`
+}
 
 /** Стрелки, размеры наконечника и ручки конца в координатах поля, классы слоя. */
 export interface CanvasLinksView {
@@ -38,6 +53,7 @@ export interface CanvasLinksView {
   headSize: ComputedRef<number>
   handleRadius: ComputedRef<number>
   layerClasses: ComputedRef<string[]>
+  markers: readonly LinkArrowMarker[]
 }
 
 /** Возвращает стрелки, размеры наконечника и ручки конца в координатах поля и классы слоя. */
@@ -45,6 +61,7 @@ export function useCanvasLinks(): CanvasLinksView {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
   const dragStore = useDragStore()
+  const viewSettings = useViewSettingsStore()
   const measured = shallowRef<MeasuredArrow[]>([])
 
   /** Замеряет источники и плашки всех связей; не отрисованные (или пересекающиеся) пропускаются. */
@@ -60,13 +77,15 @@ export function useCanvasLinks(): CanvasLinksView {
     measured.value = next
   }
 
-  // После перерисовки: документ, высоты корней (раскладка внутри), предпросмотр перемещения корня, зум (замер делится на него)
+  // После перерисовки: документ, высоты корней (раскладка внутри), предпросмотр перемещения корня, зум (замер делится
+  // на него), живое зеркало (меняет размеры плашек без смены документа)
   watch(
     [
       () => layoutStore.document,
       () => cameraStore.rootHeights,
       () => dragStore.rootPosition,
       () => cameraStore.camera.zoom,
+      () => viewSettings.linksMirrored,
     ],
     measure,
     { flush: 'post' },
@@ -87,7 +106,7 @@ export function useCanvasLinks(): CanvasLinksView {
         linkId,
         ...segment,
         classes: active ? ['canvas-links__arrow', 'canvas-links__arrow--active'] : ['canvas-links__arrow'],
-        marker: `url(#${active ? LINK_ARROW_MARKERS.active : LINK_ARROW_MARKERS.idle})`,
+        marker: markerUrl(active ? LINK_ARROW_MARKERS.active : LINK_ARROW_MARKERS.idle),
       }
     })
   })
@@ -103,5 +122,5 @@ export function useCanvasLinks(): CanvasLinksView {
     dragStore.isDragging ? ['canvas-links', 'canvas-links--dragging'] : ['canvas-links'],
   )
 
-  return { arrows, headSize, handleRadius, layerClasses }
+  return { arrows, headSize, handleRadius, layerClasses, markers: MARKERS }
 }

@@ -19,6 +19,7 @@ import {
 import { rootLabelMap } from './node-view'
 import * as tree from './tree'
 import * as extract from './tree-extract'
+import { withoutDanglingLinks } from './tree-internal'
 import type { ExtractTarget } from './tree-extract'
 import type { MoveTarget, NodePatch } from './tree'
 
@@ -181,11 +182,12 @@ export const useLayoutStore = defineStore('layout', () => {
   }
 
   /**
-   * Вставляет копию поддерева ребёнком `parentId` (в конец) с новыми id и выделяет её.
+   * Вставляет копию поддерева ребёнком `parentId` (в конец) с новыми id и выделяет её; связи на удалённые корни
+   * из копии выбрасываются.
    * Возвращает id копии или `null` при отказе (нет блока-родителя).
    */
   function pasteChild(parentId: NodeId, copied: LayoutNode): NodeId | null {
-    const node = tree.cloneSubtree(copied)
+    const node = tree.cloneSubtree(withoutDanglingLinks(copied, document.value))
     if (!commit(tree.addChild(document.value, parentId, node))) return null
     selectedId.value = node.id
     return node.id
@@ -193,7 +195,7 @@ export const useLayoutStore = defineStore('layout', () => {
 
   /** Вставляет копию блока новым корнем в точку поля (шириной `width`) и выделяет; `null` при отказе. */
   function pasteRoot(copied: LayoutNode, at: CanvasPoint, width: number): NodeId | null {
-    const node = tree.cloneSubtree(copied)
+    const node = tree.cloneSubtree(withoutDanglingLinks(copied, document.value))
     const canvas = { x: at.x, y: at.y, width, height: null, exportMaxWidth: false }
     if (!commit(tree.addRoot(document.value, { canvas, node }))) return null
     selectedId.value = node.id

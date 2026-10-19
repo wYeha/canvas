@@ -37,8 +37,23 @@ function walk(node: BlockNode, parent: BlockNode | null, visit: (node: BlockNode
   for (const child of node.children) walk(child, node, visit)
 }
 
-/** Строит индекс связей документа за один обход всех узлов. */
+/**
+ * Индексы по документам: документ неизменяемый (каждая правка — новый объект), поэтому индекс одного документа
+ * считается один раз. Проверки при перетаскивании зовут его на каждое движение мыши.
+ */
+const indexCache = new WeakMap<LayoutDocument, LinkIndex>()
+
+/** Индекс связей документа (из кеша или за один обход всех узлов). */
 export function buildLinkIndex(doc: LayoutDocument): LinkIndex {
+  const cached = indexCache.get(doc)
+  if (cached !== undefined) return cached
+  const index = computeLinkIndex(doc)
+  indexCache.set(doc, index)
+  return index
+}
+
+/** Строит индекс связей документа за один обход всех узлов. */
+function computeLinkIndex(doc: LayoutDocument): LinkIndex {
   const rootOf = new Map<NodeId, NodeId>()
   const placements: LinkPlacement[] = []
   const edges = new Map<NodeId, Set<NodeId>>()

@@ -12,15 +12,11 @@
       {{ LINK_GO_TO_SOURCE_LABEL }}
     </UiButton>
     <div v-if="widths !== null" class="canvas-props-link__widths">
-      <p class="canvas-props-link__source">
+      <p class="canvas-props-link__row">
         <span class="canvas-props-link__label">{{ LINK_WIDTH_LABEL }}</span>
         <span class="canvas-props-link__value">{{ widths.text }}</span>
       </p>
-      <UiButton
-        :disabled="widths.fitTo === null"
-        :title="widths.fitTo === null ? LINK_FIT_DISABLED_TITLE : LINK_FIT_TITLE"
-        @click="fitSource"
-      >
+      <UiButton :disabled="widths.fitTo === null" :title="fitTitle" @click="fitSource">
         {{ LINK_FIT_LABEL }}
       </UiButton>
     </div>
@@ -30,14 +26,12 @@
 <script setup lang="ts">
 import UiButton from '@/views/components/ui-button/UiButton.vue'
 import {
-  LINK_FIT_DISABLED_TITLE,
   LINK_FIT_LABEL,
-  LINK_FIT_TITLE,
   LINK_GO_TO_SOURCE_LABEL,
   LINK_SOURCE_LABEL,
   LINK_WIDTH_LABEL,
 } from '@/scripts/pages/canvas/constants'
 import { useCanvasPropsLink } from '@/scripts/pages/canvas/use-canvas-props-link'
 
-const { source, goToSource, widths, fitSource } = useCanvasPropsLink()
+const { source, goToSource, widths, fitSource, fitTitle } = useCanvasPropsLink()
 </script>

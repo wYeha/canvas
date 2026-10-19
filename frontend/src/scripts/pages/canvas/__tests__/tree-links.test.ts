@@ -16,6 +16,7 @@ import {
   type MoveTarget,
 } from '@/scripts/pages/canvas/tree'
 import { copyNodeToTarget } from '@/scripts/pages/canvas/tree-copy'
+import { withoutDanglingLinks } from '@/scripts/pages/canvas/tree-internal'
 import { block, childIds, deepFreeze, expectValid, makeDoc } from './tree-fixture'
 
 /** Блок-связь с заданным id на корень `sourceId`. */
@@ -162,5 +163,19 @@ describe('копирование и дублирование', () => {
 
   it('клон связи сохраняет источник', () => {
     expect(cloneSubtree(linkTo('l', 'C')).sourceId).toBe('C')
+  })
+})
+
+describe('withoutDanglingLinks', () => {
+  it('убирает из поддерева связи на корни, которых нет в документе; остальное — те же ссылки', () => {
+    const kept = { ...createLinkBlock('B'), id: 'lB' }
+    const gone = { ...createLinkBlock('X'), id: 'lX' }
+    const node = block('n', 'flex', [kept, block('m', 'flex', [gone])])
+    const result = withoutDanglingLinks(node, makeDoc())
+    expect(childIds(result)).toEqual(['lB', 'm'])
+    expect(childIds(result.children[1])).toEqual([])
+    expect(result.children[0]).toBe(kept)
+    const clean = block('k', 'flex', [kept])
+    expect(withoutDanglingLinks(clean, makeDoc())).toBe(clean)
   })
 })

@@ -84,7 +84,7 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
 
   /** Приёмник для узла `nodeId` под точкой страницы; у блока — с позицией вставки. */
   function targetAt(nodeId: NodeId, client: CanvasPoint, forCopy: boolean): DropTarget | null {
-    const base = resolveDropTarget(layoutStore.document, nodeId, hitAt(client))
+    const base = resolveDropTarget(layoutStore.document, nodeId, hitAt(client), forCopy)
     if (base?.kind !== 'block') return base
     return { ...base, index: insertIndexIn(base.id, nodeId, client, forCopy) }
   }

@@ -52,5 +52,7 @@ export function extractToCanvas(
     ...moved,
     roots: moved.roots.map((entry) => (entry.node.id === nodeId ? { ...entry, node: asRoot(entry.node) } : entry)),
   }
-  return addChild(withRoot, parent.id, { ...link, self: node.self, repeat: node.repeat }, index)
+  const next = addChild(withRoot, parent.id, { ...link, self: node.self, repeat: node.repeat }, index)
+  // Без связи на месте блока операция была бы половинчатой: тогда — без изменений
+  return next === withRoot ? doc : next
 }

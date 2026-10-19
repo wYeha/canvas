@@ -10,6 +10,7 @@ import { clientRectOf, findNodeElement } from './node-dom'
 import { labelEditKeyAction, labelEditorRect } from './label-editor'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
+import { useViewSettingsStore } from './view-settings-store'
 import { overlayRectStyle, toLocalRect } from './selection'
 import { findNode } from './tree-query'
 
@@ -17,6 +18,7 @@ import { findNode } from './tree-query'
 export function useCanvasLabelEditor() {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
+  const viewSettings = useViewSettingsStore()
   const labelEdit = useLabelEditStore()
   const { document: doc } = storeToRefs(layoutStore)
   const { camera, rootHeights } = storeToRefs(cameraStore)
@@ -55,7 +57,8 @@ export function useCanvasLabelEditor() {
     if (labelEdit.mode === 'rename') inputEl.value?.select()
   }
 
-  watch([camera, doc, rootHeights], recompute, { flush: 'post' })
+  // Живое зеркало меняет раскладку без смены документа
+  watch([camera, doc, rootHeights, () => viewSettings.linksMirrored], recompute, { flush: 'post' })
   watch(
     editingId,
     () => {

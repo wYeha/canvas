@@ -5,7 +5,9 @@
 import { computed, nextTick, onMounted, shallowRef, watch, type ComputedRef } from 'vue'
 import { isLinkBlock } from '@shared'
 import { useCameraStore } from './camera-store'
+import { LINK_FIT_DISABLED_TITLE, LINK_FIT_TITLE } from './constants'
 import { useLayoutStore } from './layout-store'
+import { useViewSettingsStore } from './view-settings-store'
 import { linkWidthState, type LinkWidthState } from './link-width'
 import { measureNodeWorldRect } from './node-dom'
 import { findRootEntry } from './tree-query'
@@ -22,6 +24,8 @@ export interface CanvasPropsLinkState {
   widths: ComputedRef<LinkWidthState | null>
   /** Ставит ширину превью источника равной месту. */
   fitSource: () => void
+  /** Подсказка «Подогнать»: что сделает кнопка или почему недоступна. */
+  fitTitle: ComputedRef<string>
 }
 
 /** Возвращает имя источника выделенной связи и переход к нему. */
@@ -29,6 +33,7 @@ export function useCanvasPropsLink(): CanvasPropsLinkState {
   const layoutStore = useLayoutStore()
   const linkNav = useCanvasLinkNav()
   const cameraStore = useCameraStore()
+  const viewSettings = useViewSettingsStore()
   /** Ширина плашки выделенной связи на поле (px поля); `null` — не связь или не отрисована. */
   const placeWidth = shallowRef<number | null>(null)
 
@@ -50,13 +55,14 @@ export function useCanvasPropsLink(): CanvasPropsLinkState {
     placeWidth.value = rect === null ? null : rect.width
   }
 
-  // После перерисовки: выделение, документ (в том числе ширина корня), высоты корней и зум меняют замер
+  // После перерисовки: выделение, документ (в том числе ширина корня), высоты корней, зум и живое зеркало меняют замер
   watch(
     [
       () => layoutStore.selectedId,
       () => layoutStore.document,
       () => cameraStore.rootHeights,
       () => cameraStore.camera.zoom,
+      () => viewSettings.linksMirrored,
     ],
     measurePlace,
     { flush: 'post' },
@@ -80,5 +86,7 @@ export function useCanvasPropsLink(): CanvasPropsLinkState {
     layoutStore.updateRootPlacement(node.sourceId, { width })
   }
 
-  return { source, goToSource, widths, fitSource }
+  const fitTitle = computed(() => (widths.value?.fitTo == null ? LINK_FIT_DISABLED_TITLE : LINK_FIT_TITLE))
+
+  return { source, goToSource, widths, fitSource, fitTitle }
 }

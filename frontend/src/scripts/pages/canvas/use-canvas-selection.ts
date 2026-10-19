@@ -9,6 +9,7 @@ import type { LayoutDocument, NodeId } from '@shared'
 import { useCameraStore } from './camera-store'
 import { useDragStore } from './dnd/drag-store'
 import { useLayoutStore } from './layout-store'
+import { useViewSettingsStore } from './view-settings-store'
 import { clientRectOf, findNodeElement } from './node-dom'
 import { isBadgeInside, overlayRectStyle, selectionBadgeText, sizeText, toLocalRect, visibleHoverId } from './selection'
 import { findNode } from './tree-query'
@@ -26,6 +27,7 @@ export interface SelectionBox {
 export function useCanvasSelection() {
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
+  const viewSettings = useViewSettingsStore()
   const { document: doc, selectedId, hoveredId } = storeToRefs(layoutStore)
   const { camera, rootHeights } = storeToRefs(cameraStore)
   const dragStore = useDragStore()
@@ -93,8 +95,18 @@ export function useCanvasSelection() {
   // Камера, документ, выделение и наведение: после обновления DOM и в том же кадре, чтобы рамка не отставала при пане.
   // Замеры корней — размеры блоков могли поменяться без смены документа.
   // Перетаскивание: начало и конец (рамки скрыть/вернуть) и новая точка перемещаемого корня (рамка едет за ним).
+  // Живое зеркало меняет размеры связей без смены документа.
   watch(
-    [camera, doc, selectedId, hoveredId, rootHeights, () => dragStore.draggingId, () => dragStore.rootPosition],
+    [
+      camera,
+      doc,
+      selectedId,
+      hoveredId,
+      rootHeights,
+      () => dragStore.draggingId,
+      () => dragStore.rootPosition,
+      () => viewSettings.linksMirrored,
+    ],
     recompute,
     { flush: 'post' },
   )
