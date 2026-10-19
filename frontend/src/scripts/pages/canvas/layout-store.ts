@@ -18,6 +18,8 @@ import {
 } from './factories'
 import { rootLabelMap } from './node-view'
 import * as tree from './tree'
+import * as extract from './tree-extract'
+import type { ExtractTarget } from './tree-extract'
 import type { MoveTarget, NodePatch } from './tree'
 
 /** Снимок для истории: документ (иммутабелен, хранится по ссылке) и выделение в момент записи шага. */
@@ -287,6 +289,17 @@ export const useLayoutStore = defineStore('layout', () => {
     return link.id
   }
 
+  /**
+   * «Вынести на канвас»: вложенный блок становится корнем в `target`, на его месте — связь на него (один шаг истории);
+   * выделяется связь, стрелка от нового корня показывает, куда он делся. `false`, если нельзя.
+   */
+  function extractToCanvas(nodeId: NodeId, target: ExtractTarget): boolean {
+    const link = createLinkBlock(nodeId)
+    if (!commit(extract.extractToCanvas(document.value, nodeId, link, target))) return false
+    selectedId.value = link.id
+    return true
+  }
+
   return {
     document,
     selectedId,
@@ -307,6 +320,7 @@ export const useLayoutStore = defineStore('layout', () => {
     pasteChild,
     pasteRoot,
     addLink,
+    extractToCanvas,
     removeNode,
     duplicateNode,
     moveNode,

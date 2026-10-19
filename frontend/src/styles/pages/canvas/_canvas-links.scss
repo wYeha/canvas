@@ -11,6 +11,8 @@
   overflow: visible; // координаты стрелок — от начала поля, в том числе отрицательные
   pointer-events: none; // иначе поиск блока под курсором попадал бы в слой (node-dom.ts)
 
+  $b: &;
+
   &__arrow {
     fill: none;
     stroke: var(--color-link);
@@ -19,6 +21,27 @@
 
     &--active {
       stroke: var(--color-accent);
+    }
+  }
+
+  // Ручка конца стрелки: невидимая зона захвата поверх наконечника, при наведении — акцентный кружок
+  &__end {
+    cursor: grab;
+    pointer-events: all;
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: v.$link-arrow-width;
+    vector-effect: non-scaling-stroke;
+
+    &:hover {
+      fill: var(--color-accent-soft);
+      stroke: var(--color-accent);
+    }
+  }
+
+  &--dragging {
+    #{$b}__end {
+      pointer-events: none;
     }
   }
 

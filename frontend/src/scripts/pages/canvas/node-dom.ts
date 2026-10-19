@@ -17,6 +17,8 @@ import {
   LABEL_NODE_SELECTOR,
   LAYER_ID_ATTR,
   LAYER_SELECTOR,
+  LINK_END_ATTR,
+  LINK_END_SELECTOR,
   LINK_PORT_ATTR,
   LINK_PORT_SELECTOR,
   NODE_ID_ATTR,
@@ -49,6 +51,12 @@ export function nodeIdFromTarget(target: EventTarget | null): string | null {
 export function linkPortIdFromTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null
   return target.closest(LINK_PORT_SELECTOR)?.getAttribute(LINK_PORT_ATTR) ?? null
+}
+
+/** Id связи, за ручку конца стрелки которой взялись (`data-link-end-id`); `null`, если цель не ручка. */
+export function linkEndIdFromTarget(target: EventTarget | null): string | null {
+  if (!(target instanceof Element)) return null
+  return target.closest(LINK_END_SELECTOR)?.getAttribute(LINK_END_ATTR) ?? null
 }
 
 /** Id корня, за заголовок которого взялись (`data-root-handle-id`); `null`, если цель не в заголовке корня. */

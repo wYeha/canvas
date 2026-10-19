@@ -260,6 +260,18 @@ export const LINK_PORT_SELECTOR = `[${LINK_PORT_ATTR}]`
 /** Размер наконечника стрелки связи на экране, px (в координатах поля делится на зум). */
 export const LINK_ARROW_HEAD_PX = 8
 
+/** Атрибут ручки на конце стрелки связи: id связи; потянуть — перепривязать связь к другому блоку. */
+export const LINK_END_ATTR = 'data-link-end-id'
+
+/** Селектор ручки конца стрелки связи. */
+export const LINK_END_SELECTOR = `[${LINK_END_ATTR}]`
+
+/** Радиус ручки конца стрелки на экране, px (в координатах поля делится на зум). */
+export const LINK_END_HANDLE_PX = 8
+
+/** Подсказка ручки конца стрелки. */
+export const LINK_END_TITLE = 'Протяните на другой блок, чтобы перенести связь туда'
+
 /** Подсказка порта связи у корня. */
 export const LINK_PORT_TITLE = 'Протяните на блок, чтобы подключить туда этот корневой блок'
 
@@ -589,6 +601,7 @@ export const NODE_ACTIONS = [
   { id: 'move-down', label: 'Ниже', icon: 'arrow-down' },
   { id: 'duplicate', label: 'Дублировать', icon: null },
   { id: 'to-canvas', label: 'На канвас', icon: null },
+  { id: 'extract', label: 'Вынести на канвас', icon: null },
   { id: 'delete', label: 'Удалить', icon: 'trash' },
 ] as const
 

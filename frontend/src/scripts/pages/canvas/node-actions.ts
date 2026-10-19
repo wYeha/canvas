@@ -1,10 +1,11 @@
 /**
  * Чистая логика действий над выделенным блоком в панели свойств: доступность (с причиной отказа) и цель
- * перемещения для «выше», «ниже» и «На канвас». Без Vue и Pinia.
+ * перемещения для «выше», «ниже», «На канвас» и «Вынести на канвас». Без Vue и Pinia.
  */
 import type { LayoutDocument, NodeId } from '@shared'
 import { DUPLICATE_ROOT_GAP, NODE_ACTION_REASONS, NODE_ACTIONS } from './constants'
 import { canMoveNode, findParent, locateNode, type MoveTarget } from './tree'
+import type { ExtractTarget } from './tree-extract'
 
 /** Цель-проба для проверки «можно ли на канвас»: точка не важна, важен только тип цели. */
 const TO_CANVAS_PROBE: MoveTarget = { type: 'canvas', at: { x: 0, y: 0 } }
@@ -48,10 +49,10 @@ function toCanvasReason(doc: LayoutDocument, nodeId: NodeId): string | null {
   return canMoveNode(doc, nodeId, TO_CANVAS_PROBE) === 'link-to-canvas' ? NODE_ACTION_REASONS.linkToCanvas : null
 }
 
-/** Состояние «На канвас»: только для вложенного блока, не связи. */
-function toCanvasState(doc: LayoutDocument, nodeId: NodeId): NodeActionState {
+/** Состояние «На канвас» и «Вынести на канвас»: только для вложенного блока, не связи. */
+function toCanvasState(doc: LayoutDocument, nodeId: NodeId, id: 'to-canvas' | 'extract'): NodeActionState {
   const reason = toCanvasReason(doc, nodeId)
-  return { id: 'to-canvas', disabled: reason !== null, reason }
+  return { id, disabled: reason !== null, reason }
 }
 
 /** Состояния всех действий выделенного узла в порядке показа; пусто, если узла нет в документе. */
@@ -60,7 +61,7 @@ export function nodeActionStates(doc: LayoutDocument, nodeId: NodeId): NodeActio
   if (siblings === null) return []
   return NODE_ACTIONS.map(({ id }): NodeActionState => {
     if (id === 'move-up' || id === 'move-down') return moveState(id, siblings)
-    if (id === 'to-canvas') return toCanvasState(doc, nodeId)
+    if (id === 'to-canvas' || id === 'extract') return toCanvasState(doc, nodeId, id)
     return { id, disabled: false, reason: null }
   })
 }
@@ -88,14 +89,18 @@ export function moveTargetFor(doc: LayoutDocument, nodeId: NodeId, delta: -1 | 1
   return isRoot ? rootMoveTarget(doc, nodeId, delta) : childMoveTarget(doc, nodeId, delta)
 }
 
-/** Цель «На канвас»: корень правее корня, в котором лежал блок, на том же уровне; `null`, если перенос недопустим. */
-export function toCanvasTarget(doc: LayoutDocument, nodeId: NodeId): MoveTarget | null {
+/**
+ * Цель «На канвас» и «Вынести на канвас»: корень правее корня, в котором лежал блок, на том же уровне; `width` —
+ * ширина превью нового корня (не передана — ширина прежнего корня). `null`, если перенос недопустим.
+ */
+export function toCanvasTarget(doc: LayoutDocument, nodeId: NodeId, width?: number): ExtractTarget | null {
   const rootIndex = locateNode(doc, nodeId)?.rootIndex
   const root = rootIndex === undefined ? undefined : doc.roots[rootIndex]
   if (root === undefined || findParent(doc, nodeId) === undefined) return null
-  const target: MoveTarget = {
+  const target: ExtractTarget = {
     type: 'canvas',
     at: { x: root.canvas.x + root.canvas.width + DUPLICATE_ROOT_GAP, y: root.canvas.y },
+    ...(width === undefined ? {} : { width }),
   }
   return canMoveNode(doc, nodeId, target) === null ? target : null
 }

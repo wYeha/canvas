@@ -89,16 +89,19 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
     return { ...base, index: insertIndexIn(base.id, nodeId, client, forCopy) }
   }
 
-  /** Цель протягиваемой связи на `sourceId` под точкой страницы (с позицией вставки) и блок, который отказал. */
-  function refreshLinkTarget(sourceId: NodeId, client: CanvasPoint): void {
+  /**
+   * Цель протягиваемой связи на `sourceId` под точкой страницы (с позицией вставки) и блок, который отказал.
+   * При перепривязке `linkId` сама связь исключается из расчёта индекса, как перетаскиваемый ребёнок.
+   */
+  function refreshLinkTarget(sourceId: NodeId, linkId: NodeId | null, client: CanvasPoint): void {
     const { target, deniedId } = resolveLinkTarget(layoutStore.document, sourceId, hitAt(client))
     dragStore.setLinkDenied(deniedId)
     if (target?.kind !== 'block') {
       dragStore.setDropTarget(target)
       return
     }
-    // Источник не среди детей цели (иначе был бы цикл), поэтому исключать из расчёта индекса некого
-    dragStore.setDropTarget({ ...target, index: insertIndexIn(target.id, sourceId, client, false) })
+    // Источник не среди детей цели (иначе был бы цикл): у новой связи исключать из расчёта индекса некого
+    dragStore.setDropTarget({ ...target, index: insertIndexIn(target.id, linkId ?? sourceId, client, false) })
   }
 
   /** Пересчитывает приёмник перетаскиваемого узла или цель протягиваемой связи по точке страницы. */
@@ -108,7 +111,7 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
     lastForCopy = forCopy
     dragStore.dropForCopy = forCopy
     const session = dragStore.session
-    if (session?.kind === 'link') refreshLinkTarget(session.nodeId, client)
+    if (session?.kind === 'link') refreshLinkTarget(session.nodeId, session.linkId, client)
     if (session?.kind !== 'node') return
     dragStore.setDropTarget(targetAt(session.nodeId, client, forCopy))
   }

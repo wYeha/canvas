@@ -5,10 +5,11 @@
  * для узла ищется приёмник под курсором (`use-drop-target.ts`): над пустым полем узел становится корнем,
  * над блоком с индексом вставки — переносится внутрь (`child`). `Alt` при отпускании — копия в цель;
  * у края видимого поля — автопан (`drag-autopan.ts`). От порта корня протягивается новая связь: при отпускании над
- * допустимым блоком она встаёт в него на позицию вставки.
+ * допустимым блоком она встаёт в него на позицию вставки. За ручку на конце стрелки связь перепривязывают: при
+ * отпускании она переезжает в блок под курсором.
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
-import type { NodeId } from '@shared'
+import { isLinkBlock, type NodeId } from '@shared'
 import { screenToWorld, type Rect } from '@/scripts/pages/canvas/camera'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import {
@@ -25,22 +26,28 @@ import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import {
   clientRectOf,
   measureNodeWorldRect,
+  linkEndIdFromTarget,
   linkPortIdFromTarget,
   nodeIdFromTarget,
   rootHandleIdFromTarget,
 } from '@/scripts/pages/canvas/node-dom'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
+import { arrowSegment } from '@/scripts/pages/canvas/link-arrows'
 import { dragAutopanDelta } from './drag-autopan'
 import { createGrab, isDragStart, rootGrabOffset, toViewportPoint } from './dnd-geometry'
 import { useDragStore, type DragSession } from './drag-store'
 import { useDropTarget } from './use-drop-target'
 
-/** Нажатие ЛКМ на блоке (`node`), заголовке корня (`root`) или порте связи (`link`), которое ещё может стать перетаскиванием. */
+/**
+ * Нажатие ЛКМ на блоке (`node`), заголовке корня (`root`), порте связи или конце стрелки (`link`), которое ещё может
+ * стать перетаскиванием. У конца стрелки `nodeId` — источник, `linkId` — перепривязываемая связь.
+ */
 interface PendingPress {
   kind: DragSession['kind']
   pointerId: number
   nodeId: NodeId
+  linkId: NodeId | null
   start: CanvasPoint
 }
 
@@ -108,19 +115,41 @@ export function useCanvasDnd(
     pending = null
     if (e.button !== PRIMARY_BUTTON || !e.isPrimary || !isSurface(e.target) || isPanning()) return
     const start = { x: e.clientX, y: e.clientY }
+    const relink = relinkPress(e, start)
+    if (relink !== null) {
+      pending = relink
+      return
+    }
     // Порт лежит в заголовке корня: проверяется раньше заголовка, иначе нажатие начало бы перемещение корня
     const portId = linkPortIdFromTarget(e.target)
     if (portId !== null) {
-      pending = { kind: 'link', pointerId: e.pointerId, nodeId: portId, start }
+      pending = { kind: 'link', pointerId: e.pointerId, nodeId: portId, linkId: null, start }
       return
     }
     const nodeId = nodeIdFromTarget(e.target)
     if (nodeId !== null) {
-      pending = { kind: 'node', pointerId: e.pointerId, nodeId, start }
+      pending = { kind: 'node', pointerId: e.pointerId, nodeId, linkId: null, start }
       return
     }
     const rootId = rootHandleIdFromTarget(e.target)
-    if (rootId !== null) pending = { kind: 'root', pointerId: e.pointerId, nodeId: rootId, start }
+    if (rootId !== null) pending = { kind: 'root', pointerId: e.pointerId, nodeId: rootId, linkId: null, start }
+  }
+
+  /** Нажатие на ручку конца стрелки: перепривязка связи к её же источнику; `null`, если цель не ручка или не связь. */
+  function relinkPress(e: PointerEvent, start: CanvasPoint): PendingPress | null {
+    const linkId = linkEndIdFromTarget(e.target)
+    const link = linkId === null ? undefined : findNode(layoutStore.document, linkId)
+    if (link === undefined || !isLinkBlock(link)) return null
+    return { kind: 'link', pointerId: e.pointerId, nodeId: link.sourceId, linkId: link.id, start }
+  }
+
+  /** Начало линии перепривязки — начало стрелки у источника по замеру; не отрисовано — точка нажатия. */
+  function relinkFrom(sourceId: NodeId, linkId: NodeId, pressWorld: CanvasPoint): CanvasPoint {
+    const zoom = cameraStore.camera.zoom
+    const source = measureNodeWorldRect(sourceId, zoom)
+    const link = measureNodeWorldRect(linkId, zoom)
+    const segment = source && link ? arrowSegment(source, link) : null
+    return segment === null ? pressWorld : { x: segment.x1, y: segment.y1 }
   }
 
   /** Сессия перетаскивания узла: захват по замеру узла в DOM; `null`, если узел не отрисован. */
@@ -137,10 +166,15 @@ export function useCanvasDnd(
     return { kind: 'root', nodeId: press.nodeId, offset: rootGrabOffset(pressWorld, entry.canvas), pointer }
   }
 
-  /** Сессия протягивания связи: линия начинается от точки нажатия на порт (на поле); `null`, если корня нет. */
+  /**
+   * Сессия протягивания связи: новая — линия от точки нажатия на порт, перепривязка — от начала стрелки (на поле);
+   * `null`, если корня нет.
+   */
   function linkSession(press: PendingPress, pressWorld: CanvasPoint, pointer: CanvasPoint): DragSession | null {
     if (findRootEntry(layoutStore.document, press.nodeId) === undefined) return null
-    return { kind: 'link', nodeId: press.nodeId, from: pressWorld, pointer }
+    const { nodeId, linkId } = press
+    const from = linkId === null ? pressWorld : relinkFrom(nodeId, linkId, pressWorld)
+    return { kind: 'link', nodeId, linkId, from, pointer }
   }
 
   /** Сессия по виду нажатия. */
@@ -166,8 +200,8 @@ export function useCanvasDnd(
     dragStore.begin(session)
     activePointer = e.pointerId
     el.setPointerCapture(e.pointerId)
-    // Выделяем то, что тянем: свойства показывают перетаскиваемый блок, F2 — на канвасе (у связи — её источник)
-    layoutStore.select(press.nodeId)
+    // Выделяем то, что тянем: свойства показывают перетаскиваемый блок, F2 — на канвасе (у новой связи — её источник)
+    layoutStore.select(press.linkId ?? press.nodeId)
     labelEdit.pickInLayers(null)
     layoutStore.hover(null)
     window.getSelection()?.removeAllRanges()
@@ -231,9 +265,12 @@ export function useCanvasDnd(
     refreshTarget(client, { forCopy })
     const id = dragStore.session?.nodeId ?? null
     if (dragStore.session?.kind === 'link') {
+      const linkId = dragStore.session.linkId
       const drop = linkDrop()
       stop()
-      if (id !== null && drop !== null) layoutStore.addLink(drop.parentId, id, drop.index)
+      if (id === null || drop === null) return
+      if (linkId === null) layoutStore.addLink(drop.parentId, id, drop.index)
+      else layoutStore.moveNode(linkId, { type: 'child', parentId: drop.parentId, index: drop.index })
       return
     }
     const target = releaseMove(client)
@@ -268,12 +305,15 @@ export function useCanvasDnd(
     if (document.visibilityState === 'hidden') stop()
   }
 
-  // Узел или корень пропал из документа во время перетаскивания — тянуть больше нечего
+  // Узел, корень или перепривязываемая связь пропали из документа во время перетаскивания — тянуть больше нечего
   watch(
     () => layoutStore.document,
     (doc) => {
-      const id = dragStore.session?.nodeId ?? null
-      if (id !== null && findNode(doc, id) === undefined) stop()
+      const session = dragStore.session
+      if (session === null) return
+      const linkId = session.kind === 'link' ? session.linkId : null
+      const gone = findNode(doc, session.nodeId) === undefined
+      if (gone || (linkId !== null && findNode(doc, linkId) === undefined)) stop()
     },
   )
 

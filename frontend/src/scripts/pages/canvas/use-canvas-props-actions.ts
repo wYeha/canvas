@@ -1,10 +1,13 @@
-/** Composable действий футера панели свойств: кнопки (доступность с причиной) и выполнение через хранилище. */
+/** Composable действий футера панели свойств (в том числе «Вынести на канвас» с замером ширины блока): кнопки (доступность с причиной) и выполнение через хранилище. */
 import { computed } from 'vue'
+import type { NodeId } from '@shared'
 import type { UiIconName } from '@/scripts/components/ui-icon/ui-icon.types'
 import type { UiButtonVariant } from '@/scripts/components/ui-button/ui-button.types'
 import { NODE_ACTIONS } from './constants'
+import { useCameraStore } from './camera-store'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
+import { measureNodeWorldRect } from './node-dom'
 import { moveTargetFor, nodeActionStates, toCanvasTarget, type NodeActionId } from './node-actions'
 
 /** Кнопка действия для шаблона. */
@@ -22,6 +25,7 @@ export interface NodeActionButton {
 export function useCanvasPropsActions() {
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
+  const cameraStore = useCameraStore()
 
   /** Кнопки действий выделенного узла; пусто без выделения. */
   const buttons = computed<NodeActionButton[]>(() => {
@@ -44,6 +48,13 @@ export function useCanvasPropsActions() {
     })
   })
 
+  /** «Вынести на канвас»: ширина нового корня — замер блока на поле (как у переноса на поле мышью). */
+  function extract(id: NodeId): void {
+    const rect = measureNodeWorldRect(id, cameraStore.camera.zoom)
+    const target = toCanvasTarget(layoutStore.document, id, rect === null ? undefined : Math.round(rect.width))
+    if (target !== null) layoutStore.extractToCanvas(id, target)
+  }
+
   /** Выполняет действие над выделенным узлом (кнопка или хоткей); недоступное или без выделения — ничего. */
   function run(action: NodeActionId): void {
     const id = layoutStore.selectedId
@@ -59,6 +70,8 @@ export function useCanvasPropsActions() {
     } else if (action === 'to-canvas') {
       const target = toCanvasTarget(doc, id)
       if (target !== null) layoutStore.moveNode(id, target)
+    } else if (action === 'extract') {
+      extract(id)
     } else if (action === 'duplicate') {
       layoutStore.duplicateNode(id)
     } else {
