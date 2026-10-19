@@ -12,31 +12,24 @@ function block(label: string, spec: BlockSpec, children: LayoutNode[] = []): Blo
 }
 
 /** Flex-контейнер демо. */
-function flex(
-  direction: 'row' | 'column',
-  gap: number | null,
-  extra: Partial<{ align: 'center'; wrap: boolean }> = {},
-) {
+function flex(direction: 'row' | 'column', extra: Partial<{ align: 'center'; wrap: boolean }> = {}) {
   return {
     kind: 'flex' as const,
     direction,
     wrap: extra.wrap ?? false,
     justify: 'flex-start' as const,
     align: extra.align ?? ('stretch' as const),
-    gap,
   }
 }
 
-/** Grid-контейнер демо с одинаковым зазором. */
-function grid(columns: string, gap: number) {
+/** Grid-контейнер демо. */
+function grid(columns: string) {
   return {
     kind: 'grid' as const,
     columns,
     rows: 'auto',
     justifyItems: 'stretch' as const,
     alignItems: 'stretch' as const,
-    columnGap: gap,
-    rowGap: gap,
   }
 }
 
@@ -50,9 +43,9 @@ function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
 
 /** Шапка дашборда: логотип, меню, пользователь. */
 function buildHeader(): BlockNode {
-  return block('header', { container: flex('row', 16, { align: 'center' }) }, [
+  return block('header', { container: flex('row', { align: 'center' }) }, [
     block('logo', { self: { width: '120px' } }),
-    block('nav', { container: flex('row', 12), self: { flex: '1' } }, [
+    block('nav', { container: flex('row'), self: { flex: '1' } }, [
       block('nav-item', {}),
       block('nav-item', {}),
       block('nav-item', {}),
@@ -63,7 +56,7 @@ function buildHeader(): BlockNode {
 
 /** Левая колонка: три пункта меню. */
 function buildSidebar(): BlockNode {
-  return block('sidebar', { container: flex('column', 8) }, [
+  return block('sidebar', { container: flex('column') }, [
     block('menu-item', {}),
     block('menu-item', {}),
     block('menu-item', {}),
@@ -73,9 +66,9 @@ function buildSidebar(): BlockNode {
 /** Основная область: ряд из четырёх KPI, графики и таблица. */
 function buildMain(): BlockNode {
   const kpiCards = [0, 1, 2, 3].map(() => block(KPI_LABEL, {}))
-  return block('main', { container: flex('column', 24), self: { flex: '1' } }, [
-    block('kpi-row', { container: grid('repeat(4, 1fr)', 16) }, kpiCards),
-    block('charts', { container: grid('repeat(2, 1fr)', 16) }, [
+  return block('main', { container: flex('column'), self: { flex: '1' } }, [
+    block('kpi-row', { container: grid('repeat(4, 1fr)') }, kpiCards),
+    block('charts', { container: grid('repeat(2, 1fr)') }, [
       block('chart-left', { self: { minHeight: '200px' } }),
       block('chart-right', { self: { minHeight: '200px' } }),
     ]),
@@ -85,14 +78,14 @@ function buildMain(): BlockNode {
 
 /** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-карточка» (240) и «Карточка графика» (480). */
 export function createDemoDocument(): LayoutDocument {
-  const kpi = block(KPI_LABEL, { container: flex('column', 8) }, [block('kpi-title', {}), block('kpi-value', {})])
-  const chartCard = block('Карточка графика', { container: flex('column', 12) }, [
+  const kpi = block(KPI_LABEL, { container: flex('column') }, [block('kpi-title', {}), block('kpi-value', {})])
+  const chartCard = block('Карточка графика', { container: flex('column') }, [
     block('chart-title', {}),
     block('chart-area', { self: { minHeight: '180px' } }),
   ])
-  const dashboard = block('Дашборд', { container: flex('column', null) }, [
+  const dashboard = block('Дашборд', { container: flex('column') }, [
     buildHeader(),
-    block('body', { container: grid('240px 1fr', 0) }, [buildSidebar(), buildMain()]),
+    block('body', { container: grid('240px 1fr') }, [buildSidebar(), buildMain()]),
   ])
   return {
     ...createDocument('Дашборд аналитики'),

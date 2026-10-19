@@ -1,10 +1,10 @@
-/** Zod-схемы и типы контейнера блока: flex или grid, различаются по полю `kind`. */
+/**
+ * Zod-схемы и типы контейнера блока: flex или grid, различаются по полю `kind`. Отступа между детьми (gap) в модели нет:
+ * в редакторе он фиксированный, в экспорт не идёт; `gap`, `columnGap`, `rowGap` старых документов отбрасываются при разборе.
+ */
 import { z } from 'zod'
 import { isSafeCssValue, UNSAFE_CSS_MESSAGE } from './css-value'
 import { FLEX_ALIGN_VALUES, FLEX_DIRECTIONS, FLEX_JUSTIFY_VALUES, GRID_ALIGN_VALUES } from './constants'
-
-/** Отступ между элементами в px; `null` — не задан и в стили не попадает. */
-const gapSchema = z.number().nonnegative().nullable()
 
 /** Безопасная CSS-строка: без символов, разрывающих декларацию или разметку при экспорте. */
 export const safeCssStringSchema = z.string().refine(isSafeCssValue, { message: UNSAFE_CSS_MESSAGE })
@@ -16,7 +16,6 @@ export const flexContainerSchema = z.object({
   wrap: z.boolean(),
   justify: z.enum(FLEX_JUSTIFY_VALUES),
   align: z.enum(FLEX_ALIGN_VALUES),
-  gap: gapSchema,
 })
 
 /** Grid-контейнер: `columns` и `rows` — строки в синтаксисе `grid-template-*`. */
@@ -26,8 +25,6 @@ export const gridContainerSchema = z.object({
   rows: safeCssStringSchema,
   justifyItems: z.enum(GRID_ALIGN_VALUES),
   alignItems: z.enum(GRID_ALIGN_VALUES),
-  columnGap: gapSchema,
-  rowGap: gapSchema,
 })
 
 /**

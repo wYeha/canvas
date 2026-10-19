@@ -21,30 +21,23 @@ describe('convertContainer', () => {
     expect(convertContainer(flex, 'flex')).toBe(flex)
   })
 
-  it('flex → grid: gap в оба отступа, align → alignItems, остальное по умолчанию', () => {
-    const flex = { ...createFlexContainer(), gap: 12, align: 'flex-end' as const, direction: 'column' as const }
-    expect(convertContainer(flex, 'grid')).toEqual({
-      ...createGridContainer(),
-      columnGap: 12,
-      rowGap: 12,
-      alignItems: 'end',
-    })
+  it('flex → grid: align → alignItems, остальное по умолчанию', () => {
+    const flex = { ...createFlexContainer(), align: 'flex-end' as const, direction: 'column' as const }
+    expect(convertContainer(flex, 'grid')).toEqual({ ...createGridContainer(), alignItems: 'end' })
   })
 
-  it('flex → grid: baseline становится stretch, пустой gap остаётся null', () => {
+  it('flex → grid: baseline становится stretch', () => {
     const grid = convertContainer({ ...createFlexContainer(), align: 'baseline' }, 'grid')
-    expect(grid).toMatchObject({ alignItems: 'stretch', columnGap: null, rowGap: null })
+    expect(grid).toMatchObject({ alignItems: 'stretch' })
   })
 
-  it('grid → flex: gap = columnGap ?? rowGap, alignItems → align, остальное по умолчанию', () => {
+  it('grid → flex: alignItems → align, остальное по умолчанию', () => {
     const base = createGridContainer()
-    expect(convertContainer({ ...base, columnGap: 8, rowGap: 4, alignItems: 'start' }, 'flex')).toEqual({
+    expect(convertContainer({ ...base, alignItems: 'start' }, 'flex')).toEqual({
       ...createFlexContainer(),
-      gap: 8,
       align: 'flex-start',
     })
-    expect(convertContainer({ ...base, columnGap: null, rowGap: 4 }, 'flex')).toMatchObject({ gap: 4 })
-    expect(convertContainer({ ...base, alignItems: 'center' }, 'flex')).toMatchObject({ gap: null, align: 'center' })
+    expect(convertContainer({ ...base, alignItems: 'center' }, 'flex')).toMatchObject({ align: 'center' })
   })
 })
 
@@ -103,33 +96,28 @@ describe('useCanvasPropsContainer', () => {
     props.justify.value = 'space-between'
     props.align.value = 'baseline'
     props.wrap.value = true
-    props.gap.value = 16
     expect(container(layoutStore)).toMatchObject({
       kind: 'flex',
       direction: 'row-reverse',
       justify: 'space-between',
       align: 'baseline',
       wrap: true,
-      gap: 16,
     })
     props.direction.value = 'diagonal'
     props.justify.value = null
     expect(container(layoutStore)).toMatchObject({ direction: 'row-reverse', justify: 'space-between' })
-    props.gap.value = null
-    expect(container(layoutStore)).toMatchObject({ gap: null })
   })
 
-  it('смена типа переносит gap и align; в grid flex-поля недоступны', () => {
+  it('смена типа переносит align; в grid flex-поля недоступны', () => {
     const { layoutStore, props } = setup()
-    props.gap.value = 10
     props.align.value = 'flex-end'
     props.kind.value = 'grid'
-    expect(container(layoutStore)).toMatchObject({ kind: 'grid', columnGap: 10, rowGap: 10, alignItems: 'end' })
+    expect(container(layoutStore)).toMatchObject({ kind: 'grid', alignItems: 'end' })
     expect(props.flex.value).toBeNull()
     props.direction.value = 'column'
     expect(container(layoutStore).kind).toBe('grid')
     props.kind.value = 'flex'
-    expect(container(layoutStore)).toMatchObject({ kind: 'flex', gap: 10, align: 'flex-end' })
+    expect(container(layoutStore)).toMatchObject({ kind: 'flex', align: 'flex-end' })
     props.kind.value = 'bogus'
     expect(container(layoutStore).kind).toBe('flex')
   })

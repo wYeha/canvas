@@ -66,13 +66,13 @@ describe('round-trip', () => {
     }
   })
 
-  it('небольшое дерево: grid-ребёнок, grid-лист с rows, rowSpan и зазором колонок, повтор, описания', () => {
+  it('небольшое дерево: grid-ребёнок, grid-лист с rows и rowSpan, повтор, описания', () => {
     const entry = root(smallTree(), 1280, 900, false)
     const dom = parse(exportRootHtml(docOf(entry), entry))
     expectMatches(rootElement(dom), entry.node, null)
     const styles = Array.from(dom.body.querySelectorAll('div')).map((element) => element.getAttribute('style'))
     expect(styles).toContain(
-      'display:grid; grid-template-columns:repeat(2, 1fr); grid-template-rows:40px 1fr; column-gap:8px; grid-row:span 2',
+      'display:grid; grid-template-columns:repeat(2, 1fr); grid-template-rows:40px 1fr; grid-row:span 2',
     )
   })
 

@@ -31,8 +31,7 @@ function isDefaultContainer(container: Container): boolean {
       container.direction === DEFAULT_FLEX.direction &&
       container.wrap === DEFAULT_FLEX.wrap &&
       container.justify === DEFAULT_FLEX.justify &&
-      container.align === DEFAULT_FLEX.align &&
-      container.gap === DEFAULT_FLEX.gap
+      container.align === DEFAULT_FLEX.align
     )
   }
   const rows = container.rows.trim()
@@ -40,9 +39,7 @@ function isDefaultContainer(container: Container): boolean {
     container.columns.trim() === DEFAULT_GRID.columns &&
     (rows === '' || rows === CSS_DEFAULT_GRID_ROWS) &&
     container.justifyItems === DEFAULT_GRID.justifyItems &&
-    container.alignItems === DEFAULT_GRID.alignItems &&
-    container.columnGap === DEFAULT_GRID.columnGap &&
-    container.rowGap === DEFAULT_GRID.rowGap
+    container.alignItems === DEFAULT_GRID.alignItems
   )
 }
 

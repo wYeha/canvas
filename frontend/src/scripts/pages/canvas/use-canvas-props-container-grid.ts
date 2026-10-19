@@ -1,17 +1,14 @@
-/** Composable grid-части секции «Контейнер»: шаблоны колонок и строк через черновик, выравнивание и связанные отступы. */
-import { computed, ref, watch, type ComputedRef, type WritableComputedRef } from 'vue'
+/** Composable grid-части секции «Контейнер»: шаблоны колонок и строк через черновик, выравнивание. */
+import { computed, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { BlockNode, GridContainer, NodeId } from '@shared'
 import { useLayoutStore } from './layout-store'
 import {
   activeColumnPreset,
   asGridAlign,
-  gapPatch,
-  initialGapLinked,
   normalizeColumns,
   normalizeRows,
   rowsFromField,
   rowsToField,
-  type GridGapKey,
 } from './props-container-grid'
 import { findNode } from './tree-query'
 import { useBlockTextDraft } from './use-block-text-draft'
@@ -71,33 +68,6 @@ export function useCanvasPropsContainerGrid(block: ComputedRef<BlockNode | null>
     })
   }
 
-  /** Связка отступов: локальное состояние, при смене выделения задаётся заново по равенству отступов. */
-  const gapLinked = ref(false)
-  watch(
-    () => block.value?.id,
-    () => {
-      gapLinked.value = grid.value ? initialGapLinked(grid.value) : false
-    },
-    { immediate: true },
-  )
-
-  /** Переключает связку отступов (данные не меняются). */
-  function toggleGapLinked(): void {
-    gapLinked.value = !gapLinked.value
-  }
-
-  /** Поле отступа: запись при включённой связке меняет оба отступа. */
-  function gapField(key: GridGapKey): WritableComputedRef<number | null> {
-    return computed({
-      /** Читает отступ из документа. */
-      get: () => grid.value?.[key] ?? null,
-      /** Пишет отступ (пусто — `null`), с учётом связки. */
-      set: (value) => {
-        if (block.value) patchGrid(block.value.id, gapPatch(key, value, gapLinked.value))
-      },
-    })
-  }
-
   return {
     grid,
     columns: columns.draft,
@@ -111,9 +81,5 @@ export function useCanvasPropsContainerGrid(block: ComputedRef<BlockNode | null>
     onRowsKeydown: rows.onKeydown,
     justifyItems: alignField('justifyItems'),
     alignItems: alignField('alignItems'),
-    gapLinked,
-    toggleGapLinked,
-    columnGap: gapField('columnGap'),
-    rowGap: gapField('rowGap'),
   }
 }

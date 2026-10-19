@@ -1,4 +1,4 @@
-/** Тесты grid-части секции «Контейнер»: чистые функции (пресеты, нормализация, связка) и composable с черновиками и стором. */
+/** Тесты grid-части секции «Контейнер»: чистые функции (пресеты, нормализация, выравнивание) и composable с черновиками и стором. */
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
@@ -8,8 +8,6 @@ import {
   GRID_COLUMN_PRESETS,
   activeColumnPreset,
   asGridAlign,
-  gapPatch,
-  initialGapLinked,
   normalizeColumns,
   normalizeRows,
   rowsFromField,
@@ -62,22 +60,11 @@ describe('нормализация шаблонов', () => {
   })
 })
 
-describe('выравнивание и связка отступов', () => {
+describe('выравнивание', () => {
   it('слова start/center/end/stretch, чужое отклоняется', () => {
     expect(GRID_ALIGN_OPTIONS.map((o) => o.value)).toEqual(['start', 'center', 'end', 'stretch'])
     expect(asGridAlign('end')).toBe('end')
     expect(asGridAlign('flex-end')).toBeNull()
-  })
-
-  it('связка включена при равных отступах (в том числе null)', () => {
-    expect(initialGapLinked({ columnGap: null, rowGap: null })).toBe(true)
-    expect(initialGapLinked({ columnGap: 8, rowGap: 8 })).toBe(true)
-    expect(initialGapLinked({ columnGap: 8, rowGap: 4 })).toBe(false)
-  })
-
-  it('gapPatch: со связкой меняет оба, без — один', () => {
-    expect(gapPatch('columnGap', 5, true)).toEqual({ columnGap: 5, rowGap: 5 })
-    expect(gapPatch('rowGap', 5, false)).toEqual({ rowGap: 5 })
   })
 })
 
@@ -173,28 +160,5 @@ describe('useCanvasPropsContainer (grid)', () => {
     props.alignItems.value = 'end'
     props.alignItems.value = 'baseline'
     expect(container(layoutStore)).toMatchObject({ justifyItems: 'center', alignItems: 'end' })
-  })
-
-  it('отступы: связка меняет оба, без связки — один', () => {
-    const { layoutStore, props } = setup()
-    expect(props.gapLinked.value).toBe(true)
-    props.columnGap.value = 12
-    expect(container(layoutStore)).toMatchObject({ columnGap: 12, rowGap: 12 })
-    props.toggleGapLinked()
-    props.rowGap.value = 4
-    expect(container(layoutStore)).toMatchObject({ columnGap: 12, rowGap: 4 })
-  })
-
-  it('связка пересчитывается при смене выделения', async () => {
-    const { layoutStore, props } = setup()
-    props.toggleGapLinked()
-    props.rowGap.value = 4
-    layoutStore.addRoot('grid', 'Второй', { x: 500, y: 0 })
-    layoutStore.select(layoutStore.document.roots[1]?.node.id ?? null)
-    await nextTick()
-    expect(props.gapLinked.value).toBe(true)
-    layoutStore.select(layoutStore.document.roots[0]?.node.id ?? null)
-    await nextTick()
-    expect(props.gapLinked.value).toBe(false)
   })
 })

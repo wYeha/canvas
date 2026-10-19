@@ -13,12 +13,12 @@ describe('exportRootHtml', () => {
         Страница каталога
         для десктопа
       -->
-      <main style="display:flex; flex-direction:column; gap:24px">
+      <main style="display:flex; flex-direction:column">
         <!-- cards
           Карточки товаров
           по три в ряд
         -->
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; flex:1">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); flex:1">
           <div><!-- card ×3 — Карточка товара --></div>
           <div></div>
           <div style="grid-column:span 2">
@@ -28,7 +28,7 @@ describe('exportRootHtml', () => {
               с картинкой
             -->
           </div>
-          <div style="display:grid; grid-template-columns:repeat(2, 1fr); grid-template-rows:40px 1fr; column-gap:8px; grid-row:span 2"><!-- gallery --></div>
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); grid-template-rows:40px 1fr; grid-row:span 2"><!-- gallery --></div>
         </div>
         <footer style="height:80px"><!-- footer --></footer>
       </main>
@@ -102,7 +102,9 @@ describe('exportNodeLines', () => {
   })
 
   it('лист с изменённым контейнером сохраняет контейнерную часть целиком', () => {
-    const leaf = block('flex', 'row', { container: { ...createFlexContainer(), gap: 8 } })
-    expect(exportNodeLines(docOf(), leaf, 'flex', 0)).toEqual(['<div style="display:flex; gap:8px"><!-- row --></div>'])
+    const leaf = block('flex', 'row', { container: { ...createFlexContainer(), wrap: true } })
+    expect(exportNodeLines(docOf(), leaf, 'flex', 0)).toEqual([
+      '<div style="display:flex; flex-wrap:wrap"><!-- row --></div>',
+    ])
   })
 })

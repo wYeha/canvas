@@ -16,7 +16,7 @@ export function blockFixture(id: string): BlockNode {
     label: id,
     description: '',
     tag: 'div',
-    container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch', gap: null },
+    container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch' },
     self: {},
     repeat: 1,
     children: [],

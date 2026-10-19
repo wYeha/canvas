@@ -120,13 +120,12 @@ $block-palette-dark: (
   'slate': #97a3b6,
 );
 
-// Прозрачности цвета блока (и акцента для штриховок), выводятся как --alpha-<ключ>
+// Прозрачности цвета блока (и акцента для подсветок), выводятся как --alpha-<ключ>
 $block-alpha-light: (
   'fill': 0.1,
   'stroke': 0.55,
   'chip': 0.22,
   'icon': 0.22,
-  'spacing-hatch': 0.25,
   'drop-fill': 0.12,
 );
 $block-alpha-dark: (
@@ -134,7 +133,6 @@ $block-alpha-dark: (
   'stroke': 0.42,
   'chip': 0.24,
   'icon': 0.3,
-  'spacing-hatch': 0.35,
   'drop-fill': 0.12,
 );
 
@@ -235,6 +233,7 @@ $status-dot-size: 8px;
 $toolbar-divider-height: 20px;
 $zoom-value-width: 44px;
 $block-padding: 20px; // фиксированный внутренний отступ каждого блока, только редактор; продублировано в BLOCK_PADDING_PX
+$block-gap: 16px; // фиксированный зазор между детьми каждого блока (flex и grid), только редактор, в экспорт не идёт
 $empty-leaf-min-height: 48px; // редакторский min-height пустого листа (вместе с $block-padding), в экспорт не идёт
 $drag-ghost-tilt: 2deg; // наклон призрака перетаскивания
 $drag-ghost-opacity: 0.9; // призрак перетаскивания

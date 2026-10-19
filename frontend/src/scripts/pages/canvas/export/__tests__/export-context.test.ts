@@ -56,7 +56,7 @@ describe('contextLines', () => {
     expect(context(catalog, 'cards')).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards
-        Родитель «Каталог» (main): flex column, gap 24px
+        Родитель «Каталог» (main): flex column
         Место: 1-й ребёнок из 2; ширина — растягивается на всю ширину родителя; высота — flex:1
       -->"
     `)
@@ -66,7 +66,7 @@ describe('contextLines', () => {
     expect(context(catalog, 'cards', { cards: 1240, Каталог: 1280 })).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards
-        Родитель «Каталог» (main): flex column, gap 24px
+        Родитель «Каталог» (main): flex column
         Место: 1-й ребёнок из 2; ширина — растягивается на всю ширину родителя (~1240px, ~100% ширины родителя); высота — flex:1
       -->"
     `)
@@ -143,10 +143,8 @@ describe('contextLines', () => {
     )
   })
 
-  it('grid: разные зазоры, auto-fill и именованные линии', () => {
-    expect(lineOf(gridParent({ columnGap: 8, rowGap: 16 }), {}, 'parent')).toBe(
-      'Родитель «P» (div): grid, колонки «repeat(2, 1fr)» (2 колонки), column-gap 8px, row-gap 16px',
-    )
+  it('grid: зазоров нет (gap только в редакторе), auto-fill и именованные линии', () => {
+    expect(lineOf(gridParent({}), {}, 'parent')).toBe('Родитель «P» (div): grid, колонки «repeat(2, 1fr)» (2 колонки)')
     expect(lineOf(gridParent({ columns: 'repeat(auto-fill, minmax(200px, 1fr))' }), {}, 'parent')).toBe(
       'Родитель «P» (div): grid, колонки «repeat(auto-fill, minmax(200px, 1fr))»',
     )
@@ -209,14 +207,14 @@ describe('contextLines', () => {
     expect(context(catalog, 'promo')).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards › promo
-        Родитель «cards» (div): grid, колонки «repeat(3, 1fr)» (3 колонки), gap 16px
+        Родитель «cards» (div): grid, колонки «repeat(3, 1fr)» (3 колонки)
         Место: 3-й ребёнок из 4; ширина — занимает 2 колонки (span 2); высота — по содержимому строки
       -->"
     `)
     expect(context(catalog, 'card')).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards › card
-        Родитель «cards» (div): grid, колонки «repeat(3, 1fr)» (3 колонки), gap 16px
+        Родитель «cards» (div): grid, колонки «repeat(3, 1fr)» (3 колонки)
         Место: 1-й ребёнок из 4; ширина — занимает 1 колонку; высота — по содержимому строки; повторяется ×3
       -->"
     `)

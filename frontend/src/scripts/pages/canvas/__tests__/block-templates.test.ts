@@ -46,34 +46,34 @@ describe('block-templates', () => {
     }
   })
 
-  it('ряд KPI: flex row, gap 16, KPI ×4', () => {
+  it('ряд KPI: flex row, KPI ×4', () => {
     const root = build('kpi-row')
-    expect(root.container).toMatchObject({ kind: 'flex', direction: 'row', gap: 16 })
+    expect(root.container).toMatchObject({ kind: 'flex', direction: 'row' })
     expect(root.children).toHaveLength(1)
     expect(root.children[0]).toMatchObject({ label: 'KPI', repeat: 4 })
   })
 
-  it('сетка графиков: grid 1fr 1fr, gap 16, график ×4 высотой 200px', () => {
+  it('сетка графиков: grid 1fr 1fr, график ×4 высотой 200px', () => {
     const root = build('chart-grid')
-    expect(root.container).toMatchObject({ kind: 'grid', columns: '1fr 1fr', columnGap: 16, rowGap: 16 })
+    expect(root.container).toMatchObject({ kind: 'grid', columns: '1fr 1fr' })
     expect(root.children[0]).toMatchObject({ label: 'График', repeat: 4, self: { height: '200px' } })
   })
 
   it('фильтры + таблица: колонка, фильтры ×4 в ряду, таблица 320px', () => {
     const root = build('filters-table')
-    expect(root.container).toMatchObject({ kind: 'flex', direction: 'column', gap: 16 })
+    expect(root.container).toMatchObject({ kind: 'flex', direction: 'column' })
     const [filters, table] = root.children as BlockNode[]
     expect(filters?.label).toBe('Фильтры')
-    expect(filters?.container).toMatchObject({ direction: 'row', gap: 8 })
+    expect(filters?.container).toMatchObject({ direction: 'row' })
     expect(filters?.children[0]).toMatchObject({ label: 'Фильтр', repeat: 4 })
     expect(table).toMatchObject({ label: 'Таблица', self: { height: '320px' } })
   })
 
-  it('сайдбар + контент: grid 250px 1fr, gap 24, меню ×5, контент min-height 400px', () => {
+  it('сайдбар + контент: grid 250px 1fr, меню ×5, контент min-height 400px', () => {
     const root = build('sidebar-content')
-    expect(root.container).toMatchObject({ kind: 'grid', columns: '250px 1fr', columnGap: 24, rowGap: 24 })
+    expect(root.container).toMatchObject({ kind: 'grid', columns: '250px 1fr' })
     const [sidebar, content] = root.children as BlockNode[]
-    expect(sidebar?.container).toMatchObject({ direction: 'column', gap: 8 })
+    expect(sidebar?.container).toMatchObject({ direction: 'column' })
     expect(sidebar?.children[0]).toMatchObject({ label: 'Пункт меню', repeat: 5 })
     expect(content).toMatchObject({ label: 'Контент', self: { minHeight: '400px' } })
   })

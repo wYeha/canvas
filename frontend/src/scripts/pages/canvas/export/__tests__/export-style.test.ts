@@ -46,11 +46,9 @@ describe('exportStyleEntries', () => {
   it.each([
     ['flex: direction', { ...createFlexContainer(), direction: 'column' as const }],
     ['flex: wrap', { ...createFlexContainer(), wrap: true }],
-    ['flex: gap 0', { ...createFlexContainer(), gap: 0 }],
     ['flex: justify', { ...createFlexContainer(), justify: 'center' as const }],
     ['grid: columns', { ...createGridContainer(), columns: '1fr 1fr' }],
     ['grid: rows', { ...createGridContainer(), rows: '100px' }],
-    ['grid: row-gap', { ...createGridContainer(), rowGap: 4 }],
     ['grid: align-items', { ...createGridContainer(), alignItems: 'center' as const }],
   ])('лист с изменённым полем (%s) сохраняет контейнерную часть целиком', (_name, container) => {
     const block = make(container.kind, { container })
@@ -67,7 +65,7 @@ describe('exportStyleEntries', () => {
     const blocks = [
       make('flex', { self: { flex: '1', height: '40px' } }),
       make('grid', { self: { colSpan: 2, height: '40px' } }),
-      make('grid', { container: { ...createGridContainer(), columnGap: 8, rowGap: 8 } }),
+      make('grid', { container: { ...createGridContainer(), justifyItems: 'center' } }),
     ]
     for (const block of blocks) {
       for (const parentKind of ['flex', 'grid', null] as const) {

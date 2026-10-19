@@ -11,7 +11,7 @@ import {
 } from '@/scripts/pages/canvas/factories'
 
 describe('контейнеры', () => {
-  it('flex по умолчанию: row, без переноса, flex-start, stretch, без gap', () => {
+  it('flex по умолчанию: row, без переноса, flex-start, stretch (gap в модели нет)', () => {
     const container = createFlexContainer()
     expect(container).toEqual({
       kind: 'flex',
@@ -19,12 +19,11 @@ describe('контейнеры', () => {
       wrap: false,
       justify: 'flex-start',
       align: 'stretch',
-      gap: null,
     })
     expect(containerSchema.safeParse(container).success).toBe(true)
   })
 
-  it('grid по умолчанию: две равные колонки, stretch, без gap', () => {
+  it('grid по умолчанию: две равные колонки, stretch (gap в модели нет)', () => {
     const container = createGridContainer()
     expect(container).toEqual({
       kind: 'grid',
@@ -32,8 +31,6 @@ describe('контейнеры', () => {
       rows: 'auto',
       justifyItems: 'stretch',
       alignItems: 'stretch',
-      columnGap: null,
-      rowGap: null,
     })
     expect(containerSchema.safeParse(container).success).toBe(true)
   })

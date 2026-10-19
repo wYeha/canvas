@@ -1,4 +1,4 @@
-/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, отбрасывание старых плашек и padding, версия схемы. */
+/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, отбрасывание старых плашек, padding и gap, версия схемы. */
 import { describe, expect, it } from 'vitest'
 import {
   SCHEMA_VERSION,
@@ -17,7 +17,7 @@ function block(id: string, children: BlockNode['children'] = []): BlockNode {
     label: id,
     description: '',
     tag: 'div',
-    container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch', gap: null },
+    container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch' },
     self: {},
     repeat: 1,
     children,
@@ -62,8 +62,6 @@ describe('parseDocument', () => {
         rows: 'auto',
         justifyItems: 'stretch',
         alignItems: 'stretch',
-        columnGap: 8,
-        rowGap: null,
       },
       self: { colSpan: 2, flex: '1' },
       repeat: 3,
@@ -146,6 +144,30 @@ describe('миграция старых документов', () => {
   })
 })
 
+describe('отбрасывание gap', () => {
+  it('молча отбрасывает gap, columnGap и rowGap старых документов, в том числе битые', () => {
+    const flexWithGap = { ...block('a'), container: { ...block('a').container, gap: 24 } }
+    const gridWithGap = {
+      ...block('g'),
+      container: {
+        kind: 'grid',
+        columns: '1fr',
+        rows: 'auto',
+        justifyItems: 'stretch',
+        alignItems: 'stretch',
+        columnGap: -5,
+        rowGap: 'x',
+      },
+    }
+    const result = parseDocument(documentOf({ ...flexWithGap, children: [gridWithGap] } as unknown as BlockNode))
+    if (!result.ok) throw new Error(result.error)
+    const root = result.document.roots[0]?.node
+    expect(root?.container).not.toHaveProperty('gap')
+    expect(root?.children[0]?.container).not.toHaveProperty('columnGap')
+    expect(root?.children[0]?.container).not.toHaveProperty('rowGap')
+  })
+})
+
 describe('схемы узлов', () => {
   it('различают flex и grid по kind', () => {
     expect(containerSchema.safeParse({ kind: 'grid', columns: '1fr' }).success).toBe(false)
@@ -172,8 +194,6 @@ describe('небезопасные CSS-строки', () => {
       rows,
       justifyItems: 'stretch',
       alignItems: 'stretch',
-      columnGap: null,
-      rowGap: null,
     },
   })
 

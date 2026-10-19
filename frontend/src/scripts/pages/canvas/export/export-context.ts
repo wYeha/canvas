@@ -21,7 +21,6 @@ import {
   CSS_FLEX_WRAP,
   CSS_GRID_SPAN,
   CSS_MIN_SPAN,
-  CSS_PX_UNIT,
   ROOT_UNTITLED_LABEL,
 } from '@/scripts/pages/canvas/constants'
 import { repeatMark } from '@/scripts/pages/canvas/node-view'
@@ -102,14 +101,9 @@ function blockLabel(block: BlockNode): string {
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
 
-/** Свойство и значение через пробел: `gap 24px`. */
+/** Свойство и значение через пробел: `justify-content center`. */
 function named(property: string, value: string): string {
   return `${property}${EXPORT_WORD_SEPARATOR}${value}`
-}
-
-/** Число px как текст: `24px`. */
-function pxText(value: number): string {
-  return `${String(value)}${CSS_PX_UNIT}`
 }
 
 /** Склеивает непустые части через разделитель. */
@@ -152,23 +146,12 @@ function pathLine(path: readonly LayoutNode[]): string {
   return `${EXPORT_CONTEXT_PATH} ${labels.join(EXPORT_CONTEXT_PATH_SEPARATOR)}`
 }
 
-/** Раскладка flex-родителя без значений по умолчанию: `flex column, wrap, gap 24px`. */
+/** Раскладка flex-родителя без значений по умолчанию: `flex column, wrap, justify-content center`. */
 function flexLayoutParts(container: FlexContainer): string[] {
   const parts = [named(CSS.flex, container.direction)]
   if (container.wrap) parts.push(CSS_FLEX_WRAP)
   if (container.justify !== CSS_DEFAULT_JUSTIFY_CONTENT) parts.push(named(CSS.justifyContent, container.justify))
   if (container.align !== CSS_DEFAULT_ALIGN) parts.push(named(CSS.alignItems, container.align))
-  if (container.gap !== null) parts.push(named(CSS.gap, pxText(container.gap)))
-  return parts
-}
-
-/** Зазоры grid-родителя: общий `gap`, если равны, иначе по отдельности. */
-function gridGapParts(container: GridContainer): string[] {
-  const { columnGap, rowGap } = container
-  if (columnGap !== null && columnGap === rowGap) return [named(CSS.gap, pxText(columnGap))]
-  const parts: string[] = []
-  if (columnGap !== null) parts.push(named(CSS.columnGap, pxText(columnGap)))
-  if (rowGap !== null) parts.push(named(CSS.rowGap, pxText(rowGap)))
   return parts
 }
 
@@ -191,15 +174,15 @@ function rowsPart(template: string): string {
   return rows === '' || rows === CSS_DEFAULT_GRID_ROWS ? '' : `${EXPORT_CONTEXT_ROWS} ${quoted(rows)}`
 }
 
-/** Раскладка grid-родителя: `grid, колонки «…» (2 колонки), строки «…», justify-items center, gap 16px`. */
+/** Раскладка grid-родителя: `grid, колонки «…» (2 колонки), строки «…», justify-items center`. */
 function gridLayoutParts(container: GridContainer): string[] {
   const parts = [CSS.grid, columnsPart(container.columns), rowsPart(container.rows)]
   if (container.justifyItems !== CSS_DEFAULT_ALIGN) parts.push(named(CSS.justifyItems, container.justifyItems))
   if (container.alignItems !== CSS_DEFAULT_ALIGN) parts.push(named(CSS.alignItems, container.alignItems))
-  return [...parts.filter((part) => part !== ''), ...gridGapParts(container)]
+  return parts.filter((part) => part !== '')
 }
 
-/** Родитель: `Родитель «main» (div): flex column, gap 24px`. */
+/** Родитель: `Родитель «main» (div): flex column`. */
 function parentLine(parent: BlockNode): string {
   const { container } = parent
   const parts = container.kind === 'flex' ? flexLayoutParts(container) : gridLayoutParts(container)

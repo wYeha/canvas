@@ -1,11 +1,8 @@
-/** Чистая логика grid-части секции «Контейнер»: пресеты колонок, нормализация шаблонов, связка отступов. Без Vue. */
+/** Чистая логика grid-части секции «Контейнер»: пресеты колонок, нормализация шаблонов. Без Vue. */
 import { GRID_ALIGN_VALUES, normalizeCssSpaces, parseCssValue, type GridContainer } from '@shared'
 import type { UiChipOption } from '@/scripts/components/ui-chips/ui-chips.types'
 import type { UiSegmentedOption } from '@/scripts/components/ui-segmented/ui-segmented.types'
 import { GRID_ROWS_DEFAULT } from './constants'
-
-/** Какой из двух отступов изменили. */
-export type GridGapKey = 'columnGap' | 'rowGap'
 
 /** Пресеты `grid-template-columns`: подпись на чипе и CSS-значение. */
 export const GRID_COLUMN_PRESETS: readonly UiChipOption[] = [
@@ -53,18 +50,4 @@ export function activeColumnPreset(columns: string): string | null {
 /** Строки показываем пустым полем, если стоит значение по умолчанию (`auto`). */
 export function rowsToField(rows: string): string {
   return normalizeCssSpaces(rows) === GRID_ROWS_DEFAULT ? '' : rows
-}
-
-/** Связка включена, если отступы равны (в том числе оба не заданы). */
-export function initialGapLinked(container: Pick<GridContainer, 'columnGap' | 'rowGap'>): boolean {
-  return container.columnGap === container.rowGap
-}
-
-/** Изменение отступа: при включённой связке второй отступ повторяет первый. */
-export function gapPatch(
-  key: GridGapKey,
-  value: number | null,
-  linked: boolean,
-): Partial<Pick<GridContainer, GridGapKey>> {
-  return linked ? { columnGap: value, rowGap: value } : { [key]: value }
 }

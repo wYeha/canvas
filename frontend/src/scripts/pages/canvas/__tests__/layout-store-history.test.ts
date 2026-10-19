@@ -72,26 +72,26 @@ describe('создание блока', () => {
   })
 })
 
-/** Пишет gap flex-контейнера узла, как числовое поле панели. */
-function setGap(store: ReturnType<typeof useLayoutStore>, id: string, gap: number): void {
+/** Пишет высоту узла в px, как числовое поле панели (стрелками). */
+function setHeight(store: ReturnType<typeof useLayoutStore>, id: string, height: number): void {
   const node = findNode(store.document, id)
-  if (node?.container.kind === 'flex') store.updateNode(id, { container: { ...node.container, gap } })
+  if (node) store.updateNode(id, { self: { ...node.self, height: `${String(height)}px` } })
 }
 
 describe('правки панели', () => {
   it('быстрые правки одного поля (стрелки числового поля) склеиваются, после паузы — новый шаг', () => {
     const { store, rootId } = storeWithRoot()
-    setGap(store, rootId, 1)
+    setHeight(store, rootId, 1)
     vi.advanceTimersByTime(HISTORY_MERGE_MS / 2)
-    setGap(store, rootId, 2)
+    setHeight(store, rootId, 2)
     vi.advanceTimersByTime(HISTORY_MERGE_MS / 2)
-    setGap(store, rootId, 3)
+    setHeight(store, rootId, 3)
     vi.advanceTimersByTime(HISTORY_MERGE_MS + 1)
-    setGap(store, rootId, 4)
+    setHeight(store, rootId, 4)
     store.undo()
-    expect(findNode(store.document, rootId)).toMatchObject({ container: { gap: 3 } })
+    expect(findNode(store.document, rootId)?.self.height).toBe('3px')
     store.undo()
-    expect(findNode(store.document, rootId)).toMatchObject({ container: { gap: null } })
+    expect(findNode(store.document, rootId)?.self.height).toBeUndefined()
     expect(store.canUndo).toBe(false)
   })
 

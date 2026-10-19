@@ -22,10 +22,10 @@ export function docOf(...roots: RootEntry[]): LayoutDocument {
   return { ...createDocument('Тест'), roots }
 }
 
-/** Grid-лист с изменёнными rows, зазором колонок и rowSpan: контейнерная часть не по умолчанию и выводится. */
+/** Grid-лист с изменёнными rows и rowSpan: контейнерная часть не по умолчанию и выводится. */
 function gridLeaf(): BlockNode {
   return block('grid', 'gallery', {
-    container: { ...createGridContainer(), rows: '40px 1fr', columnGap: 8 },
+    container: { ...createGridContainer(), rows: '40px 1fr' },
     self: { rowSpan: 2 },
   })
 }
@@ -37,7 +37,7 @@ export function smallTree(): BlockNode {
     'cards',
     {
       description: 'Карточки товаров\nпо три в ряд',
-      container: { ...createGridContainer(), columns: 'repeat(3, 1fr)', columnGap: 16, rowGap: 16 },
+      container: { ...createGridContainer(), columns: 'repeat(3, 1fr)' },
       self: { flex: '1' },
     },
     [
@@ -53,7 +53,7 @@ export function smallTree(): BlockNode {
     {
       tag: 'main',
       description: 'Страница каталога\nдля десктопа',
-      container: { kind: 'flex', direction: 'column', wrap: false, justify: 'flex-start', align: 'stretch', gap: 24 },
+      container: { kind: 'flex', direction: 'column', wrap: false, justify: 'flex-start', align: 'stretch' },
     },
     [cards, block('flex', 'footer', { tag: 'footer', self: { height: '80px' } })],
   )

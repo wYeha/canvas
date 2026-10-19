@@ -11,7 +11,6 @@ import {
   CSS_FLEX_WRAP,
   CSS_GRID_SPAN,
   CSS_MIN_SPAN,
-  CSS_PX_UNIT,
   INLINE_STYLE_SEPARATOR,
 } from './constants'
 
@@ -27,11 +26,6 @@ export function isDefaultFlex(value: string | undefined): boolean {
   return text === '' || text === CSS_DEFAULT_FLEX
 }
 
-/** Число px как CSS-значение: `16` → `16px`. */
-function px(value: number): string {
-  return `${String(value)}${CSS_PX_UNIT}`
-}
-
 /** Обрезает строку; пустая после trim превращается в `null`. */
 function clean(value: string | undefined): string | null {
   const trimmed = value?.trim() ?? ''
@@ -43,28 +37,17 @@ function push(entries: StyleEntry[], property: string, value: string | null): vo
   if (value !== null) entries.push([property, value])
 }
 
-/** Стили flex-контейнера: display, direction, wrap, justify, align, gap. */
+/** Стили flex-контейнера: display, direction, wrap, justify, align (gap в модели нет — он только редакторский, BEM-классом). */
 function flexEntries(container: FlexContainer): StyleEntry[] {
   const entries: StyleEntry[] = [['display', CSS_DISPLAY_FLEX]]
   if (container.direction !== CSS_DEFAULT_FLEX_DIRECTION) entries.push(['flex-direction', container.direction])
   if (container.wrap) entries.push(['flex-wrap', CSS_FLEX_WRAP])
   if (container.justify !== CSS_DEFAULT_JUSTIFY_CONTENT) entries.push(['justify-content', container.justify])
   if (container.align !== CSS_DEFAULT_ALIGN) entries.push(['align-items', container.align])
-  if (container.gap !== null) entries.push(['gap', px(container.gap)])
   return entries
 }
 
-/** Стили gap grid-контейнера: общий `gap`, если зазоры равны, иначе по отдельности. */
-function gridGapEntries(container: GridContainer): StyleEntry[] {
-  const { columnGap, rowGap } = container
-  if (columnGap !== null && columnGap === rowGap) return [['gap', px(columnGap)]]
-  const entries: StyleEntry[] = []
-  if (columnGap !== null) entries.push(['column-gap', px(columnGap)])
-  if (rowGap !== null) entries.push(['row-gap', px(rowGap)])
-  return entries
-}
-
-/** Стили grid-контейнера: display, шаблоны, выравнивание, gap. */
+/** Стили grid-контейнера: display, шаблоны, выравнивание. */
 function gridEntries(container: GridContainer): StyleEntry[] {
   const entries: StyleEntry[] = [['display', CSS_DISPLAY_GRID]]
   push(entries, 'grid-template-columns', clean(container.columns))
@@ -72,7 +55,6 @@ function gridEntries(container: GridContainer): StyleEntry[] {
   if (rows !== CSS_DEFAULT_GRID_ROWS) push(entries, 'grid-template-rows', rows)
   if (container.justifyItems !== CSS_DEFAULT_ALIGN) entries.push(['justify-items', container.justifyItems])
   if (container.alignItems !== CSS_DEFAULT_ALIGN) entries.push(['align-items', container.alignItems])
-  entries.push(...gridGapEntries(container))
   return entries
 }
 
@@ -96,7 +78,7 @@ function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEn
   return entries
 }
 
-/** Контейнерная часть стилей блока (display, flex/grid-свойства, gap); в `styleEntries` она всегда идёт первой. */
+/** Контейнерная часть стилей блока (display, flex/grid-свойства); в `styleEntries` она всегда идёт первой. */
 export function containerEntries(container: Container): StyleEntry[] {
   return container.kind === 'flex' ? flexEntries(container) : gridEntries(container)
 }
@@ -116,7 +98,7 @@ export function toStyleObject(entries: readonly StyleEntry[]): Record<string, st
   return Object.fromEntries(entries)
 }
 
-/** Строка инлайн-стиля для экспорта: `display:flex; gap:16px`. */
+/** Строка инлайн-стиля для экспорта: `display:flex; flex-direction:column`. */
 export function toInlineStyle(entries: readonly StyleEntry[]): string {
   return entries.map(([property, value]) => `${property}:${value}`).join(INLINE_STYLE_SEPARATOR)
 }

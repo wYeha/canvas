@@ -75,16 +75,6 @@ export function useCanvasPropsContainer() {
     },
   })
 
-  /** Отступ между элементами, px; `null` — не задан. */
-  const gap: WritableComputedRef<number | null> = computed({
-    /** Читает отступ. */
-    get: () => flex.value?.gap ?? null,
-    /** Пишет отступ (пусто — `null`). */
-    set: (value) => {
-      patchFlex({ gap: value })
-    },
-  })
-
   /** Классы группы иконок выравнивания: базовый и модификатор поворота под текущее направление. */
   function iconClasses(axis: AlignAxis): ComputedRef<string[]> {
     return computed(() => {
@@ -102,7 +92,6 @@ export function useCanvasPropsContainer() {
     wrap,
     justify: flexField('justify', asFlexJustify),
     align: flexField('align', asFlexAlign),
-    gap,
     justifyClasses: iconClasses('justify'),
     alignClasses: iconClasses('align'),
   }

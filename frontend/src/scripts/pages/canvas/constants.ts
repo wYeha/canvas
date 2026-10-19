@@ -30,7 +30,6 @@ export const DEFAULT_FLEX: Omit<FlexContainer, 'kind'> = {
   wrap: false,
   justify: 'flex-start',
   align: 'stretch',
-  gap: null,
 }
 
 /** Grid-контейнер нового блока, кроме `kind`: две равные колонки. */
@@ -39,8 +38,6 @@ export const DEFAULT_GRID: Omit<GridContainer, 'kind'> = {
   rows: 'auto',
   justifyItems: 'stretch',
   alignItems: 'stretch',
-  columnGap: null,
-  rowGap: null,
 }
 
 /** Направление flex у нового корневого блока: страница обычно собирается сверху вниз. */
@@ -424,12 +421,6 @@ export const CONTAINER_JUSTIFY_LABEL = 'justify-content'
 /** Подпись поля `align-items`. */
 export const CONTAINER_ALIGN_LABEL = 'align-items'
 
-/** Подпись поля gap. */
-export const CONTAINER_GAP_LABEL = 'gap'
-
-/** Минимальное значение gap, px. */
-export const CONTAINER_GAP_MIN = 0
-
 /** Подпись поля `grid-template-columns`. */
 export const GRID_COLUMNS_LABEL = 'grid-template-columns'
 
@@ -450,18 +441,6 @@ export const GRID_JUSTIFY_ITEMS_LABEL = 'justify-items'
 
 /** Подпись поля `align-items` в grid. */
 export const GRID_ALIGN_ITEMS_LABEL = 'align-items'
-
-/** Подпись группы полей отступов grid. */
-export const GRID_GAP_LABEL = 'gap'
-
-/** Подпись поля `column-gap`. */
-export const GRID_COLUMN_GAP_LABEL = 'column-gap'
-
-/** Подпись поля `row-gap`. */
-export const GRID_ROW_GAP_LABEL = 'row-gap'
-
-/** Подпись кнопки-связки отступов («одинаковые»). */
-export const GRID_GAP_LINK_LABEL = 'Одинаковые отступы'
 
 /** Значение `grid-template-rows` по умолчанию. */
 export const GRID_ROWS_DEFAULT = 'auto'
@@ -637,15 +616,6 @@ export const ARROW_DOWN_CODE = 'ArrowDown'
 
 /** Подпись кнопки тулбара со списком шаблонов-заготовок (она же подпись меню для скринридера). */
 export const TEMPLATES_LABEL = 'Шаблоны'
-
-/** Зазор между крупными частями шаблонов (карточки, ряды, колонки), px. */
-export const TEMPLATE_GAP = 16
-
-/** Малый зазор в шаблонах (фильтры, пункты меню), px. */
-export const TEMPLATE_GAP_SMALL = 8
-
-/** Зазор между сайдбаром и контентом, px. */
-export const TEMPLATE_GAP_LARGE = 24
 
 /** Ширина превью корня шаблонов-страниц, px. */
 export const TEMPLATE_ROOT_WIDTH = 960

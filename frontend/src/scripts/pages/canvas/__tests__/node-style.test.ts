@@ -21,19 +21,19 @@ describe('flex', () => {
   })
 
   it('выводит только отличия от CSS по умолчанию', () => {
-    const node = make('flex', { direction: 'column', wrap: true, justify: 'center', align: 'flex-end', gap: 16 })
+    const node = make('flex', { direction: 'column', wrap: true, justify: 'center', align: 'flex-end' })
     expect(styles(node)).toEqual({
       display: 'flex',
       'flex-direction': 'column',
       'flex-wrap': 'wrap',
       'justify-content': 'center',
       'align-items': 'flex-end',
-      gap: '16px',
     })
   })
 
-  it('gap 0 выводится как 0px', () => {
-    expect(styles(make('flex', { gap: 0 }))).toEqual({ display: 'flex', gap: '0px' })
+  it('gap не выводится никогда: он только редакторский', () => {
+    expect(styleEntries(make('flex'), null).map(([property]) => property)).not.toContain('gap')
+    expect(styleEntries(make('grid'), null).map(([property]) => property)).not.toContain('gap')
   })
 })
 
@@ -58,30 +58,6 @@ describe('grid', () => {
   it('justify-items и align-items выводятся, если не stretch', () => {
     const node = make('grid', { columns: '', justifyItems: 'center', alignItems: 'end' })
     expect(styles(node)).toEqual({ display: 'grid', 'justify-items': 'center', 'align-items': 'end' })
-  })
-
-  it('равные зазоры сливаются в gap, включая 0', () => {
-    expect(styles(make('grid', { columns: '', columnGap: 8, rowGap: 8 })).gap).toBe('8px')
-    expect(styles(make('grid', { columns: '', columnGap: 0, rowGap: 0 })).gap).toBe('0px')
-  })
-
-  it('разные зазоры выводятся по отдельности', () => {
-    expect(styles(make('grid', { columns: '', columnGap: 8, rowGap: 16 }))).toEqual({
-      display: 'grid',
-      'column-gap': '8px',
-      'row-gap': '16px',
-    })
-  })
-
-  it('null-зазор не выводится', () => {
-    expect(styles(make('grid', { columns: '', columnGap: 8, rowGap: null }))).toEqual({
-      display: 'grid',
-      'column-gap': '8px',
-    })
-    expect(styles(make('grid', { columns: '', columnGap: null, rowGap: 4 }))).toEqual({
-      display: 'grid',
-      'row-gap': '4px',
-    })
   })
 })
 
@@ -157,18 +133,17 @@ describe('не стили', () => {
 describe('порядок и сериализация', () => {
   const node = make(
     'flex',
-    { direction: 'column', wrap: true, justify: 'center', align: 'center', gap: 4 },
+    { direction: 'column', wrap: true, justify: 'center', align: 'center' },
     { self: { flex: '1', width: '2px', height: '3px', minHeight: '4px' } },
   )
 
-  it('порядок: display, direction, wrap, justify, align, gap, self', () => {
+  it('порядок: display, direction, wrap, justify, align, self', () => {
     expect(styleEntries(node, 'flex').map(([property]) => property)).toEqual([
       'display',
       'flex-direction',
       'flex-wrap',
       'justify-content',
       'align-items',
-      'gap',
       'flex',
       'width',
       'height',
@@ -176,14 +151,12 @@ describe('порядок и сериализация', () => {
     ])
   })
 
-  it('порядок grid: display, шаблоны, выравнивание, gap', () => {
+  it('порядок grid: display, шаблоны, выравнивание', () => {
     const grid = make('grid', {
       columns: '1fr',
       rows: '2fr',
       justifyItems: 'center',
       alignItems: 'center',
-      columnGap: 1,
-      rowGap: 2,
     })
     expect(styleEntries(grid, null).map(([property]) => property)).toEqual([
       'display',
@@ -191,13 +164,13 @@ describe('порядок и сериализация', () => {
       'grid-template-rows',
       'justify-items',
       'align-items',
-      'column-gap',
-      'row-gap',
     ])
   })
 
   it('toInlineStyle: разделитель «; », без завершающей точки с запятой', () => {
-    expect(toInlineStyle(styleEntries(make('flex', { gap: 16 }), null))).toBe('display:flex; gap:16px')
+    expect(toInlineStyle(styleEntries(make('flex', { direction: 'column' }), null))).toBe(
+      'display:flex; flex-direction:column',
+    )
   })
 
   it('toInlineStyle пустого списка — пустая строка', () => {

@@ -116,21 +116,18 @@ export function asContainerKind(value: string | null): ContainerKind | null {
   return asOneOf(CONTAINER_KINDS, value)
 }
 
-/** Переводит flex в grid: gap → оба отступа, align → alignItems, остальное — по умолчанию. */
+/** Переводит flex в grid: align → alignItems, остальное — по умолчанию. */
 function flexToGrid(container: FlexContainer): GridContainer {
   return {
     ...createGridContainer(),
-    columnGap: container.gap,
-    rowGap: container.gap,
     alignItems: FLEX_TO_GRID_ALIGN[container.align],
   }
 }
 
-/** Переводит grid во flex: gap = columnGap ?? rowGap, alignItems → align, остальное — по умолчанию. */
+/** Переводит grid во flex: alignItems → align, остальное — по умолчанию. */
 function gridToFlex(container: GridContainer): FlexContainer {
   return {
     ...createFlexContainer(),
-    gap: container.columnGap ?? container.rowGap,
     align: GRID_TO_FLEX_ALIGN[container.alignItems],
   }
 }
