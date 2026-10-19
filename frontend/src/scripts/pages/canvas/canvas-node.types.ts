@@ -13,6 +13,8 @@ export interface CanvasNodeProps {
   copyRoot?: boolean
   /** Остаток бюджета копий повтора для поддерева настоящего блока; по умолчанию — весь бюджет (`REPEAT_RENDER_BUDGET`). */
   copyBudget?: number
+  /** Узел внутри живого зеркала связи: вложенные связи здесь рисуются плашками, не зеркалом. */
+  inMirror?: boolean
 }
 
 /** Пропсы корня на поле. */

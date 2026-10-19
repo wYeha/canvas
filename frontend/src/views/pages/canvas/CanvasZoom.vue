@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: плашка зума — переключатель подписей, уменьшить, процент, увеличить, вписать всё -->
+<!-- Фрагмент страницы canvas: плашка зума — переключатели подписей и зеркала связей, уменьшить, процент, увеличить, вписать всё -->
 <template>
   <UiPill class="canvas-zoom">
     <UiIconButton
@@ -7,6 +7,13 @@
       :tooltip="labelsToggleTitle"
       :pressed="labelsVisible"
       @click="toggleLabels"
+    />
+    <UiIconButton
+      icon="link"
+      :label="MIRROR_TOGGLE_LABEL"
+      :tooltip="mirrorToggleTitle"
+      :pressed="linksMirrored"
+      @click="toggleMirror"
     />
     <UiIconButton icon="minus" label="Уменьшить (Ctrl −)" @click="zoomOut" />
     <span class="canvas-zoom__value">{{ zoomLabel }}</span>
@@ -18,8 +25,19 @@
 <script setup lang="ts">
 import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
 import UiPill from '@/views/components/ui-pill/UiPill.vue'
-import { LABELS_TOGGLE_LABEL } from '@/scripts/pages/canvas/constants'
+import { LABELS_TOGGLE_LABEL, MIRROR_TOGGLE_LABEL } from '@/scripts/pages/canvas/constants'
 import { useCanvasZoom } from '@/scripts/pages/canvas/use-canvas-zoom'
 
-const { zoomLabel, labelsVisible, labelsToggleTitle, toggleLabels, zoomIn, zoomOut, fitAll } = useCanvasZoom()
+const {
+  zoomLabel,
+  labelsVisible,
+  labelsToggleTitle,
+  toggleLabels,
+  linksMirrored,
+  mirrorToggleTitle,
+  toggleMirror,
+  zoomIn,
+  zoomOut,
+  fitAll,
+} = useCanvasZoom()
 </script>

@@ -72,6 +72,14 @@ export function rootLabelMap(doc: Pick<LayoutDocument, 'roots'>): Map<NodeId, st
   return new Map(doc.roots.map((root) => [root.node.id, rootTitle(root.node)]))
 }
 
+/**
+ * Связь в живом зеркале: содержимое источника (контейнер, тег, дети) со своими id, свойствами места и повтором
+ * связи — так же, как её выведет экспорт. Остаётся связью (`sourceId`): значок и цвет плашки сохраняются.
+ */
+export function mirrorBlock(link: BlockNode & { sourceId: NodeId }, source: BlockNode): BlockNode {
+  return { ...source, id: link.id, label: link.label, self: link.self, repeat: link.repeat, sourceId: link.sourceId }
+}
+
 /** Имя источника связи; источника нет — «источник не найден». */
 export function linkSourceName(sourceId: NodeId, labels: SourceLabels): string {
   return labels.get(sourceId) ?? LINK_MISSING_LABEL

@@ -45,6 +45,9 @@ export const SYNC_STATE_STORAGE_KEY = 'layout-canvas:sync'
 /** Ключ localStorage для настройки редактора «показывать подписи блоков на канвасе» (`'true'` / `'false'`; общая для всех документов). */
 export const LABELS_VISIBLE_STORAGE_KEY = 'layout-canvas:labels-visible'
 
+/** Ключ localStorage для флага «живое зеркало связей». */
+export const LINKS_MIRRORED_STORAGE_KEY = 'layout-canvas:links-mirrored'
+
 /** Строка localStorage для включённого флага. */
 export const FLAG_TRUE = 'true'
 

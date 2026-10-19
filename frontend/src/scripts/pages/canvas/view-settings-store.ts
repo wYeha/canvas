@@ -1,12 +1,12 @@
 /**
- * Pinia-хранилище настроек редактора (не документа): сейчас только «показывать подписи блоков».
- * Нужно нескольким фрагментам — плашке зума (кнопка) и полю (модификатор). Значение запоминается в localStorage.
+ * Pinia-хранилище настроек редактора (не документа): «показывать подписи блоков» и «живое зеркало связей».
+ * Нужно нескольким фрагментам — плашке зума (кнопки), полю и блокам. Значения запоминаются в localStorage.
  */
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { LABELS_VISIBLE_STORAGE_KEY } from '@/scripts/globals/constants'
+import { LABELS_VISIBLE_STORAGE_KEY, LINKS_MIRRORED_STORAGE_KEY } from '@/scripts/globals/constants'
 import { getStorageItem, setStorageItem } from '@/scripts/globals/storage'
-import { parseLabelsVisible, serializeLabelsVisible } from './view-settings'
+import { parseLabelsVisible, parseLinksMirrored, serializeFlag } from './view-settings'
 
 export const useViewSettingsStore = defineStore('view-settings', () => {
   /** Показаны ли чипы подписей и подписи пустых листов (по умолчанию да). */
@@ -15,8 +15,17 @@ export const useViewSettingsStore = defineStore('view-settings', () => {
   /** Переключает показ подписей и запоминает выбор; недоступное хранилище не мешает работе в текущей сессии. */
   function toggleLabels(): void {
     labelsVisible.value = !labelsVisible.value
-    setStorageItem(LABELS_VISIBLE_STORAGE_KEY, serializeLabelsVisible(labelsVisible.value))
+    setStorageItem(LABELS_VISIBLE_STORAGE_KEY, serializeFlag(labelsVisible.value))
   }
 
-  return { labelsVisible, toggleLabels }
+  /** Живое зеркало: на месте связи рисуется содержимое источника, а не плашка (по умолчанию нет). */
+  const linksMirrored = ref(parseLinksMirrored(getStorageItem(LINKS_MIRRORED_STORAGE_KEY)))
+
+  /** Переключает живое зеркало связей и запоминает выбор. */
+  function toggleLinksMirrored(): void {
+    linksMirrored.value = !linksMirrored.value
+    setStorageItem(LINKS_MIRRORED_STORAGE_KEY, serializeFlag(linksMirrored.value))
+  }
+
+  return { labelsVisible, toggleLabels, linksMirrored, toggleLinksMirrored }
 })

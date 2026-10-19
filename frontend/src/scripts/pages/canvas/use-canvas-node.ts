@@ -1,17 +1,22 @@
-/** Composable фрагмента CanvasNode: из узла собирает вид (классы, стили раскладки, значок, подпись, копии повтора) для шаблона; связь — плашка с именем источника. */
+/**
+ * Composable фрагмента CanvasNode: из узла собирает вид (классы, стили раскладки, значок, подпись, копии повтора) для шаблона;
+ * связь — плашка с именем источника, а в живом зеркале — содержимое источника (копиями, клик выделяет связь).
+ */
 import { computed, type ComputedRef } from 'vue'
-import { isLinkBlock, type NodeId } from '@shared'
+import { isLinkBlock, type BlockNode, type NodeId } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
 import { REPEAT_RENDER_BUDGET } from './constants'
 import { useDragStore } from './dnd/drag-store'
 import { useLayoutStore } from './layout-store'
 import { styleEntries, toStyleObject } from './node-style'
+import { useViewSettingsStore } from './view-settings-store'
 import {
   blockClasses,
   blockLabel,
   directionIcon,
   isLeafBlock,
   linkSourceName,
+  mirrorBlock,
   renderChildren,
   repeatMark,
   type RenderChild,
@@ -27,6 +32,8 @@ export interface NodeView {
   repeat: string
   leaf: boolean
   children: RenderChild[]
+  /** Связь показана живым зеркалом: дети — содержимое источника, вложенные связи внутри — плашками. */
+  mirror: boolean
 }
 
 /** Результат `useCanvasNode`: вид узла, его итоговые классы (с состоянием перетаскивания) и атрибуты пометки. */
@@ -45,6 +52,7 @@ export interface CanvasNodeState {
 export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
   const dragStore = useDragStore()
   const layoutStore = useLayoutStore()
+  const viewSettings = useViewSettingsStore()
 
   /**
    * Подпись узла: у связи — имя источника, у блока — своя. Подписи корней читаются только у связи: иначе каждый
@@ -58,20 +66,36 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
   /** Копия повтора: id исходного блока или `null` у настоящего блока. */
   const copyOf = computed<NodeId | null>(() => props.copyOf ?? null)
 
+  /**
+   * Источник для живого зеркала: только у связи, при включённом зеркале и не внутри другого зеркала (один уровень —
+   * объём отрисовки не больше источника на каждую связь). Тот же объект, пока источник не менялся: вид не пересобирается.
+   */
+  const mirrorSource = computed<BlockNode | null>(() => {
+    const { node } = props
+    if (!isLinkBlock(node) || props.inMirror === true || !viewSettings.linksMirrored) return null
+    return layoutStore.rootNodes.get(node.sourceId) ?? null
+  })
+
   /** Вид оформленного блока. */
   const view = computed<NodeView>(() => {
     const { node, depth, parentKind } = props
-    const classes = blockClasses(node, depth, parentKind)
+    const source = mirrorSource.value
+    const shown = source !== null && isLinkBlock(node) ? mirrorBlock(node, source) : node
+    const classes = blockClasses(shown, depth, parentKind)
+    if (source !== null) classes.push('canvas-node--mirror')
     if (props.copyRoot === true) classes.push('canvas-node--repeat-copy')
+    // Содержимое зеркала — копии, относящиеся к связи: клик, ховер и перетаскивание по ним — к самой связи
+    const childrenCopyOf = source === null ? copyOf.value : (copyOf.value ?? node.id)
     return {
       classes,
-      style: toStyleObject(styleEntries(node, parentKind)),
-      icon: directionIcon(node),
+      style: toStyleObject(styleEntries(shown, parentKind)),
+      icon: directionIcon(shown),
       label: nodeLabel(),
       // У корня ×N не показываем: повтор корня не рисуется и не экспортируется
       repeat: copyOf.value === null && parentKind !== null ? repeatMark(node) : '',
-      leaf: isLeafBlock(node),
-      children: renderChildren(node.children, copyOf.value, props.copyBudget ?? REPEAT_RENDER_BUDGET),
+      leaf: isLeafBlock(shown),
+      children: renderChildren(shown.children, childrenCopyOf, props.copyBudget ?? REPEAT_RENDER_BUDGET),
+      mirror: source !== null,
     }
   })
 

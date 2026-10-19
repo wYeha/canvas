@@ -1,4 +1,7 @@
-<!-- Фрагмент страницы canvas: рекурсивный блок превью (раскладка из styleEntries, цвет по глубине, подпись, копии повтора) -->
+<!--
+  Фрагмент страницы canvas: рекурсивный блок превью (раскладка из styleEntries, цвет по глубине, подпись, копии повтора,
+  живое зеркало связи)
+-->
 <template>
   <div :class="classes" :data-node-id="nodeAttr" :data-repeat-of="repeatAttr" :style="view.style">
     <span v-if="view.leaf" class="canvas-node__caption" :data-label-node-id="labelAttr">
@@ -20,6 +23,7 @@
       :copy-of="child.copyOf"
       :copy-root="child.copyRoot"
       :copy-budget="child.budget"
+      :in-mirror="view.mirror || inMirror"
     />
   </div>
 </template>
@@ -29,7 +33,7 @@ import { computed } from 'vue'
 import type { CanvasNodeProps } from '@/scripts/pages/canvas/canvas-node.types'
 import { useCanvasNode } from '@/scripts/pages/canvas/use-canvas-node'
 
-const props = defineProps<CanvasNodeProps>()
+const props = withDefaults(defineProps<CanvasNodeProps>(), { inMirror: false })
 const { view, classes, nodeAttr, repeatAttr, labelAttr } = useCanvasNode(props)
 /** Вид контейнера этого узла: родитель для детей. */
 const kind = computed(() => props.node.container.kind)

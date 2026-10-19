@@ -68,6 +68,9 @@ export const useLayoutStore = defineStore('layout', () => {
    */
   const rootLabels = computed(() => rootLabelMap(document.value))
 
+  /** Корневые блоки по id — источники живого зеркала связей. Карта новая на каждую правку, читать только у связей. */
+  const rootNodes = computed(() => new Map(document.value.roots.map((root) => [root.node.id, root.node])))
+
   /** Путь от корня до выделенного узла включительно; пусто без выделения. */
   const selectedPath = computed<LayoutNode[]>(() =>
     selectedId.value === null ? [] : tree.getPath(document.value, selectedId.value),
@@ -307,6 +310,7 @@ export const useLayoutStore = defineStore('layout', () => {
     selectedNode,
     selectedPath,
     rootLabels,
+    rootNodes,
     canUndo,
     canRedo,
     rootOf,

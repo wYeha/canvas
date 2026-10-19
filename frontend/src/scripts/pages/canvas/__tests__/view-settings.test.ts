@@ -1,6 +1,6 @@
 /** Тесты настроек редактора: разбор и запись флага подписей. */
 import { describe, expect, it } from 'vitest'
-import { parseLabelsVisible, serializeLabelsVisible } from '@/scripts/pages/canvas/view-settings'
+import { parseLabelsVisible, serializeFlag } from '@/scripts/pages/canvas/view-settings'
 
 describe('parseLabelsVisible', () => {
   it('по умолчанию и на мусоре подписи показаны', () => {
@@ -14,7 +14,7 @@ describe('parseLabelsVisible', () => {
   })
 
   it('serialize и parse обратимы', () => {
-    expect(parseLabelsVisible(serializeLabelsVisible(false))).toBe(false)
-    expect(parseLabelsVisible(serializeLabelsVisible(true))).toBe(true)
+    expect(parseLabelsVisible(serializeFlag(false))).toBe(false)
+    expect(parseLabelsVisible(serializeFlag(true))).toBe(true)
   })
 })
