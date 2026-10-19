@@ -12,8 +12,11 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared": ["../shared/src/index.ts"],
+      "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "vitest.config.ts"]
+  "include": ["src/**/*.ts", "vitest.config.ts", "../shared/src/**/*.ts"],
+  "exclude": ["../shared/src/**/__tests__/**"]
 }

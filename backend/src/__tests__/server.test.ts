@@ -4,12 +4,13 @@ import type { FastifyInstance } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ERROR_CODES, HTTP_STATUS_INTERNAL } from '@/constants'
 import { buildServer } from '@/server'
+import { memoryDatabase } from './fixtures'
 
 describe('сервер', () => {
   let app: FastifyInstance
 
   beforeEach(async () => {
-    app = await buildServer({ logLevel: 'silent' })
+    app = await buildServer({ logLevel: 'silent' }, { db: memoryDatabase() })
   })
 
   afterEach(async () => {

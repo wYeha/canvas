@@ -1,6 +1,6 @@
 # Правила бэкенда
 
-Обязательны для всех, кто пишет код в `backend/`. Бэкенд маленький: хранит макеты одного пользователя и защищает их паролем.
+Обязательны для всех, кто пишет код в `backend/`. Бэкенд маленький: хранит документы одного пользователя и защищает их паролем.
 
 ## Стек
 
@@ -17,7 +17,9 @@ server.ts          — создание Fastify, регистрация плаг
 config.ts          — чтение и проверка переменных окружения
 constants.ts       — значения по умолчанию, лимиты, коды ошибок
 db/
-  connection.ts    — открытие SQLite, применение миграций
+  connection.ts    — открытие SQLite, настройки соединения, применение миграций
+  migrations.ts    — чтение и применение SQL-миграций, учёт в schema_migrations
+  db-constants.ts  — константы слоя базы
   migrations/      — 001_init.sql, 002_... (только добавлять, не менять старые)
 plugins/
   errors.ts        — единый формат ошибок, обработчик 404
@@ -25,9 +27,9 @@ plugins/
 routes/
   health.ts        — GET /api/health
   auth.ts          — POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
-  layouts.ts       — CRUD /api/layouts
+  documents.ts     — CRUD /api/documents
 services/
-  layouts.ts       — SQL-запросы к таблице layouts
+  documents.ts     — SQL-запросы к таблице documents
 ```
 
 ## Правила

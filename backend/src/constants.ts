@@ -1,4 +1,4 @@
-/** Константы бэкенда: значения окружения по умолчанию, лимиты запросов, коды ошибок API. */
+/** Константы бэкенда: значения окружения по умолчанию (в том числе путь к базе), лимиты запросов, коды ошибок API. */
 
 /** Адрес по умолчанию: только локальный интерфейс, снаружи API доступно через nginx. */
 export const DEFAULT_HOST = '127.0.0.1'
@@ -6,6 +6,9 @@ export const DEFAULT_PORT = 3000
 export const DEFAULT_LOG_LEVEL = 'info'
 export const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'] as const
 export const MAX_PORT = 65535
+
+/** Файл базы SQLite относительно рабочей папки процесса; папка `backend/data/` не коммитится. */
+export const DEFAULT_DATABASE_PATH = 'data/layout-canvas.db'
 
 /** Файл переменных окружения относительно рабочей папки процесса (`npm run dev -w backend` запускается из backend/). */
 export const ENV_FILE_PATH = '.env'
