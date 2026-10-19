@@ -1,11 +1,12 @@
 <!--
-  Фрагмент страницы canvas: поле с точечным фоном, движущимся вместе с камерой; слой мира с корневыми блоками,
+  Фрагмент страницы canvas: поле с точечным фоном, движущимся вместе с камерой; слой мира с корневыми блоками и стрелками связей,
   оверлей выделения, призрак перетаскивания, поле ввода подписи и подсказка пустого поля; поверх в слоте лежат плавающие панели
 -->
 <template>
   <main ref="viewportEl" :class="classes" :style="viewportStyle">
     <div ref="worldEl" :class="worldClasses" data-canvas-world :style="worldStyle">
       <CanvasRoot v-for="root in roots" :key="root.node.id" :root="root" />
+      <CanvasLinks />
     </div>
     <CanvasSelection />
     <CanvasDropInsert />
@@ -21,6 +22,7 @@
 import CanvasDragGhost from '@/views/pages/canvas/CanvasDragGhost.vue'
 import CanvasDropInsert from '@/views/pages/canvas/CanvasDropInsert.vue'
 import CanvasLinkDraft from '@/views/pages/canvas/CanvasLinkDraft.vue'
+import CanvasLinks from '@/views/pages/canvas/CanvasLinks.vue'
 import CanvasLabelEditor from '@/views/pages/canvas/CanvasLabelEditor.vue'
 import CanvasSelection from '@/views/pages/canvas/CanvasSelection.vue'
 import CanvasRoot from '@/views/pages/canvas/CanvasRoot.vue'

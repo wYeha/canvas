@@ -257,6 +257,9 @@ export const LINK_PORT_ATTR = 'data-link-port-id'
 /** Селектор порта связи. */
 export const LINK_PORT_SELECTOR = `[${LINK_PORT_ATTR}]`
 
+/** Размер наконечника стрелки связи на экране, px (в координатах поля делится на зум). */
+export const LINK_ARROW_HEAD_PX = 8
+
 /** Подсказка порта связи у корня. */
 export const LINK_PORT_TITLE = 'Протяните на блок, чтобы подключить туда этот корневой блок'
 

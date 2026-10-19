@@ -1,0 +1,32 @@
+// Стили фрагмента canvas-links: SVG-слой стрелок связей поверх корней в слое мира; тонкие линии экранной толщины
+@use 'variables' as v;
+
+.canvas-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: v.$z-link-arrows;
+  width: 1px;
+  height: 1px;
+  overflow: visible; // координаты стрелок — от начала поля, в том числе отрицательные
+  pointer-events: none; // иначе поиск блока под курсором попадал бы в слой (node-dom.ts)
+
+  &__arrow {
+    fill: none;
+    stroke: var(--color-link);
+    stroke-width: v.$link-arrow-width;
+    vector-effect: non-scaling-stroke; // экранная толщина при любом зуме
+
+    &--active {
+      stroke: var(--color-accent);
+    }
+  }
+
+  &__head {
+    fill: var(--color-link);
+
+    &--active {
+      fill: var(--color-accent);
+    }
+  }
+}
