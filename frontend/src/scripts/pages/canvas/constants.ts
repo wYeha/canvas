@@ -569,6 +569,7 @@ export const NODE_ACTION_REASONS = {
   first: 'Уже первый среди соседей',
   last: 'Уже последний среди соседей',
   alreadyRoot: 'Блок уже лежит на канвасе',
+  linkToCanvas: 'Связь — место внутри блока, на поле она стоять не может',
   missing: 'Ничего не выделено',
 } as const
 

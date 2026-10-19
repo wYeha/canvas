@@ -3,10 +3,28 @@
  * перемещения). Вход не мутируется; недопустимая или пустая операция возвращает тот же объект `doc`.
  * `updatedAt`, `labelCounter` и `createdAt` здесь не меняются: `updatedAt` ставит хранилище.
  */
-import type { CanvasPlacement, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
+import {
+  isLinkBlock,
+  linkSourcesIn,
+  linksCreateCycle,
+  type CanvasPlacement,
+  type LayoutDocument,
+  type LayoutNode,
+  type NodeId,
+  type RootEntry,
+} from '@shared'
 import { createId } from '@/scripts/globals/id'
 import { DUPLICATE_ROOT_GAP } from './constants'
-import { collectDocIds, collectIds, insertAt, nodeAt, removeAtLocation, updateAtLocation } from './tree-internal'
+import {
+  collectDocIds,
+  collectIds,
+  insertAt,
+  nodeAt,
+  removeAtLocation,
+  removeLinksTo,
+  rootIdOf,
+  updateAtLocation,
+} from './tree-internal'
 import { findNode, locateNode } from './tree-query'
 import type { DuplicateResult, NodePatch, TreeError } from './tree-types'
 
@@ -15,17 +33,34 @@ export * from './tree-move'
 export * from './tree-copy'
 export * from './tree-types'
 
-/** Проверяет добавляемое поддерево: id внутри него уникальны и не пересекаются с документом. */
-function checkSubtree(doc: LayoutDocument, node: LayoutNode): TreeError | null {
+/**
+ * Проверяет связи добавляемого поддерева, которое окажется в корне `targetRootId` (для нового корня — его же id):
+ * источники — корни документа, и ни один источник не включает этот корень (иначе цикл).
+ */
+function checkSubtreeLinks(doc: LayoutDocument, node: LayoutNode, targetRootId: NodeId): TreeError | null {
+  const sources = linkSourcesIn(node)
+  if (sources.length === 0) return null
+  if (sources.includes(targetRootId)) return 'link-cycle'
+  const rootIds = new Set(doc.roots.map((root) => root.node.id))
+  if (sources.some((sourceId) => !rootIds.has(sourceId))) return 'source-not-found'
+  return linksCreateCycle(doc, sources, targetRootId) ? 'link-cycle' : null
+}
+
+/** Проверяет добавляемое поддерево: id уникальны и не пересекаются с документом, связи допустимы в корне `targetRootId`. */
+function checkSubtree(doc: LayoutDocument, node: LayoutNode, targetRootId: NodeId): TreeError | null {
   const docIds = collectDocIds(doc)
   const ids = collectIds(node)
-  return new Set(ids).size !== ids.length || ids.some((id) => docIds.has(id)) ? 'duplicate-id' : null
+  if (new Set(ids).size !== ids.length || ids.some((id) => docIds.has(id))) return 'duplicate-id'
+  return checkSubtreeLinks(doc, node, targetRootId)
 }
 
 /** Проверяет, можно ли добавить узел ребёнком блока `parentId`; возвращает причину отказа или `null`. */
 export function canAddChild(doc: LayoutDocument, parentId: NodeId, node: LayoutNode): TreeError | null {
-  if (!findNode(doc, parentId)) return 'target-not-found'
-  return checkSubtree(doc, node)
+  const parent = findNode(doc, parentId)
+  const targetRootId = rootIdOf(doc, parentId)
+  if (!parent || targetRootId === undefined) return 'target-not-found'
+  if (isLinkBlock(parent)) return 'target-is-link'
+  return checkSubtree(doc, node, targetRootId)
 }
 
 /** Добавляет узел ребёнком блока на позицию `index` (по умолчанию в конец; индекс зажимается). */
@@ -39,9 +74,10 @@ export function addChild(doc: LayoutDocument, parentId: NodeId, node: LayoutNode
   }))
 }
 
-/** Проверяет, можно ли добавить корневой блок: id не пересекаются с документом. Ширина превью здесь не проверяется. */
+/** Проверяет, можно ли добавить корневой блок: не связь, id не пересекаются с документом, связи без циклов. Ширина превью здесь не проверяется. */
 export function canAddRoot(doc: LayoutDocument, node: RootEntry['node']): TreeError | null {
-  return checkSubtree(doc, node)
+  if (isLinkBlock(node)) return 'link-to-canvas'
+  return checkSubtree(doc, node, node.id)
 }
 
 /**
@@ -53,10 +89,12 @@ export function addRoot(doc: LayoutDocument, entry: RootEntry, index?: number): 
   return { ...doc, roots: insertAt(doc.roots, index ?? doc.roots.length, entry) }
 }
 
-/** Удаляет узел вместе с поддеревом; корень убирается из `roots`. */
+/** Удаляет узел вместе с поддеревом; корень убирается из `roots` вместе со всеми связями на него (иначе они повисли бы). */
 export function removeNode(doc: LayoutDocument, nodeId: NodeId): LayoutDocument {
   const loc = locateNode(doc, nodeId)
-  return loc ? removeAtLocation(doc, loc) : doc
+  if (!loc) return doc
+  const next = removeAtLocation(doc, loc)
+  return loc.indices.length === 0 ? removeLinksTo(next, nodeId) : next
 }
 
 /** Проверяет, что каждое значение патча `Object.is`-равно текущему значению объекта. */

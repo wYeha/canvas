@@ -1,6 +1,6 @@
-/** Zod-схемы и типы узлов дерева: блок с детьми и его части; старые плашки и поле `padding` отбрасываются при разборе. */
+/** Zod-схемы и типы узлов дерева: блок с детьми и его части, связь — блок с `sourceId`; старые плашки становятся связями. */
 import { z } from 'zod'
-import { LAYOUT_TAGS, LEGACY_LINK_NODE_TYPE } from './constants'
+import { LAYOUT_TAGS, LEGACY_LINK_BLOCK_DEFAULTS, LEGACY_LINK_NODE_TYPE } from './constants'
 import { containerSchema, safeCssStringSchema } from './container'
 
 /** Идентификатор узла или документа: непустая строка. */
@@ -19,20 +19,39 @@ export const selfPropsSchema = z.object({
   rowSpan: z.int().min(1).optional(),
 })
 
-/** Узел-плашка старого формата: объект с `type`, равным `LEGACY_LINK_NODE_TYPE`. */
-function isLegacyLinkNode(value: unknown): boolean {
+/** Узел-плашка старого формата (до 8.1): объект с `type`, равным `LEGACY_LINK_NODE_TYPE`. */
+function isLegacyLinkNode(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && 'type' in value && value.type === LEGACY_LINK_NODE_TYPE
 }
 
-/** Миграция при разборе: убирает из списка детей узлы-плашки старых документов; прочие данные не трогает. */
-function dropLegacyLinkNodes(value: unknown): unknown {
-  return Array.isArray(value) ? value.filter((item) => !isLegacyLinkNode(item)) : value
+/**
+ * Превращает плашку старого формата `{ id, type: 'link', sourceId, self }` в блок-связь: блок с тем же id,
+ * `sourceId` и `self`, без детей; остальные поля — значения по умолчанию. Битые поля отсеет схема блока.
+ */
+function legacyLinkToBlock(value: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...LEGACY_LINK_BLOCK_DEFAULTS,
+    container: { ...LEGACY_LINK_BLOCK_DEFAULTS.container },
+    id: value.id,
+    sourceId: value.sourceId,
+    self: value.self ?? {},
+    repeat: value.repeat ?? LEGACY_LINK_BLOCK_DEFAULTS.repeat,
+    children: [],
+  }
+}
+
+/** Миграция при разборе: плашки старых документов в списке детей становятся блоками-связями; прочее не трогается. */
+function migrateLegacyLinkNodes(value: unknown): unknown {
+  return Array.isArray(value) ? value.map((item) => (isLegacyLinkNode(item) ? legacyLinkToBlock(item) : item)) : value
 }
 
 /**
  * Блок: flex- или grid-контейнер с детьми. Цвет не хранится — он вычисляется по глубине при рендере.
- * Внутренних отступов в модели нет (8.2): поле `padding` старых документов не описано в схеме,
- * а `z.object` по умолчанию отбрасывает неизвестные ключи — так оно молча исчезает при разборе.
+ * Внутренних отступов и gap в модели нет (8.2, 8.4): неизвестные ключи старых документов `z.object` отбрасывает.
+ *
+ * Связь — блок с `sourceId`: на его месте при экспорте стоит корневой блок-источник (вложение), а свойства
+ * «как ребёнок» и повтор — его собственные (принадлежат месту, а не источнику). Детей у связи нет, контейнер, тег,
+ * подпись и описание не используются. Целостность (источник существует, нет циклов) проверяет схема документа.
  */
 export const blockNodeSchema = z.object({
   id: nodeIdSchema,
@@ -43,9 +62,10 @@ export const blockNodeSchema = z.object({
   container: containerSchema,
   self: selfPropsSchema,
   repeat: z.int().min(1),
-  /** Дети блока; геттер нужен zod 4 для рекурсивной схемы. Плашки старых документов отбрасываются до проверки. */
+  sourceId: nodeIdSchema.optional(),
+  /** Дети блока; геттер нужен zod 4 для рекурсивной схемы. Плашки старых документов становятся блоками-связями. */
   get children(): z.ZodPreprocess<z.ZodArray<typeof blockNodeSchema>> {
-    return z.preprocess(dropLegacyLinkNodes, z.array(blockNodeSchema))
+    return z.preprocess(migrateLegacyLinkNodes, z.array(blockNodeSchema))
   },
 })
 
@@ -61,5 +81,5 @@ export type SelfProps = z.infer<typeof selfPropsSchema>
 /** Блок с детьми. */
 export type BlockNode = z.infer<typeof blockNodeSchema>
 
-/** Узел дерева; других видов узлов, кроме блока, нет. */
+/** Узел дерева; других видов узлов, кроме блока, нет (связь — блок с `sourceId`). */
 export type LayoutNode = BlockNode

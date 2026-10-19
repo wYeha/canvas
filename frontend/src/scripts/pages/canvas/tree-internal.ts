@@ -64,6 +64,37 @@ export function collectIds(node: LayoutNode): NodeId[] {
   return [node.id, ...node.children.flatMap(collectIds)]
 }
 
+/** Id корня, в поддереве которого лежит узел; `undefined`, если узла нет. */
+export function rootIdOf(doc: LayoutDocument, nodeId: NodeId): NodeId | undefined {
+  const index = doc.roots.findIndex((root) => collectIds(root.node).includes(nodeId))
+  return doc.roots[index]?.node.id
+}
+
+/** Поддерево без связей на `sourceId`; ветки без изменений остаются теми же ссылками. */
+function withoutLinksTo(node: LayoutNode, sourceId: NodeId): LayoutNode {
+  let changed = false
+  const children: LayoutNode[] = []
+  for (const child of node.children) {
+    if (child.sourceId === sourceId) {
+      changed = true
+      continue
+    }
+    const next = withoutLinksTo(child, sourceId)
+    if (next !== child) changed = true
+    children.push(next)
+  }
+  return changed ? { ...node, children } : node
+}
+
+/** Документ без всех связей на корень `sourceId` (его удалили); без связей — тот же `doc`. */
+export function removeLinksTo(doc: LayoutDocument, sourceId: NodeId): LayoutDocument {
+  const roots = doc.roots.map((root) => {
+    const node = withoutLinksTo(root.node, sourceId)
+    return node === root.node ? root : { ...root, node }
+  })
+  return roots.some((root, index) => root !== doc.roots[index]) ? { ...doc, roots } : doc
+}
+
 /** Собирает id всех узлов документа. */
 export function collectDocIds(doc: LayoutDocument): Set<NodeId> {
   return new Set(doc.roots.flatMap((root) => collectIds(root.node)))

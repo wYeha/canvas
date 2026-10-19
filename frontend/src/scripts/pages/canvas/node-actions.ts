@@ -6,6 +6,9 @@ import type { LayoutDocument, NodeId } from '@shared'
 import { DUPLICATE_ROOT_GAP, NODE_ACTION_REASONS, NODE_ACTIONS } from './constants'
 import { canMoveNode, findParent, locateNode, type MoveTarget } from './tree'
 
+/** Цель-проба для проверки «можно ли на канвас»: точка не важна, важен только тип цели. */
+const TO_CANVAS_PROBE: MoveTarget = { type: 'canvas', at: { x: 0, y: 0 } }
+
 /** Идентификатор действия над блоком. */
 export type NodeActionId = (typeof NODE_ACTIONS)[number]['id']
 
@@ -39,9 +42,15 @@ function moveState(id: 'move-up' | 'move-down', siblings: Siblings): NodeActionS
   return { id, disabled: blocked, reason: blocked ? reason : null }
 }
 
-/** Состояние «На канвас»: только для вложенного блока (корень уже на канвасе). */
+/** Причина, по которой «На канвас» недоступно: корень уже на канвасе, связь стоять на поле не может. */
+function toCanvasReason(doc: LayoutDocument, nodeId: NodeId): string | null {
+  if (findParent(doc, nodeId) === undefined) return NODE_ACTION_REASONS.alreadyRoot
+  return canMoveNode(doc, nodeId, TO_CANVAS_PROBE) === 'link-to-canvas' ? NODE_ACTION_REASONS.linkToCanvas : null
+}
+
+/** Состояние «На канвас»: только для вложенного блока, не связи. */
 function toCanvasState(doc: LayoutDocument, nodeId: NodeId): NodeActionState {
-  const reason = findParent(doc, nodeId) === undefined ? NODE_ACTION_REASONS.alreadyRoot : null
+  const reason = toCanvasReason(doc, nodeId)
   return { id: 'to-canvas', disabled: reason !== null, reason }
 }
 

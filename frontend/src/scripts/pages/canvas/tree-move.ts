@@ -1,6 +1,15 @@
 /** Перемещение узлов: проверка допустимости заранее (для DnD) и сам перенос в блок или на канвас. */
-import type { CanvasPlacement, LayoutDocument, LayoutNode, NodeId } from '@shared'
-import { insertAt, nodeAt, removeAtLocation, updateAtLocation } from './tree-internal'
+import {
+  isLinkBlock,
+  isLinkSource,
+  linkSourcesIn,
+  linksCreateCycle,
+  type CanvasPlacement,
+  type LayoutDocument,
+  type LayoutNode,
+  type NodeId,
+} from '@shared'
+import { insertAt, nodeAt, removeAtLocation, rootIdOf, updateAtLocation } from './tree-internal'
 import { findNode, isDescendant, locateNode } from './tree-query'
 import type { MoveTarget, NodeLocation, TreeError } from './tree-types'
 
@@ -18,18 +27,37 @@ interface Detached {
   sourceCanvas: CanvasPlacement
 }
 
-/** Проверяет перенос ребёнком блока: цель существует и это не сам узел и не его потомок. */
+/** Проверяет перенос ребёнком блока: цель существует, не связь, и это не сам узел и не его потомок. */
 function checkChildTarget(doc: LayoutDocument, nodeId: NodeId, target: ChildTarget): TreeError | null {
-  if (!findNode(doc, target.parentId)) return 'target-not-found'
+  const parent = findNode(doc, target.parentId)
+  if (!parent) return 'target-not-found'
+  if (isLinkBlock(parent)) return 'target-is-link'
   if (target.parentId === nodeId || isDescendant(doc, nodeId, target.parentId)) return 'into-self-or-descendant'
   return null
+}
+
+/**
+ * Проверяет связи при переносе ребёнком блока: корень-источник не уходит внутрь блока, а связи поддерева в новом
+ * корне не замыкают цикл. Граф считается по документу без переносимого узла: его старые рёбра исчезают вместе с ним.
+ */
+function checkMoveLinks(doc: LayoutDocument, node: LayoutNode, target: ChildTarget): TreeError | null {
+  const loc = locateNode(doc, node.id)
+  if (!loc) return 'node-not-found'
+  if (loc.indices.length === 0 && isLinkSource(doc, node.id)) return 'source-into-block'
+  const sources = linkSourcesIn(node)
+  if (sources.length === 0) return null
+  const without = removeAtLocation(doc, loc)
+  const targetRootId = rootIdOf(without, target.parentId)
+  if (targetRootId === undefined) return 'target-not-found'
+  return linksCreateCycle(without, sources, targetRootId) ? 'link-cycle' : null
 }
 
 /** Проверяет, можно ли переместить узел; возвращает причину отказа или `null`. */
 export function canMoveNode(doc: LayoutDocument, nodeId: NodeId, target: MoveTarget): TreeError | null {
   const node = findNode(doc, nodeId)
   if (!node) return 'node-not-found'
-  return target.type === 'child' ? checkChildTarget(doc, nodeId, target) : null
+  if (target.type === 'canvas') return isLinkBlock(node) ? 'link-to-canvas' : null
+  return checkChildTarget(doc, nodeId, target) ?? checkMoveLinks(doc, node, target)
 }
 
 /** Вынимает узел из документа, запоминая его положение и размещение корня, из которого он вынут. */

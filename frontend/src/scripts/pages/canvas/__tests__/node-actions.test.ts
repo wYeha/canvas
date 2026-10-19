@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest'
 import { moveTargetFor, nodeActionStates, toCanvasTarget } from '@/scripts/pages/canvas/node-actions'
 import { DUPLICATE_ROOT_GAP, NODE_ACTION_REASONS } from '@/scripts/pages/canvas/constants'
-import { moveNode } from '@/scripts/pages/canvas/tree'
+import { createLinkBlock } from '@/scripts/pages/canvas/factories'
+import { addChild, moveNode } from '@/scripts/pages/canvas/tree'
 import { childIds, expectValid, makeDoc } from './tree-fixture'
 
 /** Состояние действия по id узла в свежей фикстуре. */
@@ -40,6 +41,14 @@ describe('nodeActionStates', () => {
     expect(state('a1', 'to-canvas')?.disabled).toBe(false)
     expect(state('A', 'to-canvas')).toMatchObject({ disabled: true, reason: NODE_ACTION_REASONS.alreadyRoot })
     expect(state('a3', 'to-canvas')?.disabled).toBe(false)
+  })
+
+  it('«На канвас» у связи недоступно с причиной', () => {
+    const doc = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
+    expect(nodeActionStates(doc, 'lC').find((s) => s.id === 'to-canvas')).toMatchObject({
+      disabled: true,
+      reason: NODE_ACTION_REASONS.linkToCanvas,
+    })
   })
 
   it('дублировать и удалить доступны всегда', () => {

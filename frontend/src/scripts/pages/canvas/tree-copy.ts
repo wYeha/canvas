@@ -40,8 +40,11 @@ export function copyNodeToTarget(
   sourceId: NodeId,
   target: MoveTarget,
 ): { document: LayoutDocument; copyId: NodeId | null } {
-  if (canMoveNode(doc, sourceId, target) !== null) return { document: doc, copyId: null }
-  if (moveNode(doc, sourceId, target) === doc) return { document: doc, copyId: null }
+  // Копия корня-источника может встать в блок (исходник остаётся корнем, связи не повисают); прочие отказы переноса
+  // и «то же место» действуют и для копии. Связи копии проверяют `addChild`/`addRoot`
+  const moveError = canMoveNode(doc, sourceId, target)
+  if (moveError !== null && moveError !== 'source-into-block') return { document: doc, copyId: null }
+  if (moveError === null && moveNode(doc, sourceId, target) === doc) return { document: doc, copyId: null }
 
   const node = findNode(doc, sourceId)
   if (!node) return { document: doc, copyId: null }

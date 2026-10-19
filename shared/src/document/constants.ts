@@ -26,10 +26,20 @@ export const FLEX_ALIGN_VALUES = ['flex-start', 'center', 'flex-end', 'stretch',
 export const GRID_ALIGN_VALUES = ['start', 'center', 'end', 'stretch'] as const
 
 /**
- * Тип узла-плашки из старых документов (до упрощения в 8.1). Такие узлы при разборе молча отбрасываются,
- * поэтому версия схемы не меняется: старые сохранения и `.json` открываются без них.
+ * Тип узла-плашки из старых документов (до упрощения 8.1). Теперь связь — блок с `sourceId`, поэтому при разборе
+ * такие узлы превращаются в блоки-связи; версия схемы не меняется.
  */
 export const LEGACY_LINK_NODE_TYPE = 'link'
 
 /** Число повторов корневого блока: у корня повтора нет, при разборе документа `repeat` корня приводится к этому значению. */
 export const ROOT_REPEAT = 1
+
+/** Поля блока-связи, полученного из плашки старого формата (кроме id, `sourceId`, `self`, повтора и детей). */
+export const LEGACY_LINK_BLOCK_DEFAULTS = {
+  type: 'block',
+  label: '',
+  description: '',
+  tag: 'div',
+  container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch' },
+  repeat: 1,
+} as const

@@ -24,9 +24,9 @@ function block(id: string, children: BlockNode['children'] = []): BlockNode {
   }
 }
 
-/** Собирает узел-плашку старого формата (до 8.1), который при разборе должен отбрасываться. */
+/** Собирает узел-плашку старого формата (до 8.1), который при разборе становится блоком-связью. */
 function legacyLink(id: string, sourceId: string): Record<string, unknown> {
-  return { id, type: 'link', sourceId, self: {} }
+  return { id, type: 'link', sourceId, self: { flex: '1' } }
 }
 
 /** Собирает документ из корневых блоков. */
@@ -120,16 +120,17 @@ describe('parseDocument', () => {
 })
 
 describe('миграция старых документов', () => {
-  it('молча отбрасывает плашки на любой глубине, в том числе битые и с циклами', () => {
-    const inner = { ...block('inner'), children: [legacyLink('l2', 'a'), block('leaf')] }
-    const page = { ...block('a'), children: [legacyLink('l1', 'nope'), inner, { type: 'link' }] }
-    const result = parseDocument(documentOf(page as unknown as BlockNode))
-    expect(result).toEqual({ ok: true, document: documentOf(block('a', [block('inner', [block('leaf')])])) })
+  it('плашки старого формата становятся блоками-связями с тем же id, источником и self', () => {
+    const page = { ...block('a'), children: [legacyLink('l1', 'b'), block('leaf')] }
+    const result = parseDocument(documentOf(page as unknown as BlockNode, block('b')))
+    if (!result.ok) throw new Error(result.error)
+    const link = result.document.roots[0]?.node.children[0]
+    expect(link).toMatchObject({ id: 'l1', type: 'block', sourceId: 'b', self: { flex: '1' }, repeat: 1, children: [] })
   })
 
-  it('не трогает прочие ошибки в детях', () => {
-    const page = { ...block('a'), children: [legacyLink('l', 'x'), { ...block('b'), tag: 'span' }] }
-    expect(errorOf(documentOf(page as unknown as BlockNode))).toContain('roots[0].node.children[0].tag')
+  it('старая плашка на несуществующий корень — понятная ошибка', () => {
+    const page = { ...block('a'), children: [legacyLink('l', 'nope')] }
+    expect(errorOf(documentOf(page as unknown as BlockNode))).toContain('которого нет на поле')
   })
 
   it('молча отбрасывает поле padding на любой глубине, в том числе битое', () => {
@@ -141,6 +142,51 @@ describe('миграция старых документов', () => {
     expect(result).toEqual({ ok: true, document: documentOf(block('a', [block('inner', [block('leaf')])])) })
     if (!result.ok) throw new Error('документ не разобран')
     expect(result.document.roots[0]?.node).not.toHaveProperty('padding')
+  })
+})
+
+describe('связи', () => {
+  /** Блок-связь на корень `sourceId`. */
+  function link(id: string, sourceId: string): BlockNode {
+    return { ...block(id), sourceId }
+  }
+
+  it('принимает связь на существующий корень', () => {
+    expect(parseDocument(documentOf(block('a', [link('l', 'b')]), block('b'))).ok).toBe(true)
+  })
+
+  it('отклоняет связь на несуществующий корень и на вложенный блок', () => {
+    expect(errorOf(documentOf(block('a', [link('l', 'nope')])))).toContain('которого нет на поле')
+    expect(errorOf(documentOf(block('a', [link('l', 'inner')]), block('b', [block('inner')])))).toContain(
+      'которого нет на поле',
+    )
+  })
+
+  it('отклоняет связь с детьми и корень-связь', () => {
+    expect(errorOf(documentOf(block('a', [{ ...link('l', 'b'), children: [block('x')] }]), block('b')))).toContain(
+      'не может быть вложенных блоков',
+    )
+    expect(errorOf(documentOf(link('a', 'b'), block('b')))).toContain('Корневой блок не может быть связью')
+  })
+
+  it('отклоняет циклы: на свой корень, взаимные и через цепочку', () => {
+    expect(errorOf(documentOf(block('a', [link('l', 'a')])))).toContain('замыкает цикл')
+    expect(errorOf(documentOf(block('a', [link('l1', 'b')]), block('b', [link('l2', 'a')])))).toContain('замыкает цикл')
+    const chain = documentOf(
+      block('a', [link('l1', 'b')]),
+      block('b', [link('l2', 'c')]),
+      block('c', [link('l3', 'a')]),
+    )
+    expect(errorOf(chain)).toContain('замыкает цикл')
+  })
+
+  it('один источник в нескольких местах и цепочка без цикла допустимы', () => {
+    const doc = documentOf(
+      block('a', [link('l1', 'c'), block('x', [link('l2', 'c')])]),
+      block('b', [link('l3', 'c')]),
+      block('c'),
+    )
+    expect(parseDocument(doc).ok).toBe(true)
   })
 })
 
