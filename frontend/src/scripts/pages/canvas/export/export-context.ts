@@ -20,10 +20,10 @@ import {
   CSS_FLEX_WRAP,
   CSS_GRID_SPAN,
   CSS_MIN_SPAN,
+  BLOCK_PADDING_PX,
   CSS_PX_UNIT,
   ROOT_UNTITLED_LABEL,
 } from '@/scripts/pages/canvas/constants'
-import { paddingValue } from '@/scripts/pages/canvas/node-style'
 import { countGridColumns } from '@/scripts/pages/canvas/props-child'
 import { getPath, locateNode } from '@/scripts/pages/canvas/tree-query'
 import { formatComment, quoted, rootSizeText } from './export-comment'
@@ -197,12 +197,10 @@ function gridLayoutParts(container: GridContainer): string[] {
   return [...parts.filter((part) => part !== ''), ...gridGapParts(container)]
 }
 
-/** Родитель: `Родитель «main» (div): flex column, gap 24px, padding 24px`. */
+/** Родитель: `Родитель «main» (div): flex column, gap 24px`. */
 function parentLine(parent: BlockNode): string {
   const { container } = parent
   const parts = container.kind === 'flex' ? flexLayoutParts(container) : gridLayoutParts(container)
-  const padding = paddingValue(parent.padding)
-  if (padding !== null) parts.push(named(CSS.padding, padding))
   const head = `${EXPORT_CONTEXT_PARENT} ${quoted(blockLabel(parent))} (${safeTag(parent.tag).tag})`
   return `${head}: ${parts.join(EXPORT_LIST_SEPARATOR)}`
 }
@@ -304,17 +302,19 @@ function measuredWidth(options: ExportOptions, nodeId: NodeId): number | undefin
   return width !== undefined && Number.isFinite(width) ? width : undefined
 }
 
-/** Контентная ширина родителя: замер минус горизонтальный padding из модели; `undefined`, если не положительна. */
+/**
+ * Контентная ширина родителя: замер превью минус фиксированный редакторский отступ с двух сторон (в экспорте
+ * его нет, а замеры сделаны на канвасе); `undefined`, если не положительна.
+ */
 function parentContentWidth(place: NodePlace, options: ExportOptions): number | undefined {
   const width = measuredWidth(options, place.parent.id)
   if (width === undefined) return undefined
-  const { padding } = place.parent
-  const content = padding === null ? width : width - padding.left - padding.right
+  const content = width - BLOCK_PADDING_PX * 2
   return content > 0 ? content : undefined
 }
 
 /**
- * Замер ширины: ` (~1128px, ~100% ширины родителя)`. Доля — от контентной ширины родителя (без его padding),
+ * Замер ширины: ` (~1128px, ~100% ширины родителя)`. Доля — от контентной ширины родителя (без редакторского отступа),
  * поэтому растянутый ребёнок даёт ≈100%. Нет конечного замера узла → пустая строка.
  */
 function measuredText(place: NodePlace, options: ExportOptions): string {

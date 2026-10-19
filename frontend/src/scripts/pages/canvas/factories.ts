@@ -52,7 +52,6 @@ export function createBlock(kind: ContainerKind, label: string): BlockNode {
     tag: DEFAULT_TAG,
     container: kind === 'flex' ? createFlexContainer() : createGridContainer(),
     self: {},
-    padding: null,
     repeat: DEFAULT_REPEAT,
     children: [],
   }

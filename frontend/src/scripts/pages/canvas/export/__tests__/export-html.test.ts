@@ -13,7 +13,7 @@ describe('exportRootHtml', () => {
         Страница каталога
         для десктопа
       -->
-      <main style="display:flex; flex-direction:column; gap:24px; padding:24px 32px">
+      <main style="display:flex; flex-direction:column; gap:24px">
         <!-- cards
           Карточки товаров
           по три в ряд

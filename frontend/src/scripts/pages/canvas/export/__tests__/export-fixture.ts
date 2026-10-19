@@ -54,7 +54,6 @@ export function smallTree(): BlockNode {
       tag: 'main',
       description: 'Страница каталога\nдля десктопа',
       container: { kind: 'flex', direction: 'column', wrap: false, justify: 'flex-start', align: 'stretch', gap: 24 },
-      padding: { top: 24, right: 32, bottom: 24, left: 32 },
     },
     [cards, block('flex', 'footer', { tag: 'footer', self: { height: '80px' } })],
   )

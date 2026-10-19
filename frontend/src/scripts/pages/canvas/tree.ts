@@ -70,7 +70,7 @@ function definedEntries<T extends object>(patch: T): Partial<T> {
 }
 
 /**
- * Правит поля узла поверхностным слиянием: `container`, `self`, `padding` заменяются целиком (так из `self`
+ * Правит поля узла поверхностным слиянием: `container` и `self` заменяются целиком (так из `self`
  * можно удалить ключ).
  */
 export function updateNode(doc: LayoutDocument, nodeId: NodeId, patch: NodePatch): LayoutDocument {

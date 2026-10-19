@@ -4,7 +4,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
 "<!-- Корневой блок «Дашборд», ширина превью 1440px -->
 <div style="display:flex; flex-direction:column">
   <!-- header -->
-  <div style="display:flex; align-items:center; gap:16px; padding:12px 24px">
+  <div style="display:flex; align-items:center; gap:16px">
     <div style="width:120px"><!-- logo --></div>
     <!-- nav -->
     <div style="display:flex; gap:12px; flex:1">
@@ -17,13 +17,13 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
   <!-- body -->
   <div style="display:grid; grid-template-columns:240px 1fr; gap:0px">
     <!-- sidebar -->
-    <div style="display:flex; flex-direction:column; gap:8px; padding:16px">
+    <div style="display:flex; flex-direction:column; gap:8px">
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
     </div>
     <!-- main -->
-    <div style="display:flex; flex-direction:column; gap:24px; padding:24px">
+    <div style="display:flex; flex-direction:column; gap:24px">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
         <div><!-- KPI-карточка --></div>

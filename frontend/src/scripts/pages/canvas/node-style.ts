@@ -1,5 +1,5 @@
 /** Единственный источник раскладочных стилей узла: чистые функции для превью и экспорта, только отличия от CSS по умолчанию. */
-import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, Padding, SelfProps } from '@shared'
+import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, SelfProps } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
   CSS_DEFAULT_FLEX_DIRECTION,
@@ -66,16 +66,6 @@ function gridEntries(container: GridContainer): StyleEntry[] {
   return entries
 }
 
-/** Сокращённая запись padding: 1, 2 или 4 значения; `null` для отсутствующих и нулевых отступов. */
-export function paddingValue(padding: Padding | null): string | null {
-  if (padding === null) return null
-  const { top, right, bottom, left } = padding
-  if (top === 0 && right === 0 && bottom === 0 && left === 0) return null
-  if (top === right && right === bottom && bottom === left) return px(top)
-  if (top === bottom && left === right) return `${px(top)} ${px(right)}`
-  return [top, right, bottom, left].map(px).join(' ')
-}
-
 /** Стили «как ребёнок»; для корня (`parentKind === null`) ничего, свойства чужого типа родителя игнорируются. */
 function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEntry[] {
   if (parentKind === null) return []
@@ -101,10 +91,12 @@ export function containerEntries(container: Container): StyleEntry[] {
   return container.kind === 'flex' ? flexEntries(container) : gridEntries(container)
 }
 
-/** Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня). */
+/**
+ * Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня).
+ * Внутреннего отступа здесь нет: в редакторе он фиксированный и задаётся классом, в экспорт не идёт.
+ */
 export function styleEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
   const entries = containerEntries(node.container)
-  push(entries, 'padding', paddingValue(node.padding))
   entries.push(...selfEntries(node.self, parentKind))
   return entries
 }

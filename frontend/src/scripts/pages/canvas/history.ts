@@ -94,7 +94,7 @@ function differentKeys(before: Map<string, unknown>, after: Map<string, unknown>
 }
 
 /**
- * Изменённые поля объекта на двух уровнях (`label`, `container.gap`, `padding.top`): по ним строится ключ склейки,
+ * Изменённые поля объекта на двух уровнях (`label`, `container.gap`, `self.width`): по ним строится ключ склейки,
  * чтобы подряд склеивались правки одного поля, а не любые правки узла. Глубже второго уровня не спускаемся.
  */
 export function changedFields(before: object, after: object): string[] {

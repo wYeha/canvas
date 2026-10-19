@@ -26,7 +26,7 @@ export type MoveTarget =
 export type TreeError = 'node-not-found' | 'target-not-found' | 'into-self-or-descendant' | 'duplicate-id'
 
 /**
- * Правка полей узла: вложенные объекты (`container`, `self`, `padding`) заменяются целиком.
+ * Правка полей узла: вложенные объекты (`container`, `self`) заменяются целиком.
  * Ключ со значением `undefined` означает «не менять»; необязательные поля `self` стираются заменой `self` целиком.
  */
 export type NodePatch = Partial<Omit<BlockNode, 'id' | 'type' | 'children'>>

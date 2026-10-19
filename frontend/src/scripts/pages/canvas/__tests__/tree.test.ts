@@ -138,9 +138,9 @@ describe('updateNode', () => {
 
   it('правка корня', () => {
     const doc = makeDoc()
-    const result = updateNode(doc, 'B', { tag: 'main', padding: { top: 8, right: 8, bottom: 8, left: 8 } })
+    const result = updateNode(doc, 'B', { tag: 'main', description: 'шапка' })
     expectValid(result)
-    expect(findNode(result, 'B')).toMatchObject({ tag: 'main', padding: { top: 8 } })
+    expect(findNode(result, 'B')).toMatchObject({ tag: 'main', description: 'шапка' })
     expect(result.roots[1]?.canvas).toBe(doc.roots[1]?.canvas)
   })
 })

@@ -57,6 +57,12 @@ export const ZOOM_STEP_EPSILON = 1e-6
 /** Начальная камера: начало поля в левом верхнем углу viewport, 100%. */
 export const DEFAULT_CAMERA: Readonly<Camera> = { x: 0, y: 0, zoom: 1 }
 
+/**
+ * Фиксированный внутренний отступ каждого блока на канвасе, px — как SCSS `$block-padding`. Только редактор:
+ * в модели и экспорте его нет; нужен, чтобы вычесть его из замеров превью.
+ */
+export const BLOCK_PADDING_PX = 20
+
 /** Отступ от краёв видимой области при вписывании, экранные px. */
 export const FIT_PADDING = 48
 
@@ -356,26 +362,6 @@ export const BLOCK_DESCRIPTION_ROWS = 3
 
 /** Подпись селекта семантического тега. */
 export const BLOCK_TAG_LABEL = 'Тег'
-
-/** Подпись поля padding. */
-export const BLOCK_PADDING_LABEL = 'padding'
-
-/** Подпись кнопки-переключателя режима «по сторонам». */
-export const BLOCK_PADDING_TOGGLE_LABEL = 'по сторонам'
-
-/** Подсказка единого поля padding, когда стороны различаются. */
-export const BLOCK_PADDING_MIXED_PLACEHOLDER = 'разные'
-
-/** Минимальное значение padding, px. */
-export const BLOCK_PADDING_MIN = 0
-
-/** Стороны padding в порядке показа (↑ → ↓ ←): ключ, стрелка-префикс и подпись для скринридера. */
-export const BLOCK_PADDING_SIDES = [
-  { key: 'top', arrow: '↑', label: 'padding сверху' },
-  { key: 'right', arrow: '→', label: 'padding справа' },
-  { key: 'bottom', arrow: '↓', label: 'padding снизу' },
-  { key: 'left', arrow: '←', label: 'padding слева' },
-] as const
 
 /** Подпись переключателя типа контейнера. */
 export const CONTAINER_KIND_LABEL = 'Тип'

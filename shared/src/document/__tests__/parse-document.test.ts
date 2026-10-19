@@ -1,4 +1,4 @@
-/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, отбрасывание старых плашек, версия схемы. */
+/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, отбрасывание старых плашек и padding, версия схемы. */
 import { describe, expect, it } from 'vitest'
 import {
   SCHEMA_VERSION,
@@ -19,7 +19,6 @@ function block(id: string, children: BlockNode['children'] = []): BlockNode {
     tag: 'div',
     container: { kind: 'flex', direction: 'row', wrap: false, justify: 'flex-start', align: 'stretch', gap: null },
     self: {},
-    padding: null,
     repeat: 1,
     children,
   }
@@ -67,7 +66,6 @@ describe('parseDocument', () => {
         rowGap: null,
       },
       self: { colSpan: 2, flex: '1' },
-      padding: { top: 1, right: 2, bottom: 3, left: 4 },
       repeat: 3,
     }
     const doc = documentOf(block('page', [grid]), block('card'))
@@ -93,11 +91,8 @@ describe('parseDocument', () => {
     expect(errorOf(documentOf(block('other'), page as unknown as BlockNode))).toContain('roots[1].node.children[0].tag')
   })
 
-  it('отклоняет нецелый repeat, отрицательный padding и нулевую ширину превью', () => {
+  it('отклоняет нецелый repeat и нулевую ширину превью', () => {
     expect(errorOf(documentOf({ ...block('a'), repeat: 1.5 }))).toContain('repeat')
-    expect(errorOf(documentOf({ ...block('a'), padding: { top: -1, right: 0, bottom: 0, left: 0 } }))).toContain(
-      'padding.top',
-    )
     const doc = documentOf(block('a'))
     const [root] = doc.roots
     if (!root) throw new Error('нет корня')
@@ -129,6 +124,17 @@ describe('миграция старых документов', () => {
   it('не трогает прочие ошибки в детях', () => {
     const page = { ...block('a'), children: [legacyLink('l', 'x'), { ...block('b'), tag: 'span' }] }
     expect(errorOf(documentOf(page as unknown as BlockNode))).toContain('roots[0].node.children[0].tag')
+  })
+
+  it('молча отбрасывает поле padding на любой глубине, в том числе битое', () => {
+    const legacyPadding = { top: 1, right: 2, bottom: 3, left: 4 }
+    const leaf = { ...block('leaf'), padding: { top: -1 } }
+    const inner = { ...block('inner'), padding: null, children: [leaf] }
+    const page = { ...block('a'), padding: legacyPadding, children: [inner] }
+    const result = parseDocument(documentOf(page))
+    expect(result).toEqual({ ok: true, document: documentOf(block('a', [block('inner', [block('leaf')])])) })
+    if (!result.ok) throw new Error('документ не разобран')
+    expect(result.document.roots[0]?.node).not.toHaveProperty('padding')
   })
 })
 

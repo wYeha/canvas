@@ -56,18 +56,18 @@ describe('contextLines', () => {
     expect(context(catalog, 'cards')).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards
-        Родитель «Каталог» (main): flex column, gap 24px, padding 24px 32px
+        Родитель «Каталог» (main): flex column, gap 24px
         Место: 1-й ребёнок из 2; ширина — растягивается на всю ширину родителя; высота — flex:1
       -->"
     `)
   })
 
   it('вложенный во flex с замером узла и родителя', () => {
-    expect(context(catalog, 'cards', { cards: 1216, Каталог: 1280 })).toMatchInlineSnapshot(`
+    expect(context(catalog, 'cards', { cards: 1240, Каталог: 1280 })).toMatchInlineSnapshot(`
       "<!-- Фрагмент корневого блока «Каталог» (ширина превью 1280px, высота превью 900px)
         Путь: Каталог › cards
-        Родитель «Каталог» (main): flex column, gap 24px, padding 24px 32px
-        Место: 1-й ребёнок из 2; ширина — растягивается на всю ширину родителя (~1216px, ~100% ширины родителя); высота — flex:1
+        Родитель «Каталог» (main): flex column, gap 24px
+        Место: 1-й ребёнок из 2; ширина — растягивается на всю ширину родителя (~1240px, ~100% ширины родителя); высота — flex:1
       -->"
     `)
   })
@@ -165,9 +165,9 @@ describe('contextLines', () => {
     )
   })
 
-  it('замер: доля от контентной ширины родителя, нечисловые замеры игнорируются', () => {
+  it('замер: доля от ширины родителя без редакторского отступа, нечисловые замеры игнорируются', () => {
     const leaf = block('flex', 'leaf', {})
-    const parent = block('flex', 'P', { padding: { top: 0, right: 20, bottom: 0, left: 30 } }, [leaf])
+    const parent = block('flex', 'P', {}, [leaf])
     const doc = docOf(root(block('flex', 'R', {}, [parent]), 800, null, false))
     /** Строка «Место» при заданных замерах. */
     const at = (widths: Map<NodeId, number>): string => contextLines(doc, leaf.id, { measuredWidths: widths })[3] ?? ''
@@ -175,10 +175,18 @@ describe('contextLines', () => {
       at(
         new Map([
           [leaf.id, 50],
-          [parent.id, 150],
+          [parent.id, 140],
         ]),
       ),
     ).toContain('(~50px, ~50% ширины родителя)')
+    expect(
+      at(
+        new Map([
+          [leaf.id, 50],
+          [parent.id, 40],
+        ]),
+      ),
+    ).toContain('(~50px);')
     expect(
       at(
         new Map([
@@ -256,7 +264,7 @@ describe('exportSelectedHtml', () => {
   it('демо: «charts» с замером', () => {
     const doc = createDemoDocument()
     const widths = new Map([
-      [idOf(doc, 'charts'), 1128],
+      [idOf(doc, 'charts'), 1136],
       [idOf(doc, 'main'), 1176],
     ])
     expect(exportSelectedHtml(doc, idOf(doc, 'charts'), { measuredWidths: widths })).toMatchSnapshot()

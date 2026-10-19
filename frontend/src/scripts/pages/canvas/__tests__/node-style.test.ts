@@ -4,7 +4,7 @@ import type { BlockNode, ContainerKind, LayoutNode, SelfProps } from '@shared'
 import { createBlock } from '@/scripts/pages/canvas/factories'
 import { styleEntries, toInlineStyle, toStyleObject } from '@/scripts/pages/canvas/node-style'
 
-/** Блок нужного вида с подмешанными полями контейнера, padding и self. */
+/** Блок нужного вида с подмешанными полями контейнера и self. */
 function make(kind: ContainerKind, container: object = {}, extra: Partial<BlockNode> = {}): BlockNode {
   const node = createBlock(kind, 'x')
   return { ...node, ...extra, container: { ...node.container, ...container } }
@@ -85,30 +85,6 @@ describe('grid', () => {
   })
 })
 
-describe('padding', () => {
-  /** Flex-блок с заданным padding. */
-  const withPadding = (top: number, right: number, bottom: number, left: number): BlockNode =>
-    make('flex', {}, { padding: { top, right, bottom, left } })
-
-  it('null и нули не выводятся', () => {
-    expect(styles(make('flex')).padding).toBeUndefined()
-    expect(styles(withPadding(0, 0, 0, 0)).padding).toBeUndefined()
-  })
-
-  it('все равны — одно значение', () => {
-    expect(styles(withPadding(8, 8, 8, 8)).padding).toBe('8px')
-  })
-
-  it('top=bottom и left=right — два значения', () => {
-    expect(styles(withPadding(8, 16, 8, 16)).padding).toBe('8px 16px')
-  })
-
-  it('иначе четыре значения', () => {
-    expect(styles(withPadding(1, 2, 3, 4)).padding).toBe('1px 2px 3px 4px')
-    expect(styles(withPadding(8, 16, 8, 0)).padding).toBe('8px 16px 8px 0px')
-  })
-})
-
 describe('self', () => {
   const full: SelfProps = {
     flex: ' 1 1 0 ',
@@ -158,19 +134,21 @@ describe('не стили', () => {
     const node = make('flex', {}, { repeat: 5, label: 'L', description: 'D', tag: 'header' })
     expect(styles(node)).toEqual({ display: 'flex' })
   })
+
+  it('внутреннего отступа нет: в редакторе он задаётся классом, в экспорт не идёт', () => {
+    expect(styles(make('flex')).padding).toBeUndefined()
+    expect(styles(make('grid'), 'flex').padding).toBeUndefined()
+  })
 })
 
 describe('порядок и сериализация', () => {
   const node = make(
     'flex',
     { direction: 'column', wrap: true, justify: 'center', align: 'center', gap: 4 },
-    {
-      padding: { top: 1, right: 1, bottom: 1, left: 1 },
-      self: { flex: '1', width: '2px', height: '3px', minHeight: '4px' },
-    },
+    { self: { flex: '1', width: '2px', height: '3px', minHeight: '4px' } },
   )
 
-  it('порядок: display, direction, wrap, justify, align, gap, padding, self', () => {
+  it('порядок: display, direction, wrap, justify, align, gap, self', () => {
     expect(styleEntries(node, 'flex').map(([property]) => property)).toEqual([
       'display',
       'flex-direction',
@@ -178,7 +156,6 @@ describe('порядок и сериализация', () => {
       'justify-content',
       'align-items',
       'gap',
-      'padding',
       'flex',
       'width',
       'height',

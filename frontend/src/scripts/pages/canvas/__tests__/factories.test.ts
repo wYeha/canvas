@@ -52,7 +52,6 @@ describe('createBlock', () => {
       description: '',
       tag: 'div',
       self: {},
-      padding: null,
       repeat: 1,
       children: [],
     })

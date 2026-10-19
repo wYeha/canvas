@@ -6,7 +6,7 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
 <!-- 1 из 3. Корневой блок «Дашборд», ширина превью 1440px -->
 <div style="display:flex; flex-direction:column">
   <!-- header -->
-  <div style="display:flex; align-items:center; gap:16px; padding:12px 24px">
+  <div style="display:flex; align-items:center; gap:16px">
     <div style="width:120px"><!-- logo --></div>
     <!-- nav -->
     <div style="display:flex; gap:12px; flex:1">
@@ -19,13 +19,13 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
   <!-- body -->
   <div style="display:grid; grid-template-columns:240px 1fr; gap:0px">
     <!-- sidebar -->
-    <div style="display:flex; flex-direction:column; gap:8px; padding:16px">
+    <div style="display:flex; flex-direction:column; gap:8px">
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
     </div>
     <!-- main -->
-    <div style="display:flex; flex-direction:column; gap:24px; padding:24px">
+    <div style="display:flex; flex-direction:column; gap:24px">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
         <div><!-- KPI-карточка --></div>
@@ -44,13 +44,13 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
 </div>
 
 <!-- 2 из 3. Корневой блок «KPI-карточка», ширина превью 240px -->
-<div style="display:flex; flex-direction:column; gap:8px; padding:16px">
+<div style="display:flex; flex-direction:column; gap:8px">
   <div><!-- kpi-title --></div>
   <div><!-- kpi-value --></div>
 </div>
 
 <!-- 3 из 3. Корневой блок «Карточка графика», ширина превью 480px -->
-<div style="display:flex; flex-direction:column; gap:12px; padding:16px">
+<div style="display:flex; flex-direction:column; gap:12px">
   <div><!-- chart-title --></div>
   <div style="min-height:180px"><!-- chart-area --></div>
 </div>

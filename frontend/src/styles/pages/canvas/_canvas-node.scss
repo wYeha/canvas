@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи); геометрию не меняет
+// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи, редакторский отступ)
 @use 'sass:list';
 @use 'sass:map';
 @use 'variables' as v;
@@ -7,6 +7,10 @@
   $b: &;
 
   position: relative;
+
+  // Фиксированный редакторский отступ: чип подписи помещается и не перекрывает детей. В экспорт не идёт
+  // (frontend.md §4.4), поэтому превью сознательно больше экспорта на этот отступ
+  padding: v.$block-padding;
   border-radius: v.$radius-block;
   outline: 1px solid color-mix(in srgb, var(--node-color) calc(var(--alpha-stroke) * 100%), transparent);
   outline-offset: -1px; // обводка внутрь: размеры блока не меняются

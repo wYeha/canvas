@@ -1,33 +1,8 @@
-// Стили фрагмента canvas-props-block: поля секции «Блок» друг под другом, padding — поле + кнопка и сетка сторон
+// Стили фрагмента canvas-props-block: поля секции «Блок» друг под другом
 @use 'variables' as v;
 
 .canvas-props-block {
   display: flex;
   flex-direction: column;
   gap: v.$space-12;
-
-  &__padding {
-    display: flex;
-    gap: v.$space-8;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  &__single {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__toggle {
-    &--on {
-      color: var(--color-accent-text);
-      background: var(--color-accent-soft);
-    }
-  }
-
-  &__sides {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: v.$space-6;
-  }
 }

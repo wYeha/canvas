@@ -10,11 +10,6 @@ function block(label: string, spec: BlockSpec, children: LayoutNode[] = []): Blo
   return { ...createBlock('flex', label), ...spec, children }
 }
 
-/** Внутренние отступы: `pad(16)` — 16 со всех сторон, `pad(12, 24)` — вертикаль и горизонталь. */
-function pad(vertical: number, horizontal: number = vertical): BlockNode['padding'] {
-  return { top: vertical, right: horizontal, bottom: vertical, left: horizontal }
-}
-
 /** Flex-контейнер демо. */
 function flex(
   direction: 'row' | 'column',
@@ -54,7 +49,7 @@ function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
 
 /** Шапка дашборда: логотип, меню, пользователь. */
 function buildHeader(): BlockNode {
-  return block('header', { container: flex('row', 16, { align: 'center' }), padding: pad(12, 24) }, [
+  return block('header', { container: flex('row', 16, { align: 'center' }) }, [
     block('logo', { self: { width: '120px' } }),
     block('nav', { container: flex('row', 12), self: { flex: '1' } }, [
       block('nav-item', {}),
@@ -67,7 +62,7 @@ function buildHeader(): BlockNode {
 
 /** Левая колонка: три пункта меню. */
 function buildSidebar(): BlockNode {
-  return block('sidebar', { container: flex('column', 8), padding: pad(16) }, [
+  return block('sidebar', { container: flex('column', 8) }, [
     block('menu-item', {}),
     block('menu-item', {}),
     block('menu-item', {}),
@@ -77,7 +72,7 @@ function buildSidebar(): BlockNode {
 /** Основная область: ряд из четырёх KPI, графики и таблица. */
 function buildMain(): BlockNode {
   const kpiCards = [0, 1, 2, 3].map(() => block(KPI_LABEL, {}))
-  return block('main', { container: flex('column', 24), padding: pad(24), self: { flex: '1' } }, [
+  return block('main', { container: flex('column', 24), self: { flex: '1' } }, [
     block('kpi-row', { container: grid('repeat(4, 1fr)', 16) }, kpiCards),
     block('charts', { container: grid('repeat(2, 1fr)', 16) }, [
       block('chart-left', { self: { minHeight: '200px' } }),
@@ -89,11 +84,8 @@ function buildMain(): BlockNode {
 
 /** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-карточка» (240) и «Карточка графика» (480). */
 export function createDemoDocument(): LayoutDocument {
-  const kpi = block(KPI_LABEL, { container: flex('column', 8), padding: pad(16) }, [
-    block('kpi-title', {}),
-    block('kpi-value', {}),
-  ])
-  const chartCard = block('Карточка графика', { container: flex('column', 12), padding: pad(16) }, [
+  const kpi = block(KPI_LABEL, { container: flex('column', 8) }, [block('kpi-title', {}), block('kpi-value', {})])
+  const chartCard = block('Карточка графика', { container: flex('column', 12) }, [
     block('chart-title', {}),
     block('chart-area', { self: { minHeight: '180px' } }),
   ])

@@ -22,7 +22,7 @@ describe('панель свойств: документ остаётся вал�
     expect(result.ok, result.ok ? '' : result.error).toBe(true)
   }
 
-  it('padding, span 2.7, flex↔grid, пресеты ширины и колонок, очистка полей', async () => {
+  it('тег, span 2.7, flex↔grid, пресеты ширины и колонок, очистка полей', async () => {
     const layoutStore = useLayoutStore()
     expect(layoutStore.loadDocument(makeDoc()).ok).toBe(true)
     const block = useCanvasPropsBlock()
@@ -30,13 +30,10 @@ describe('панель свойств: документ остаётся вал�
     const child = useCanvasPropsChild()
     const preview = useCanvasPropsPreview()
 
-    // Корень A: padding по сторонам, пресеты ширины, переключение flex↔grid и колонки
+    // Корень A: тег, пресеты ширины, переключение flex↔grid и колонки
     layoutStore.select('A')
     await nextTick()
-    block.setSide('top', 4)
-    block.setSide('left', 9.5)
-    block.padding.value = 12
-    block.padding.value = null
+    block.tag.value = 'section'
     preview.widthPreset.value = '1024'
     container.kind.value = 'grid'
     container.columnsPreset.value = GRID_COLUMN_PRESETS[4]?.value ?? ''

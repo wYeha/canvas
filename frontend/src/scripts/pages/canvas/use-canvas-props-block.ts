@@ -1,17 +1,8 @@
-/** Composable секции «Блок»: подпись, описание, тег и padding выделенного блока; запись через экшен стора. */
-import { computed, ref, watch, type WritableComputedRef } from 'vue'
-import type { BlockNode, NodeId, Padding } from '@shared'
+/** Composable секции «Блок»: подпись, описание и тег выделенного блока; запись через экшен стора. */
+import { computed, type WritableComputedRef } from 'vue'
+import type { BlockNode, NodeId } from '@shared'
 import { useLayoutStore } from './layout-store'
-import {
-  asLayoutTag,
-  initialSidesMode,
-  isUniformPadding,
-  paddingFromUniform,
-  paddingSides,
-  paddingWithSide,
-  uniformPaddingValue,
-  type PaddingSide,
-} from './props-block'
+import { asLayoutTag } from './props-block'
 import type { NodePatch } from './tree'
 import { useBlockTextDraft } from './use-block-text-draft'
 
@@ -56,42 +47,6 @@ export function useCanvasPropsBlock() {
     },
   })
 
-  /** Режим «по сторонам»: локальное состояние, при смене блока задаётся заново по равенству сторон. */
-  const sidesMode = ref(false)
-  watch(
-    () => block.value?.id,
-    () => {
-      sidesMode.value = initialSidesMode(block.value?.padding ?? null)
-    },
-    { immediate: true },
-  )
-
-  /** Переключает режим «по сторонам» (данные не меняются). */
-  function toggleSidesMode(): void {
-    sidesMode.value = !sidesMode.value
-  }
-
-  /** Единое поле padding: общая величина; запись задаёт все 4 стороны. */
-  const padding: WritableComputedRef<number | null> = computed({
-    /** Читает общую величину сторон; `null`, если padding нет или стороны разные. */
-    get: () => uniformPaddingValue(block.value?.padding ?? null),
-    /** Пишет все 4 стороны; пусто и 0 дают padding `null`. */
-    set: (value) => {
-      if (block.value) patch(block.value.id, { padding: paddingFromUniform(value) })
-    },
-  })
-
-  /** Стороны padding различаются: единое поле пустое и подсказывает об этом. */
-  const paddingMixed = computed(() => !isUniformPadding(block.value?.padding ?? null))
-
-  /** Значения четырёх сторон для полей. */
-  const sides = computed<Padding>(() => paddingSides(block.value?.padding ?? null))
-
-  /** Пишет одну сторону padding. */
-  function setSide(side: PaddingSide, value: number | null): void {
-    if (block.value) patch(block.value.id, { padding: paddingWithSide(block.value.padding, side, value) })
-  }
-
   return {
     block,
     label: label.draft,
@@ -101,11 +56,5 @@ export function useCanvasPropsBlock() {
     applyDescription: description.apply,
     onDescriptionKeydown: description.onKeydown,
     tag,
-    sidesMode,
-    toggleSidesMode,
-    padding,
-    paddingMixed,
-    sides,
-    setSide,
   }
 }

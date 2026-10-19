@@ -1,4 +1,4 @@
-/** Zod-схемы и типы узлов дерева: блок с детьми и его части; старые плашки отбрасываются при разборе. */
+/** Zod-схемы и типы узлов дерева: блок с детьми и его части; старые плашки и поле `padding` отбрасываются при разборе. */
 import { z } from 'zod'
 import { LAYOUT_TAGS, LEGACY_LINK_NODE_TYPE } from './constants'
 import { containerSchema, safeCssStringSchema } from './container'
@@ -19,14 +19,6 @@ export const selfPropsSchema = z.object({
   rowSpan: z.int().min(1).optional(),
 })
 
-/** Внутренние отступы блока по сторонам, в px. */
-export const paddingSchema = z.object({
-  top: z.number().min(0),
-  right: z.number().min(0),
-  bottom: z.number().min(0),
-  left: z.number().min(0),
-})
-
 /** Узел-плашка старого формата: объект с `type`, равным `LEGACY_LINK_NODE_TYPE`. */
 function isLegacyLinkNode(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'type' in value && value.type === LEGACY_LINK_NODE_TYPE
@@ -37,7 +29,11 @@ function dropLegacyLinkNodes(value: unknown): unknown {
   return Array.isArray(value) ? value.filter((item) => !isLegacyLinkNode(item)) : value
 }
 
-/** Блок: flex- или grid-контейнер с детьми. Цвет не хранится — он вычисляется по глубине при рендере. */
+/**
+ * Блок: flex- или grid-контейнер с детьми. Цвет не хранится — он вычисляется по глубине при рендере.
+ * Внутренних отступов в модели нет (8.2): поле `padding` старых документов не описано в схеме,
+ * а `z.object` по умолчанию отбрасывает неизвестные ключи — так оно молча исчезает при разборе.
+ */
 export const blockNodeSchema = z.object({
   id: nodeIdSchema,
   type: z.literal('block'),
@@ -46,7 +42,6 @@ export const blockNodeSchema = z.object({
   tag: layoutTagSchema,
   container: containerSchema,
   self: selfPropsSchema,
-  padding: paddingSchema.nullable(),
   repeat: z.int().min(1),
   /** Дети блока; геттер нужен zod 4 для рекурсивной схемы. Плашки старых документов отбрасываются до проверки. */
   get children(): z.ZodPreprocess<z.ZodArray<typeof blockNodeSchema>> {
@@ -62,9 +57,6 @@ export type LayoutTag = z.infer<typeof layoutTagSchema>
 
 /** Свойства «как ребёнок». */
 export type SelfProps = z.infer<typeof selfPropsSchema>
-
-/** Внутренние отступы блока. */
-export type Padding = z.infer<typeof paddingSchema>
 
 /** Блок с детьми. */
 export type BlockNode = z.infer<typeof blockNodeSchema>

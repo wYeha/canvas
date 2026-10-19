@@ -33,13 +33,9 @@ function isSubsequence(part: readonly StyleEntry[], whole: readonly StyleEntry[]
 }
 
 describe('exportStyleEntries', () => {
-  it('пустой лист с контейнером по умолчанию: без контейнерной части, self и padding остаются', () => {
-    const padding = { top: 8, right: 8, bottom: 8, left: 8 }
+  it('пустой лист с контейнером по умолчанию: без контейнерной части, self остаётся', () => {
     expect(exportStyleEntries(make('flex'), 'flex')).toEqual([])
-    expect(exportStyleEntries(make('grid', { padding, self: { width: '120px' } }), 'flex')).toEqual([
-      ['padding', '8px'],
-      ['width', '120px'],
-    ])
+    expect(exportStyleEntries(make('grid', { self: { width: '120px' } }), 'flex')).toEqual([['width', '120px']])
   })
 
   it('пустые и auto rows у grid по умолчанию считаются умолчанием', () => {
@@ -70,7 +66,7 @@ describe('exportStyleEntries', () => {
   it('всегда подпоследовательность styleEntries', () => {
     const blocks = [
       make('flex', { self: { flex: '1', height: '40px' } }),
-      make('grid', { self: { colSpan: 2 }, padding: { top: 1, right: 2, bottom: 1, left: 2 } }),
+      make('grid', { self: { colSpan: 2, height: '40px' } }),
       make('grid', { container: { ...createGridContainer(), columnGap: 8, rowGap: 8 } }),
     ]
     for (const block of blocks) {

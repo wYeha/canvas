@@ -174,7 +174,7 @@ export const EXPORT_CONTEXT_COLUMNS_UNKNOWN = 'колонки не указан�
 /** Замер ширины превью: `~1128px`. */
 export const EXPORT_CONTEXT_MEASURED_WIDTH = '~{w}px'
 
-/** Доля контентной ширины родителя (без его горизонтального padding) по замеру: `~94% ширины родителя`. */
+/** Доля контентной ширины родителя (без редакторского отступа) по замеру: `~94% ширины родителя`. */
 export const EXPORT_CONTEXT_MEASURED_SHARE = '~{p}% ширины родителя'
 
 /** Высота в grid-ячейке при заданных `rows` родителя (не `auto`). */
@@ -216,7 +216,6 @@ export const EXPORT_CONTEXT_CSS = {
   gap: 'gap',
   columnGap: 'column-gap',
   rowGap: 'row-gap',
-  padding: 'padding',
   width: 'width',
   height: 'height',
   minHeight: 'min-height',

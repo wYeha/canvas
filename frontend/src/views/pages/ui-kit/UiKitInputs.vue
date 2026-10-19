@@ -31,7 +31,7 @@
         :min="0"
         :max="100"
       />
-      <UiNumberInput v-model="number" class="ui-kit-inputs__field" label="С префиксом" prefix="padding" unit="px" />
+      <UiNumberInput v-model="number" class="ui-kit-inputs__field" label="С префиксом" prefix="↔" unit="px" />
       <UiNumberInput
         v-model="emptyNumber"
         class="ui-kit-inputs__field"
