@@ -1,9 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
-"<!-- Документ «Дашборд аналитики»: корневых блоков 3 -->
-
-<!-- 1 из 3. Корневой блок «Дашборд», ширина превью 1440px -->
+"<!-- Корневой блок «Дашборд», ширина превью 1440px -->
 <div style="display:flex; flex-direction:column">
   <!-- header -->
   <div style="display:flex; align-items:center">
@@ -28,31 +26,28 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
     <div style="display:flex; flex-direction:column">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr)">
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
+        <!-- компонент «KPI-карточка» ×4 -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- kpi-title --></div>
+          <div><!-- kpi-value --></div>
+        </div>
       </div>
       <!-- charts -->
       <div style="display:grid; grid-template-columns:repeat(2, 1fr)">
-        <div style="min-height:200px"><!-- chart-left --></div>
-        <div style="min-height:200px"><!-- chart-right --></div>
+        <!-- компонент «Карточка графика» -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- chart-title --></div>
+          <div style="min-height:180px"><!-- chart-area --></div>
+        </div>
+        <!-- компонент «Карточка графика» -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- chart-title --></div>
+          <div style="min-height:180px"><!-- chart-area --></div>
+        </div>
       </div>
       <div style="min-height:240px"><!-- table --></div>
     </div>
   </div>
-</div>
-
-<!-- 2 из 3. Корневой блок «KPI-карточка», ширина превью 240px -->
-<div style="display:flex; flex-direction:column">
-  <div><!-- kpi-title --></div>
-  <div><!-- kpi-value --></div>
-</div>
-
-<!-- 3 из 3. Корневой блок «Карточка графика», ширина превью 480px -->
-<div style="display:flex; flex-direction:column">
-  <div><!-- chart-title --></div>
-  <div style="min-height:180px"><!-- chart-area --></div>
 </div>
 "
 `;

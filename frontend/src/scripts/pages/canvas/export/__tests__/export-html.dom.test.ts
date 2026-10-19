@@ -1,6 +1,18 @@
-/** DOM-тесты экспорта: разбор вывода браузерным парсером совпадает с моделью, инъекции в обход zod не дают лишних элементов и атрибутов. */
+/**
+ * DOM-тесты экспорта: разбор вывода браузерным парсером совпадает с моделью (на месте связей — источники),
+ * инъекции в обход zod не дают лишних элементов и атрибутов.
+ */
 import { describe, expect, it } from 'vitest'
-import type { BlockNode, ContainerKind, LayoutDocument, LayoutNode, LayoutTag, RootEntry } from '@shared'
+import {
+  isLinkBlock,
+  type BlockNode,
+  type ContainerKind,
+  type LayoutDocument,
+  type LayoutNode,
+  type LayoutTag,
+  type RootEntry,
+} from '@shared'
+import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { createBlock, createDocument, createGridContainer } from '@/scripts/pages/canvas/factories'
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
 import { toInlineStyle } from '@/scripts/pages/canvas/node-style'
@@ -20,8 +32,21 @@ function rootElement(dom: Document): Element {
   return element
 }
 
-/** Сверяет элемент с узлом модели рекурсивно: тег, стиль, число детей-элементов. */
-function expectMatches(element: Element, node: LayoutNode, parentKind: ContainerKind | null, extra = ''): void {
+/** Узел так, как его выводит экспорт: на месте связи — источник со свойствами места связи. */
+function exported(doc: LayoutDocument | null, node: LayoutNode): LayoutNode {
+  const source = doc !== null && isLinkBlock(node) ? findRootEntry(doc, node.sourceId)?.node : undefined
+  return source === undefined ? node : { ...source, self: node.self, repeat: node.repeat }
+}
+
+/** Сверяет элемент с узлом модели рекурсивно: тег, стиль, число детей-элементов; `doc` — для подстановки связей. */
+function expectMatches(
+  element: Element,
+  modelNode: LayoutNode,
+  parentKind: ContainerKind | null,
+  extra = '',
+  doc: LayoutDocument | null = null,
+): void {
+  const node = exported(doc, modelNode)
   const style = [toInlineStyle(exportStyleEntries(node, parentKind)), extra].filter((part) => part !== '').join('; ')
   expect(element.getAttribute('style') ?? '').toBe(style)
   expect(element.tagName.toLowerCase()).toBe(node.tag)
@@ -29,7 +54,7 @@ function expectMatches(element: Element, node: LayoutNode, parentKind: Container
   node.children.forEach((child, index) => {
     const childElement = element.children.item(index)
     if (!childElement) throw new Error('Нет элемента для ребёнка')
-    expectMatches(childElement, child, node.container.kind)
+    expectMatches(childElement, child, node.container.kind, '', doc)
   })
 }
 
@@ -62,7 +87,7 @@ describe('round-trip', () => {
     for (const entry of doc.roots) {
       const dom = parse(exportRootHtml(doc, entry))
       expect(dom.body.children.length).toBe(1)
-      expectMatches(rootElement(dom), entry.node, null)
+      expectMatches(rootElement(dom), entry.node, null, '', doc)
     }
   })
 

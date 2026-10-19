@@ -26,15 +26,24 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
     <div style="display:flex; flex-direction:column">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr)">
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
-        <div><!-- KPI-карточка --></div>
+        <!-- компонент «KPI-карточка» ×4 -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- kpi-title --></div>
+          <div><!-- kpi-value --></div>
+        </div>
       </div>
       <!-- charts -->
       <div style="display:grid; grid-template-columns:repeat(2, 1fr)">
-        <div style="min-height:200px"><!-- chart-left --></div>
-        <div style="min-height:200px"><!-- chart-right --></div>
+        <!-- компонент «Карточка графика» -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- chart-title --></div>
+          <div style="min-height:180px"><!-- chart-area --></div>
+        </div>
+        <!-- компонент «Карточка графика» -->
+        <div style="display:flex; flex-direction:column">
+          <div><!-- chart-title --></div>
+          <div style="min-height:180px"><!-- chart-area --></div>
+        </div>
       </div>
       <div style="min-height:240px"><!-- table --></div>
     </div>

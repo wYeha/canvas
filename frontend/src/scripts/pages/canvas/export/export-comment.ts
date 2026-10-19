@@ -1,4 +1,4 @@
-/** Комментарии экспорта: подпись и описание узла, предупреждения защиты, заголовок корневого блока. */
+/** Комментарии экспорта: подпись и описание узла, пометка компонента, предупреждения защиты, заголовок корневого блока. */
 import type { BlockNode, RootEntry } from '@shared'
 import { CSS_PX_UNIT, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
 import { repeatMark } from '@/scripts/pages/canvas/node-view'
@@ -7,6 +7,7 @@ import type { CommentParts, RootOrder } from './export-types'
 import {
   EXPORT_COMMENT_CLOSE,
   EXPORT_COMMENT_OPEN,
+  EXPORT_COMPONENT_TITLE,
   EXPORT_DESCRIPTION_SEPARATOR,
   EXPORT_DOCUMENT_ROOTS_COUNT,
   EXPORT_DOCUMENT_TITLE,
@@ -46,7 +47,25 @@ function pxText(value: number): string {
  * многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
  */
 export function nodeCommentParts(block: BlockNode): CommentParts {
-  const name = joinParts([toSingleLine(block.label), repeatMark(block, EXPORT_REPEAT_MARK)], EXPORT_WORD_SEPARATOR)
+  return commentWithName(toSingleLine(block.label), block)
+}
+
+/**
+ * Части комментария корня-источника, подставленного на место связи: `компонент «подпись»`, `×N` места и описание
+ * источника — как у обычного блока. Так агент видит, что одинаковые фрагменты — один компонент.
+ */
+export function componentCommentParts(source: BlockNode, repeatOf: BlockNode): CommentParts {
+  const label = toSingleLine(source.label)
+  const name = joinParts(
+    [EXPORT_COMPONENT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label)],
+    EXPORT_WORD_SEPARATOR,
+  )
+  return commentWithName(name, { ...source, repeat: repeatOf.repeat })
+}
+
+/** Голова из имени, `×N` блока и однострочного описания; многострочное описание — в тело. */
+function commentWithName(label: string, block: BlockNode): CommentParts {
+  const name = joinParts([label, repeatMark(block, EXPORT_REPEAT_MARK)], EXPORT_WORD_SEPARATOR)
   const lines = toCommentLines(block.description)
   const [first] = lines
   if (lines.length === 1 && first !== undefined) {

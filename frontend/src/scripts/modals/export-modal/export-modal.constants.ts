@@ -22,7 +22,7 @@ export const EXPORT_SCOPE_LABELS: Readonly<Record<ExportScopeKind, string>> = {
 export const EXPORT_SCOPE_HINTS: Readonly<Record<ExportScopeKind, string>> = {
   selected: 'Выделенный блок со всем содержимым',
   checked: 'Отмеченные корневые блоки',
-  all: 'Все корневые блоки документа',
+  all: 'Все корневые блоки документа; подключённые связями — на местах связей, отдельно не повторяются',
 }
 
 /** Порядок сегментов охвата. */

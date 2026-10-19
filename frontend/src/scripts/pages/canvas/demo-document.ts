@@ -1,6 +1,16 @@
-/** Демо-документ «Дашборд» для визуальной проверки канваса до импорта и сохранения (загружается по `?demo` в dev). */
-import { SCHEMA_VERSION, type BlockNode, type LayoutDocument, type LayoutNode, type RootEntry } from '@shared'
-import { createBlock, createDocument } from './factories'
+/**
+ * Демо-документ «Дашборд» для визуальной проверки канваса до импорта и сохранения (загружается по `?demo` в dev).
+ * KPI-карточка и карточка графика — корни-компоненты, подключённые в дашборд связями.
+ */
+import {
+  SCHEMA_VERSION,
+  type BlockNode,
+  type LayoutDocument,
+  type LayoutNode,
+  type NodeId,
+  type RootEntry,
+} from '@shared'
+import { createBlock, createDocument, createLinkBlock } from './factories'
 
 /** Поля блока, которые демо переопределяет поверх значений по умолчанию. */
 type BlockSpec = Partial<Omit<BlockNode, 'id' | 'type' | 'label' | 'children'>>
@@ -33,8 +43,8 @@ function grid(columns: string) {
   }
 }
 
-/** Подпись KPI-карточки: и отдельного корня-заготовки, и карточек в ряду KPI дашборда. */
-const KPI_LABEL = 'KPI-карточка'
+/** Число KPI-карточек в ряду дашборда (повтор связи). */
+const KPI_COUNT = 4
 
 /** Корень на поле. */
 function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
@@ -63,29 +73,25 @@ function buildSidebar(): BlockNode {
   ])
 }
 
-/** Основная область: ряд из четырёх KPI, графики и таблица. */
-function buildMain(): BlockNode {
-  const kpiCards = [0, 1, 2, 3].map(() => block(KPI_LABEL, {}))
+/** Основная область: ряд KPI (связь на KPI-карточку ×4), два графика (связи на карточку графика) и таблица. */
+function buildMain(kpiId: NodeId, chartId: NodeId): BlockNode {
   return block('main', { container: flex('column'), self: { flex: '1' } }, [
-    block('kpi-row', { container: grid('repeat(4, 1fr)') }, kpiCards),
-    block('charts', { container: grid('repeat(2, 1fr)') }, [
-      block('chart-left', { self: { minHeight: '200px' } }),
-      block('chart-right', { self: { minHeight: '200px' } }),
-    ]),
+    block('kpi-row', { container: grid('repeat(4, 1fr)') }, [{ ...createLinkBlock(kpiId), repeat: KPI_COUNT }]),
+    block('charts', { container: grid('repeat(2, 1fr)') }, [createLinkBlock(chartId), createLinkBlock(chartId)]),
     block('table', { self: { minHeight: '240px' } }),
   ])
 }
 
-/** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-карточка» (240) и «Карточка графика» (480). */
+/** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-карточка» (240) и «Карточка графика» (480), подключённые в дашборд. */
 export function createDemoDocument(): LayoutDocument {
-  const kpi = block(KPI_LABEL, { container: flex('column') }, [block('kpi-title', {}), block('kpi-value', {})])
+  const kpi = block('KPI-карточка', { container: flex('column') }, [block('kpi-title', {}), block('kpi-value', {})])
   const chartCard = block('Карточка графика', { container: flex('column') }, [
     block('chart-title', {}),
     block('chart-area', { self: { minHeight: '180px' } }),
   ])
   const dashboard = block('Дашборд', { container: flex('column') }, [
     buildHeader(),
-    block('body', { container: grid('240px 1fr') }, [buildSidebar(), buildMain()]),
+    block('body', { container: grid('240px 1fr') }, [buildSidebar(), buildMain(kpi.id, chartCard.id)]),
   ])
   return {
     ...createDocument('Дашборд аналитики'),

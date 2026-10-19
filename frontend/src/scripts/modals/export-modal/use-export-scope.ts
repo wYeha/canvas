@@ -1,6 +1,6 @@
 /** Охват экспорта: выбранный вид, отмеченные корни, замер ширин выделенного узла и его родителя. */
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
-import type { NodeId } from '@shared'
+import { buildLinkIndex, type NodeId } from '@shared'
 import { useCameraStore } from '@/scripts/pages/canvas/camera-store'
 import type { ExportScope } from '@/scripts/pages/canvas/export/export-types'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
@@ -84,12 +84,17 @@ export function useExportScope(open: Ref<boolean>): ExportScopeState {
     return layoutStore.selectedId !== null
   }
 
+  /** Корни, подключённые связями: в охвате «все» они выводятся на местах связей и в списке не отмечены. */
+  const connectedIds = computed(
+    () => new Set(buildLinkIndex(layoutStore.document).placements.map((placement) => placement.sourceId)),
+  )
+
   const rows = computed<ExportRootRow[]>(() =>
     layoutStore.document.roots.map((entry) => ({
       id: entry.node.id,
       label: rootTitle(entry.node),
       width: rootWidthText(entry.canvas),
-      checked: checkedIds.value.has(entry.node.id),
+      checked: scopeKind.value === 'all' ? !connectedIds.value.has(entry.node.id) : checkedIds.value.has(entry.node.id),
     })),
   )
 

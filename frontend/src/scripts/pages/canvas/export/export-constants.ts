@@ -30,6 +30,9 @@ export const EXPORT_COMMENT_CLOSE = '-->'
 /** Начало заголовка корня: `Корневой блок «Дашборд»`. */
 export const EXPORT_ROOT_TITLE = 'Корневой блок'
 
+/** Пометка подставленного на место связи корня-источника: `компонент «Карточка»`. */
+export const EXPORT_COMPONENT_TITLE = 'компонент'
+
 /** Подпись ширины превью в заголовке корня: `ширина превью 1440px`. */
 export const EXPORT_ROOT_PREVIEW_WIDTH = 'ширина превью'
 

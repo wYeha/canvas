@@ -1,18 +1,27 @@
 /** Охват экспорта: отбор корней в порядке слоёв документа, склейка нескольких корней с шапкой и нумерацией, диспетчер охвата. */
-import type { LayoutDocument, NodeId } from '@shared'
+import { buildLinkIndex, type LayoutDocument, type NodeId } from '@shared'
 import { documentHeaderComment } from './export-comment'
 import { exportRootHtml, exportRootLines } from './export-html'
 import { exportSelectedHtml } from './export-selected'
 import type { ExportOptions, ExportRootPlan, ExportScope } from './export-types'
 import { EXPORT_NEWLINE } from './export-constants'
 
+/** Корни, подключённые связями куда-либо: при экспорте всех они уже выведены на местах своих связей. */
+function connectedRoots(doc: LayoutDocument): Set<NodeId> {
+  return new Set(buildLinkIndex(doc).placements.map((placement) => placement.sourceId))
+}
+
 /**
- * План корней: `doc.roots` (порядок слоёв), отфильтрованные по множеству id (`'all'` — все); несуществующие id
- * игнорируются.
+ * План корней: `doc.roots` (порядок слоёв), отфильтрованные по множеству id; несуществующие id игнорируются.
+ * `'all'` — все корни, кроме подключённых связями: они выводятся внутри целей (без циклов каждый подключённый корень
+ * попадает в вывод через цепочку до неподключённого), отдельно не повторяются.
  */
 export function planRoots(doc: LayoutDocument, rootIds: readonly NodeId[] | 'all'): ExportRootPlan[] {
   const wanted = rootIds === 'all' ? null : new Set<NodeId>(rootIds)
-  return doc.roots.filter((entry) => wanted === null || wanted.has(entry.node.id)).map((entry) => ({ entry }))
+  const skipped = rootIds === 'all' ? connectedRoots(doc) : new Set<NodeId>()
+  return doc.roots
+    .filter((entry) => (wanted === null || wanted.has(entry.node.id)) && !skipped.has(entry.node.id))
+    .map((entry) => ({ entry }))
 }
 
 /**
