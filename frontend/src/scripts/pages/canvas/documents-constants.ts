@@ -12,7 +12,15 @@ export const SAVE_STATUS_LABELS = {
   saving: 'Сохраняется…',
   error: 'Не удалось сохранить',
   demo: 'Демо, не сохраняется',
+  local: 'Сохранено в браузере',
+  offline: 'Нет связи с сервером',
 } as const
+
+/** Задержка синхронизации с сервером после последнего локального сохранения, мс (правки подряд уходят одним проходом). */
+export const SYNC_DELAY_MS = 1000
+
+/** Повтор синхронизации после сбоя (нет сети, ошибка сервера), мс. */
+export const SYNC_RETRY_MS = 30_000
 
 /** Единицы времени, мс. */
 export const MS_PER_MINUTE = 60_000
@@ -70,10 +78,11 @@ export const DELETE_KEY = 'Delete'
 /** Подсказка клавиш строки документа для скринридера (aria-keyshortcuts): переименовать и удалить. */
 export const DOC_ROW_KEYSHORTCUTS = 'F2 Delete'
 
-/** События окна, при которых дописываем сохранение и обновляем список документов (другая вкладка). */
+/** События окна, при которых дописываем сохранение, обновляем список документов (другая вкладка) и сверяемся с сервером (сеть появилась). */
 export const PAGE_HIDE_EVENT = 'pagehide'
 export const VISIBILITY_CHANGE_EVENT = 'visibilitychange'
 export const STORAGE_EVENT = 'storage'
+export const ONLINE_EVENT = 'online'
 
 /** Файлы .json: расширение, тип, ограничения и отступ сериализации. */
 export const DOCUMENT_FILE_EXTENSION = '.layout.json'

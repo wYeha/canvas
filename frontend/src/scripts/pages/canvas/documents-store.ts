@@ -1,6 +1,7 @@
 /**
  * Pinia-хранилище документов: список в localStorage, текущий документ, автосохранение с задержкой,
- * создание, переключение, переименование и удаление. Демо-документ временный: не сохраняется и в список не попадает.
+ * создание, переключение, переименование и удаление, фоновая синхронизация с сервером (при действительной сессии).
+ * Демо-документ временный: не сохраняется, в список не попадает и не синхронизируется.
  */
 import { computed, ref, toRaw, watch } from 'vue'
 import { defineStore } from 'pinia'
@@ -24,6 +25,8 @@ import { createDemoDocument } from './demo-document'
 import { createDocument } from './factories'
 import { useLayoutStore } from './layout-store'
 import { createId } from '@/scripts/globals/id'
+import { useAuthStore } from '@/scripts/globals/auth-store'
+import { createDocumentsSync, type RemoteChanges } from './documents-sync'
 
 /** Результат добавления документа из файла: успех или причина отказа для тоста. */
 export type ImportResult = { ok: true } | { ok: false; error: string }
@@ -35,6 +38,7 @@ export interface DocumentsInitOptions {
 
 export const useDocumentsStore = defineStore('documents', () => {
   const layout = useLayoutStore()
+  const auth = useAuthStore()
   /** Индекс сохранённых документов (без живой записи текущего: см. `entries`). */
   const metas = ref<DocumentMeta[]>([])
   /** Id текущего сохраняемого документа; `null` в демо и до `init`. */
@@ -50,9 +54,32 @@ export const useDocumentsStore = defineStore('documents', () => {
   let cleanDocument: LayoutDocument | null = null
   /** Таймер отложенного сохранения. */
   let timer: ReturnType<typeof setTimeout> | null = null
+  /**
+   * Пустой документ, созданный при запуске, потому что в браузере не было ни одного (новое устройство).
+   * Пока его не правили, он заглушка: если с сервера придут документы, он удаляется (иначе копились бы пустые дубли).
+   */
+  let placeholder: LayoutDocument | null = null
 
   /** Работа в демо-режиме: сохранение выключено. */
   const isDemo = computed(() => status.value === 'demo')
+
+  /** Синхронизация включена: есть действительная сессия и это не демо. */
+  function isSyncEnabled(): boolean {
+    return status.value !== 'demo' && auth.state === 'authenticated'
+  }
+
+  /** Сервер ответил «нужно войти»: сессия истекла, страница уведёт на вход. */
+  function onSyncUnauthorized(): void {
+    auth.markAnonymous()
+  }
+
+  const sync = createDocumentsSync({
+    isEnabled: isSyncEnabled,
+    onRemoteChanges: applyRemoteChanges,
+    onUnauthorized: onSyncUnauthorized,
+  })
+  /** Состояние синхронизации с сервером (для статуса в хедере). */
+  const syncState = sync.state
 
   /** Список для меню: сохранённые документы, у текущего — живая запись из редактора; свежие первыми. */
   const entries = computed<DocumentMeta[]>(() => {
@@ -75,6 +102,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     metas.value = next
     const ok = writeIndex(next)
     if (!ok) status.value = 'error'
+    else sync.request('change')
     return ok
   }
 
@@ -119,6 +147,50 @@ export const useDocumentsStore = defineStore('documents', () => {
     return persistCurrent()
   }
 
+  /** Открыта заглушка нового устройства, и её не правили (любая правка заменяет объект документа). */
+  function isUntouchedPlaceholder(): boolean {
+    return placeholder !== null && placeholder.id === currentId.value && toRaw(layout.document) === placeholder
+  }
+
+  /** В редакторе есть правки, ещё не записанные в хранилище. */
+  function hasUnsavedEdits(): boolean {
+    return timer !== null || toRaw(layout.document) !== cleanDocument
+  }
+
+  /**
+   * Применяет изменения с сервера: перечитывает список; текущий документ, удалённый на другом устройстве, закрывается
+   * (если в нём нет несохранённых правок — иначе он сохранится и уйдёт на сервер заново), скачанный заново —
+   * открывается свежим только при чистом редакторе (иначе локальная правка новее и победит при следующей синхронизации).
+   */
+  function applyRemoteChanges(changes: RemoteChanges): void {
+    if (status.value === 'demo') return
+    metas.value = readIndex()
+    const id = currentId.value
+    if (id === null) return
+    if (changes.pulled.length > 0 && isUntouchedPlaceholder()) {
+      remove(id)
+      return
+    }
+    if (changes.removed.includes(id)) {
+      if (hasUnsavedEdits()) persistCurrent()
+      else openAvailable(null)
+      return
+    }
+    if (!changes.pulled.includes(id) || hasUnsavedEdits()) return
+    const doc = readDocument(id)
+    if (doc !== null) activate(doc)
+  }
+
+  /** Проверить сервер (возврат на вкладку, восстановление сети). */
+  function refreshSync(): void {
+    sync.request('refresh')
+  }
+
+  /** Остановить таймеры синхронизации (уход со страницы). */
+  function stopSync(): void {
+    sync.stop()
+  }
+
   /** Загружает документ в редактор (история, выделение сбрасываются) и делает его текущим сохранённым. */
   function activate(doc: LayoutDocument): boolean {
     loading = true
@@ -152,7 +224,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     return activate(createDocument()) && persistCurrent()
   }
 
-  /** Открывает предпочитаемый или самый свежий читаемый документ, нечитаемые убирает из списка (данные не трогает); если ничего нет — создаёт пустой. */
+  /** Открывает предпочитаемый или самый свежий читаемый документ, нечитаемые убирает из списка (данные не трогает); если ничего нет — создаёт пустой (заглушку, см. `placeholder`). */
   function openAvailable(preferredId: string | null): void {
     let id = pickDocumentId(metas.value, preferredId)
     while (id !== null) {
@@ -161,7 +233,7 @@ export const useDocumentsStore = defineStore('documents', () => {
       hideUnreadable(id)
       id = pickDocumentId(metas.value, null)
     }
-    createAndOpen()
+    if (createAndOpen()) placeholder = toRaw(layout.document)
   }
 
   /** Запуск: демо открывается временным документом, иначе — последний текущий (или самый свежий, или новый пустой). */
@@ -175,11 +247,14 @@ export const useDocumentsStore = defineStore('documents', () => {
       loading = false
       if (!result.ok) console.error(result.error)
       loadSeq.value++
+      sync.stop()
+      syncState.value = 'off'
       return
     }
     status.value = 'saved'
     metas.value = readIndex()
     openAvailable(readCurrentId())
+    void sync.runNow()
   }
 
   /** Создаёт новый документ «Без названия» и открывает его; текущий перед этим сохраняется. */
@@ -253,6 +328,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     const wasCurrent = id === currentId.value
     if (wasCurrent) clearTimer()
     removeDocument(id)
+    sync.markDeleted(id)
     const ok = persistIndex((current) => removeMeta(current, id))
     if (wasCurrent) {
       currentId.value = null
@@ -265,11 +341,14 @@ export const useDocumentsStore = defineStore('documents', () => {
     metas,
     currentId,
     status,
+    syncState,
     isDemo,
     loadSeq,
     entries,
     init,
     refreshIndex,
+    refreshSync,
+    stopSync,
     flush,
     create,
     importDocument,

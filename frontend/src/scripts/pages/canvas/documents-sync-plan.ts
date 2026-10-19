@@ -1,0 +1,93 @@
+/**
+ * Чистый план синхронизации: по локальному индексу, списку с сервера и состоянию синхронизации решает,
+ * что отправить, скачать и удалить. Конфликт (изменились обе стороны) — побеждает более свежий `updatedAt`.
+ */
+import type { DocumentMeta } from './documents.types'
+import type { SyncRecord } from './documents-sync-state'
+
+/** Шаги синхронизации. */
+export interface SyncPlan {
+  /** Отправить локальную версию на сервер. */
+  push: string[]
+  /** Скачать версию с сервера. */
+  pull: string[]
+  /** Удалить на сервере (удалён локально). */
+  deleteRemote: string[]
+  /** Удалить локально (удалён на другом устройстве). */
+  deleteLocal: string[]
+  /** Забыть отметку «удалён локально»: на сервере документа уже нет. */
+  forgetDeleted: string[]
+  /** Отметить версию как совпадающую без передачи (у обеих сторон одинаковый `updatedAt`). */
+  markSynced: Record<string, string>
+}
+
+/** Пустой план. */
+function emptyPlan(): SyncPlan {
+  return { push: [], pull: [], deleteRemote: [], deleteLocal: [], forgetDeleted: [], markSynced: {} }
+}
+
+/** Время в мс; нечитаемое — самое старое. */
+function timeOf(updatedAt: string): number {
+  const time = Date.parse(updatedAt)
+  return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time
+}
+
+/** Документ есть на обеих сторонах: равны — совпадают; изменилась одна сторона — она и побеждает; иначе свежее. */
+function planBoth(plan: SyncPlan, local: DocumentMeta, server: DocumentMeta, synced: string | undefined): void {
+  if (local.updatedAt === server.updatedAt) {
+    if (synced !== local.updatedAt) plan.markSynced[local.id] = local.updatedAt
+    return
+  }
+  if (synced === server.updatedAt) plan.push.push(local.id)
+  else if (synced === local.updatedAt) plan.pull.push(local.id)
+  else if (timeOf(local.updatedAt) >= timeOf(server.updatedAt)) plan.push.push(local.id)
+  else plan.pull.push(local.id)
+}
+
+/**
+ * Документ только локально: был синхронизирован и с тех пор не менялся — его удалили на другом устройстве;
+ * иначе (новый, созданный до синхронизации или изменённый после удаления в другом месте) — отправить.
+ */
+function planLocalOnly(plan: SyncPlan, local: DocumentMeta, synced: string | undefined): void {
+  if (synced === local.updatedAt) plan.deleteLocal.push(local.id)
+  else plan.push.push(local.id)
+}
+
+/** Строит план; порядок шагов внутри списков — как в индексах (стабильный для тестов). */
+export function planSync(
+  local: readonly DocumentMeta[],
+  server: readonly DocumentMeta[],
+  record: SyncRecord,
+): SyncPlan {
+  const plan = emptyPlan()
+  const deleted = new Set(record.deleted)
+  const serverById = new Map(server.map((meta) => [meta.id, meta]))
+  const localIds = new Set(local.map((meta) => meta.id))
+  for (const id of deleted) {
+    if (serverById.has(id)) plan.deleteRemote.push(id)
+    else plan.forgetDeleted.push(id)
+  }
+  for (const meta of local) {
+    if (deleted.has(meta.id)) continue
+    const remote = serverById.get(meta.id)
+    const synced = record.synced[meta.id]
+    if (remote) planBoth(plan, meta, remote, synced)
+    else planLocalOnly(plan, meta, synced)
+  }
+  for (const meta of server) {
+    if (!localIds.has(meta.id) && !deleted.has(meta.id)) plan.pull.push(meta.id)
+  }
+  return plan
+}
+
+/** В плане нет ни одного шага. */
+export function isPlanEmpty(plan: SyncPlan): boolean {
+  return (
+    plan.push.length === 0 &&
+    plan.pull.length === 0 &&
+    plan.deleteRemote.length === 0 &&
+    plan.deleteLocal.length === 0 &&
+    plan.forgetDeleted.length === 0 &&
+    Object.keys(plan.markSynced).length === 0
+  )
+}

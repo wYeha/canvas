@@ -1,13 +1,25 @@
-/** Тесты чистой части статуса сохранения и демо-режима: подписи, признак демо по URL, автосохранение. */
+/** Тесты чистой части статуса сохранения и демо-режима: подписи с учётом синхронизации, признак демо по URL, автосохранение. */
 import { describe, expect, it } from 'vitest'
-import { isAutosaveEnabled, isDemoRequested, saveStatusLabel } from '@/scripts/pages/canvas/save-status'
+import { isAutosaveEnabled, isDemoRequested, saveStatusKind, saveStatusLabel } from '@/scripts/pages/canvas/save-status'
 
 describe('saveStatusLabel', () => {
-  it('подписи всех статусов', () => {
-    expect(saveStatusLabel('saved')).toBe('Сохранено')
-    expect(saveStatusLabel('saving')).toBe('Сохраняется…')
-    expect(saveStatusLabel('error')).toBe('Не удалось сохранить')
-    expect(saveStatusLabel('demo')).toBe('Демо, не сохраняется')
+  it('демо, ошибка и идущее сохранение не зависят от синхронизации', () => {
+    expect(saveStatusLabel('saving', 'synced')).toBe('Сохраняется…')
+    expect(saveStatusLabel('error', 'synced')).toBe('Не удалось сохранить')
+    expect(saveStatusLabel('demo', 'off')).toBe('Демо, не сохраняется')
+  })
+
+  it('сохранённое уточняется синхронизацией', () => {
+    expect(saveStatusLabel('saved', 'synced')).toBe('Сохранено')
+    expect(saveStatusLabel('saved', 'syncing')).toBe('Сохраняется…')
+    expect(saveStatusLabel('saved', 'off')).toBe('Сохранено в браузере')
+    expect(saveStatusLabel('saved', 'failed')).toBe('Нет связи с сервером')
+  })
+
+  it('вид статуса для точки в хедере', () => {
+    expect(saveStatusKind('saved', 'off')).toBe('local')
+    expect(saveStatusKind('saved', 'failed')).toBe('offline')
+    expect(saveStatusKind('error', 'failed')).toBe('error')
   })
 })
 

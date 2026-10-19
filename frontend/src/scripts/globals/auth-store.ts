@@ -52,10 +52,16 @@ export const useAuthStore = defineStore('auth', () => {
     state.value = 'anonymous'
   }
 
+  /** Проверяет сессию заново (сервер мог появиться после офлайна). */
+  function recheck(): Promise<SessionState> {
+    state.value = 'unknown'
+    return ensureChecked()
+  }
+
   /** Сервер ответил «нужно войти» на другой запрос (например, при синхронизации): сессия истекла. */
   function markAnonymous(): void {
     state.value = 'anonymous'
   }
 
-  return { state, ensureChecked, login, logout, markAnonymous }
+  return { state, ensureChecked, recheck, login, logout, markAnonymous }
 })

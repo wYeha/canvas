@@ -36,11 +36,13 @@
     border-radius: v.$radius-pill;
 
     &--saving,
-    &--demo {
+    &--demo,
+    &--local {
       background: var(--color-muted);
     }
 
-    &--error {
+    &--error,
+    &--offline {
       background: var(--color-danger);
     }
   }
