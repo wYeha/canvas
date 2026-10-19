@@ -503,6 +503,9 @@ export const CHILD_HINT_ARROWS = {
 /** `KeyboardEvent.code` клавиши E: Ctrl+E открывает окно экспорта (по коду, чтобы работало в любой раскладке). */
 export const EXPORT_HOTKEY_CODE = 'KeyE'
 
+/** `KeyboardEvent.key` окна горячих клавиш: `?` (Shift + `/`; по символу, а не по коду: на других раскладках `?` стоит на другой клавише). */
+export const HELP_HOTKEY_KEY = '?'
+
 /** Значение `aria-keyshortcuts` кнопки «Экспорт». */
 export const EXPORT_KEYSHORTCUTS = 'Control+E'
 

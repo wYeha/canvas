@@ -14,6 +14,7 @@ import {
   ENTER_CODE,
   EXPORT_HOTKEY_CODE,
   ESCAPE_CODE,
+  HELP_HOTKEY_KEY,
   NUMPAD_ENTER_CODE,
   PASTE_HOTKEY_CODE,
   REDO_HOTKEY_CODE,
@@ -48,6 +49,11 @@ export interface KeyLike {
   metaKey: boolean
   shiftKey: boolean
   altKey: boolean
+}
+
+/** Нужные поля события клавиатуры вместе с символом клавиши (для хоткеев по символу, например `?`). */
+export interface CharKeyLike extends KeyLike {
+  key: string
 }
 
 /** Команда камеры по хоткею. */
@@ -136,6 +142,12 @@ export function matchCameraHotkey(e: KeyLike): CameraCommand | null {
 export function matchExportHotkey(e: KeyLike): boolean {
   if (e.altKey || e.shiftKey) return false
   return (e.ctrlKey || e.metaKey) && e.code === EXPORT_HOTKEY_CODE
+}
+
+/** `true` для символа `?` (Shift + `/`) без Ctrl/Cmd/Alt: окно горячих клавиш; по `event.key`, поэтому работает в любой раскладке, где есть `?`. */
+export function matchHelpHotkey(e: CharKeyLike): boolean {
+  if (e.altKey || e.ctrlKey || e.metaKey) return false
+  return e.key === HELP_HOTKEY_KEY
 }
 
 /** Сопоставляет F / G без модификаторов созданию flex- или grid-блока; по коду клавиши, поэтому работает в любой раскладке. */

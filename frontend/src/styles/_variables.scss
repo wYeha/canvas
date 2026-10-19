@@ -218,6 +218,9 @@ $docs-row-height: 44px; // строка документа в выпадашке
 $export-sidebar-width: 300px; // левая колонка окна экспорта
 $export-line-number-width: 40px; // колонка номеров строк в предпросмотре кода
 $checkbox-size: 16px;
+$kbd-height: 20px; // чип клавиши в окне горячих клавиш
+$kbd-min-width: 20px;
+$hotkeys-keys-width: 190px; // колонка клавиш в окне горячих клавиш
 $canvas-grid-step: 16px; // шаг точек сетки поля
 $canvas-dot-radius: 1px;
 $min-screen-width: 1366px; // минимальная ширина экрана (ноутбук), адаптива нет

@@ -9,6 +9,7 @@ import {
   matchCreateHotkey,
   matchEditHotkey,
   matchExportHotkey,
+  matchHelpHotkey,
   matchHistoryHotkey,
   matchSelectionHotkey,
   type CameraCommand,
@@ -25,14 +26,15 @@ import { useCanvasHistory } from './use-canvas-history'
 import { layerIdFromTarget, measureNodeWorldRect } from './node-dom'
 import { firstChildSelection, parentSelection } from './selection'
 
-/** Зависимости хоткеев страницы: открытие окна экспорта и признак «хоткеи сейчас заблокированы» (открыто окно). */
+/** Зависимости хоткеев страницы: открытие окон экспорта и горячих клавиш и признак «хоткеи сейчас заблокированы» (открыто окно). */
 export interface CanvasHotkeysOptions {
   openExport: () => void
+  openHotkeys: () => void
   isBlocked: () => boolean
 }
 
-/** Подписывает страницу на хоткеи камеры, выделения, создания блоков (F, G) и экспорта (Ctrl+E); в полях ввода и при открытом окне хоткеи не срабатывают. */
-export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions): void {
+/** Подписывает страницу на хоткеи камеры, выделения, создания блоков (F, G) и экспорта (Ctrl+E) и справки (?); в полях ввода и при открытом окне хоткеи не срабатывают. */
+export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasHotkeysOptions): void {
   const cameraStore = useCameraStore()
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
@@ -134,6 +136,11 @@ export function useCanvasHotkeys({ openExport, isBlocked }: CanvasHotkeysOptions
       // preventDefault: иначе Chrome по Ctrl+E фокусирует строку поиска
       e.preventDefault()
       openExport()
+      return
+    }
+    if (matchHelpHotkey(e)) {
+      e.preventDefault()
+      openHotkeys()
       return
     }
     if (handleHistoryKey(e)) return

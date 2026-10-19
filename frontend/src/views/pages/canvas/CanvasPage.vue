@@ -1,7 +1,7 @@
-<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы, окно экспорта и тосты -->
+<!-- Оркестратор страницы canvas: собирает хедер и поле с плавающими панелями, подключает хоткеи страницы, окна экспорта и горячих клавиш и тосты -->
 <template>
   <div class="canvas-page">
-    <CanvasHeader @export="openExport" />
+    <CanvasHeader @export="openExport" @hotkeys="openHotkeys" />
     <CanvasViewport>
       <CanvasLayers class="canvas-page__layers" />
       <CanvasProps class="canvas-page__props" />
@@ -10,6 +10,7 @@
       <CanvasZoom class="canvas-page__zoom" />
     </CanvasViewport>
     <ExportModal v-model:open="exportOpen" />
+    <HotkeysModal v-model:open="hotkeysOpen" />
     <CanvasToast />
   </div>
 </template>
@@ -24,12 +25,13 @@ import CanvasToast from '@/views/pages/canvas/CanvasToast.vue'
 import CanvasViewport from '@/views/pages/canvas/CanvasViewport.vue'
 import CanvasZoom from '@/views/pages/canvas/CanvasZoom.vue'
 import ExportModal from '@/views/modals/export-modal/ExportModal.vue'
+import HotkeysModal from '@/views/modals/hotkeys-modal/HotkeysModal.vue'
 import { useCanvasHotkeys } from '@/scripts/pages/canvas/use-canvas-hotkeys'
 import { useCanvasDocuments } from '@/scripts/pages/canvas/use-canvas-documents'
 import { useCanvasPage } from '@/scripts/pages/canvas/use-canvas-page'
 
-// Пока окно экспорта открыто, хоткеи канваса не срабатывают (Esc закрывает окно, а не поднимает выделение)
-const { exportOpen, openExport, isBlocked } = useCanvasPage()
-useCanvasHotkeys({ openExport, isBlocked })
+// Пока открыто окно (экспорт, горячие клавиши), хоткеи канваса не срабатывают (Esc закрывает окно, а не поднимает выделение)
+const { exportOpen, openExport, hotkeysOpen, openHotkeys, isBlocked } = useCanvasPage()
+useCanvasHotkeys({ openExport, openHotkeys, isBlocked })
 useCanvasDocuments()
 </script>

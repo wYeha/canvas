@@ -1,4 +1,4 @@
-/** Состояние страницы canvas, не нужное другим фрагментам: открыто ли окно экспорта. */
+/** Состояние страницы canvas, не нужное другим фрагментам: открыто ли окна экспорта и горячих клавиш. */
 import { ref, type Ref } from 'vue'
 
 /** Результат `useCanvasPage`. */
@@ -7,23 +7,33 @@ export interface CanvasPageState {
   exportOpen: Ref<boolean>
   /** Открывает окно экспорта (кнопка в хедере и Ctrl+E). */
   openExport: () => void
-  /** Хоткеи канваса заблокированы: открыто окно экспорта. */
+  /** Открыто ли окно горячих клавиш (v-model:open модалки). */
+  hotkeysOpen: Ref<boolean>
+  /** Открывает окно горячих клавиш (кнопка «?» в хедере и клавиша `?`). */
+  openHotkeys: () => void
+  /** Хоткеи канваса заблокированы: открыто окно экспорта или горячих клавиш. */
   isBlocked: () => boolean
 }
 
-/** Состояние страницы: флаг окна экспорта и команда его открытия. */
+/** Состояние страницы: флаги окон экспорта и горячих клавиш и команды их открытия. */
 export function useCanvasPage(): CanvasPageState {
   const exportOpen = ref(false)
+  const hotkeysOpen = ref(false)
 
   /** Открывает окно экспорта. */
   function openExport(): void {
     exportOpen.value = true
   }
 
-  /** Блокирует хоткеи канваса, пока открыто окно. */
-  function isBlocked(): boolean {
-    return exportOpen.value
+  /** Открывает окно горячих клавиш. */
+  function openHotkeys(): void {
+    hotkeysOpen.value = true
   }
 
-  return { exportOpen, openExport, isBlocked }
+  /** Блокирует хоткеи канваса, пока открыто любое окно. */
+  function isBlocked(): boolean {
+    return exportOpen.value || hotkeysOpen.value
+  }
+
+  return { exportOpen, openExport, hotkeysOpen, openHotkeys, isBlocked }
 }

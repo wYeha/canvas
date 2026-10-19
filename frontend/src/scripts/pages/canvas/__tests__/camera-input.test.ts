@@ -10,6 +10,7 @@ import {
   matchCameraHotkey,
   matchCreateHotkey,
   matchExportHotkey,
+  matchHelpHotkey,
   normalizeWheelDelta,
   wheelToAction,
   type KeyLike,
@@ -125,6 +126,26 @@ describe('matchExportHotkey', () => {
     expect(matchExportHotkey(key('KeyE', { ctrlKey: true, shiftKey: true }))).toBe(false)
     expect(matchExportHotkey(key('KeyE', { ctrlKey: true, altKey: true }))).toBe(false)
     expect(matchExportHotkey(key('KeyD', { ctrlKey: true }))).toBe(false)
+  })
+})
+
+describe('matchHelpHotkey', () => {
+  /** Событие с символом клавиши. */
+  function char(symbol: string, patch: Partial<KeyLike> = {}) {
+    return { ...key('Slash', patch), key: symbol }
+  }
+
+  it('символ ? срабатывает с Shift и без (другие раскладки)', () => {
+    expect(matchHelpHotkey(char('?', { shiftKey: true }))).toBe(true)
+    expect(matchHelpHotkey(char('?'))).toBe(true)
+  })
+
+  it('/ без Shift, ? с Ctrl/Cmd/Alt и другие символы не срабатывают', () => {
+    expect(matchHelpHotkey(char('/'))).toBe(false)
+    expect(matchHelpHotkey(char('?', { ctrlKey: true }))).toBe(false)
+    expect(matchHelpHotkey(char('?', { metaKey: true }))).toBe(false)
+    expect(matchHelpHotkey(char('?', { altKey: true }))).toBe(false)
+    expect(matchHelpHotkey(char(','))).toBe(false)
   })
 })
 

@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: хедер с логотипом, документом, статусом, темой и экспортом -->
+<!-- Фрагмент страницы canvas: хедер с логотипом, документом, статусом, темой, справкой и экспортом -->
 <template>
   <header class="canvas-header">
     <div class="canvas-header__group">
@@ -15,6 +15,12 @@
         {{ statusLabel }}
       </span>
       <UiIconButton :icon="themeIcon" :label="themeLabel" @click="toggleTheme" />
+      <UiIconButton
+        icon="help"
+        :label="HOTKEYS_BUTTON_LABEL"
+        :aria-keyshortcuts="HOTKEYS_KEYSHORTCUTS"
+        @click="emit('hotkeys')"
+      />
       <UiButton variant="primary" :keyshortcuts="EXPORT_KEYSHORTCUTS" :hint="EXPORT_HINT" @click="emit('export')">
         Экспорт
       </UiButton>
@@ -28,6 +34,7 @@ import UiButton from '@/views/components/ui-button/UiButton.vue'
 import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
 import type { CanvasHeaderEmits } from '@/scripts/pages/canvas/canvas-header.types'
 import { EXPORT_HINT, EXPORT_KEYSHORTCUTS } from '@/scripts/pages/canvas/constants'
+import { HOTKEYS_BUTTON_LABEL, HOTKEYS_KEYSHORTCUTS } from '@/scripts/modals/hotkeys-modal/hotkeys-modal.constants'
 import { useCanvasHeader } from '@/scripts/pages/canvas/use-canvas-header'
 
 const emit = defineEmits<CanvasHeaderEmits>()

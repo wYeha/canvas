@@ -1,0 +1,59 @@
+// Стили модалки hotkeys-modal: таблица «Клавиша — Действие» по группам, клавиши — чипы kbd
+@use 'variables' as v;
+@use 'components/ui-icon';
+@use 'components/ui-icon-button';
+@use 'components/ui-modal';
+
+.hotkeys-modal {
+  &__group {
+    & + & {
+      margin-top: v.$space-16;
+    }
+  }
+
+  &__title {
+    padding-bottom: v.$space-4;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-regular;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  &__table {
+    width: 100%;
+    font-size: v.$font-size-sm;
+    border-collapse: collapse;
+  }
+
+  &__keys {
+    width: v.$hotkeys-keys-width;
+    padding: v.$space-4 v.$space-8 v.$space-4 0;
+    vertical-align: top;
+  }
+
+  &__action {
+    padding: v.$space-4 0;
+    vertical-align: top;
+  }
+
+  &__key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: v.$kbd-min-width;
+    height: v.$kbd-height;
+    padding: 0 v.$space-6;
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    color: var(--color-text);
+    background: var(--color-subtle);
+    border: 1px solid var(--color-line);
+    border-radius: v.$radius-segment;
+  }
+
+  &__sep {
+    margin: 0 v.$space-4;
+    color: var(--color-muted);
+  }
+}
