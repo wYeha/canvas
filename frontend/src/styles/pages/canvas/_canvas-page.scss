@@ -31,10 +31,14 @@
     max-height: calc(100% - #{v.$floating-reserve});
   }
 
+  // Центрирование без transform: у трансформированного предка position: fixed выпадашки «Шаблоны»
+  // считался бы от тулбара, а не от окна, и меню уезжало
   &__toolbar {
+    right: 0;
     bottom: v.$panel-gap;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    width: max-content;
+    margin-inline: auto;
   }
 
   &__breadcrumbs {

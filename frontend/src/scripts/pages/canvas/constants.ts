@@ -606,3 +606,51 @@ export const ARROW_UP_CODE = 'ArrowUp'
 
 /** `KeyboardEvent.code` стрелки вниз (с Alt): ниже среди соседей. */
 export const ARROW_DOWN_CODE = 'ArrowDown'
+
+/** Подпись кнопки тулбара со списком шаблонов-заготовок (она же подпись меню для скринридера). */
+export const TEMPLATES_LABEL = 'Шаблоны'
+
+/** Зазор между крупными частями шаблонов (карточки, ряды, колонки), px. */
+export const TEMPLATE_GAP = 16
+
+/** Малый зазор в шаблонах (фильтры, пункты меню), px. */
+export const TEMPLATE_GAP_SMALL = 8
+
+/** Зазор между сайдбаром и контентом, px. */
+export const TEMPLATE_GAP_LARGE = 24
+
+/** Ширина превью корня шаблонов-страниц, px. */
+export const TEMPLATE_ROOT_WIDTH = 960
+
+/** Ширина превью корня шаблона «Сайдбар + контент», px. */
+export const TEMPLATE_WIDE_ROOT_WIDTH = 1440
+
+/** Число карточек в шаблоне «Ряд KPI». */
+export const TEMPLATE_KPI_COUNT = 4
+
+/** Число графиков в шаблоне «Сетка графиков 2×2». */
+export const TEMPLATE_CHART_COUNT = 4
+
+/** Высота графика в сетке, CSS. */
+export const TEMPLATE_CHART_HEIGHT = '200px'
+
+/** Число фильтров в шаблоне «Фильтры + таблица». */
+export const TEMPLATE_FILTER_COUNT = 4
+
+/** Высота таблицы, CSS. */
+export const TEMPLATE_TABLE_HEIGHT = '320px'
+
+/** Число пунктов меню в сайдбаре. */
+export const TEMPLATE_MENU_ITEM_COUNT = 5
+
+/** Колонки сетки графиков. */
+export const TEMPLATE_CHARTS_COLUMNS = '1fr 1fr'
+
+/** Колонки «Сайдбар + контент». */
+export const TEMPLATE_SIDEBAR_COLUMNS = '250px 1fr'
+
+/** Минимальная высота области контента, CSS. */
+export const TEMPLATE_CONTENT_MIN_HEIGHT = '400px'
+
+/** Значение `flex` у карточки KPI: ряд делится поровну. */
+export const TEMPLATE_KPI_FLEX = '1'
