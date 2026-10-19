@@ -111,6 +111,7 @@ export function useCanvasViewport() {
     'canvas-viewport--pan-ready': spaceHeld.value && !panning.value,
     'canvas-viewport--panning': panning.value,
     'canvas-viewport--dragging': dragStore.isDragging,
+    'canvas-viewport--linking': dragStore.linkSourceId !== null,
     'canvas-viewport--drop-denied': dragStore.dropDenied,
     [VIEWPORT_LABELS_HIDDEN_CLASS]: !viewSettings.labelsVisible,
   }))

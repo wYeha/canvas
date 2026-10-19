@@ -8,7 +8,14 @@ import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
 import { HISTORY_LIMIT, HISTORY_MERGE_MS } from './constants'
 import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
-import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
+import {
+  createBlock,
+  createDocument,
+  createLinkBlock,
+  createRootEntry,
+  nextAutoLabel,
+  type CanvasPoint,
+} from './factories'
 import { rootLabelMap } from './node-view'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
@@ -272,6 +279,14 @@ export const useLayoutStore = defineStore('layout', () => {
     hoveredId.value = id
   }
 
+  /** Ставит связь на корень `sourceId` в блок `parentId` на позицию `index` и выделяет её; `null`, если нельзя (цикл и т. п.). */
+  function addLink(parentId: NodeId, sourceId: NodeId, index: number): NodeId | null {
+    const link = createLinkBlock(sourceId)
+    if (!commit(tree.addChild(document.value, parentId, link, index))) return null
+    selectedId.value = link.id
+    return link.id
+  }
+
   return {
     document,
     selectedId,
@@ -291,6 +306,7 @@ export const useLayoutStore = defineStore('layout', () => {
     setLabelOrAuto,
     pasteChild,
     pasteRoot,
+    addLink,
     removeNode,
     duplicateNode,
     moveNode,

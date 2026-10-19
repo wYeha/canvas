@@ -1,6 +1,6 @@
 /**
- * Pinia-хранилище перетаскивания на канвасе: что тянут (узел или корень за заголовок), точка захвата, положение указателя
- * и приёмник под курсором. Его читают узлы (след на месте), корни (предпросмотр новой точки), призрак,
+ * Pinia-хранилище перетаскивания на канвасе: что тянут (узел, корень за заголовок или новую связь от порта корня),
+ * точка захвата, положение указателя и приёмник под курсором. Его читают узлы (след на месте), корни (предпросмотр новой точки), призрак,
  * viewport (курсор, в том числе «нельзя»), оверлей выделения и хоткеи (блокировка на время перетаскивания).
  */
 import { computed, ref } from 'vue'
@@ -27,8 +27,19 @@ export interface RootDragSession {
   pointer: CanvasPoint
 }
 
+/**
+ * Протягивание новой связи от порта корня-источника: `nodeId` — источник, `from` — точка порта на поле (линия
+ * начинается от неё и при пане/зуме остаётся у порта), указатель — экранные координаты viewport.
+ */
+export interface LinkDragSession {
+  kind: 'link'
+  nodeId: NodeId
+  from: CanvasPoint
+  pointer: CanvasPoint
+}
+
 /** Идущее перетаскивание. */
-export type DragSession = NodeDragSession | RootDragSession
+export type DragSession = NodeDragSession | RootDragSession | LinkDragSession
 
 export const useDragStore = defineStore('drag', () => {
   const cameraStore = useCameraStore()
@@ -44,6 +55,18 @@ export const useDragStore = defineStore('drag', () => {
   /** Идёт ли перетаскивание любого вида. */
   const isDragging = computed<boolean>(() => session.value !== null)
 
+  /** Ищется приёмник (тянут узел или новую связь): подсветка блока-приёмника и линия вставки. */
+  const isTargeting = computed<boolean>(() => session.value?.kind === 'node' || session.value?.kind === 'link')
+
+  /** Источник протягиваемой связи; `null`, если связь не тянут. */
+  const linkSourceId = computed<NodeId | null>(() => (session.value?.kind === 'link' ? session.value.nodeId : null))
+
+  /**
+   * Блок под курсором, в который протягиваемую связь поставить нельзя (свой корень, цикл): красная подсветка.
+   * `null` — такого нет. Меняется только при смене блока под курсором.
+   */
+  const linkDeniedId = ref<NodeId | null>(null)
+
   /** Новая точка перемещаемого корня на поле (предпросмотр до отпускания); `null`, если корень не двигают. */
   const rootPosition = computed<CanvasPoint | null>(() => {
     const current = session.value
@@ -58,8 +81,8 @@ export const useDragStore = defineStore('drag', () => {
    */
   const dropTarget = ref<DropTarget | null>(null)
 
-  /** Тянут узел, а отпустить некуда: курсор «нельзя». Булев — меняется только на границах. */
-  const dropDenied = computed<boolean>(() => session.value?.kind === 'node' && dropTarget.value === null)
+  /** Тянут узел или связь, а отпустить некуда: курсор «нельзя». Булев — меняется только на границах. */
+  const dropDenied = computed<boolean>(() => isTargeting.value && dropTarget.value === null)
 
   /**
    * Режим копии (Alt) для превью вставки: перетаскиваемый ребёнок не исключается из расчёта индекса и линии.
@@ -71,7 +94,13 @@ export const useDragStore = defineStore('drag', () => {
   function begin(next: DragSession): void {
     session.value = { ...next, pointer: { ...next.pointer } }
     dropTarget.value = null
+    linkDeniedId.value = null
     dropForCopy.value = false
+  }
+
+  /** Запоминает блок, отказавший протягиваемой связи, только если он сменился. */
+  function setLinkDenied(id: NodeId | null): void {
+    if (linkDeniedId.value !== id) linkDeniedId.value = id
   }
 
   /** Запоминает приёмник, только если он изменился: движение в одном блоке без смены позиции вставки стор не трогает. */
@@ -89,6 +118,7 @@ export const useDragStore = defineStore('drag', () => {
   function end(): void {
     session.value = null
     dropTarget.value = null
+    linkDeniedId.value = null
     dropForCopy.value = false
   }
 
@@ -97,6 +127,9 @@ export const useDragStore = defineStore('drag', () => {
     draggingId,
     movingRootId,
     isDragging,
+    isTargeting,
+    linkSourceId,
+    linkDeniedId,
     rootPosition,
     dropTarget,
     dropDenied,
@@ -104,6 +137,7 @@ export const useDragStore = defineStore('drag', () => {
     begin,
     movePointer,
     setDropTarget,
+    setLinkDenied,
     end,
   }
 })

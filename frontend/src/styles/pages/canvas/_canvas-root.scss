@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-root: корневой блок на поле, подпись и ширина превью над ним, лёгкая тень
+// Стили фрагмента canvas-root: корневой блок на поле, подпись, ширина превью и порт связи над ним, лёгкая тень
 @use 'variables' as v;
 
 .canvas-root {
@@ -42,7 +42,9 @@
     transform-origin: left bottom;
   }
 
+  // Подпись забирает свободное место: ширина превью и порт стоят справа рядом
   &__title {
+    flex: 1;
     min-width: 0;
     overflow: hidden;
     font-weight: v.$font-weight-medium;
@@ -54,6 +56,22 @@
     font-family: v.$font-mono;
     font-size: v.$font-size-xs;
     color: var(--color-muted);
+  }
+
+  // Порт связи: кружок в конце заголовка, от него протягивают связь на блок-цель (экранный размер — вместе с заголовком)
+  &__port {
+    flex: none;
+    align-self: center;
+    width: v.$link-port-size;
+    height: v.$link-port-size;
+    cursor: crosshair;
+    background: var(--color-paper);
+    border: v.$link-port-border solid var(--color-link);
+    border-radius: v.$radius-pill;
+
+    &:hover {
+      border-color: var(--color-accent);
+    }
   }
 
   &__node {

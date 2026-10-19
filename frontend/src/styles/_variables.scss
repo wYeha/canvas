@@ -246,6 +246,9 @@ $repeat-copy-opacity: 0.5; // копии повтора ×N на канвасе 
 $drop-insert-dot-size: 6px; // диаметр точек на концах линии вставки (DROP_INSERT_DOT_RADIUS × 2)
 $hatch-line: 2px; // толщина штриховки плашки связи
 $hatch-step: 6px; // шаг штриховки плашки связи
+$link-port-size: 10px; // порт связи в заголовке корня (экранные px)
+$link-port-border: 2px;
+$link-draft-width: 2px; // пунктир линии протягиваемой связи
 
 // Запас по высоте под нижние плашки: панели «Слои» и «Свойства» не заходят на них
 $floating-reserve: $panel-gap * 3 + $pill-height;

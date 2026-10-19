@@ -1,5 +1,5 @@
 /**
- * Composable фрагмента CanvasDropInsert: линия вставки при перетаскивании узла — положение по `dropTarget.index`
+ * Composable фрагмента CanvasDropInsert: линия вставки при перетаскивании узла и протягивании связи — положение по `dropTarget.index`
  * и замеру детей приёмника, экранные координаты viewport.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -35,7 +35,13 @@ export function useCanvasDropInsert() {
     const session = dragStore.session
     const target = dragStore.dropTarget
     const origin = overlayEl.value?.getBoundingClientRect()
-    if (origin === undefined || session?.kind !== 'node' || target?.kind !== 'block' || target.index === null) {
+    if (
+      origin === undefined ||
+      session === null ||
+      !dragStore.isTargeting ||
+      target?.kind !== 'block' ||
+      target.index === null
+    ) {
       view.value = null
       return
     }

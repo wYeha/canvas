@@ -85,16 +85,20 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
   const isDropReceiver = computed<boolean>(
     () =>
       copyOf.value === null &&
-      dragStore.draggingId !== null &&
+      dragStore.isTargeting &&
       dragStore.dropTarget?.kind === 'block' &&
       dragStore.dropTarget.id === props.node.id,
   )
 
-  /** Классы узла: вид, след перетаскиваемого и подсветка приёмника. */
+  /** Блок под курсором отказал протягиваемой связи (свой корень, цикл): красная подсветка. */
+  const isLinkDenied = computed<boolean>(() => copyOf.value === null && dragStore.linkDeniedId === props.node.id)
+
+  /** Классы узла: вид, след перетаскиваемого, подсветка приёмника и отказа связи. */
   const classes = computed<string[]>(() => {
     const extra: string[] = []
     if (isDragSource.value) extra.push('canvas-node--drag-source')
     if (isDropReceiver.value) extra.push('canvas-node--drop-target')
+    if (isLinkDenied.value) extra.push('canvas-node--link-denied')
     return extra.length === 0 ? view.value.classes : [...view.value.classes, ...extra]
   })
 

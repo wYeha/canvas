@@ -1,6 +1,6 @@
 /** Тесты выбора приёмника: прозрачность перетаскиваемого поддерева и плашек связей, пустое поле, устаревшие id. */
 import { describe, expect, it } from 'vitest'
-import { resolveDropTarget, sameDropTarget } from '@/scripts/pages/canvas/dnd/drop-target'
+import { resolveDropTarget, resolveLinkTarget, sameDropTarget } from '@/scripts/pages/canvas/dnd/drop-target'
 import { makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
 import { createLinkBlock } from '@/scripts/pages/canvas/factories'
 import { addChild } from '@/scripts/pages/canvas/tree'
@@ -83,5 +83,27 @@ describe('плашка связи прозрачна', () => {
   it('над плашкой приёмник — её родитель', () => {
     const doc = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
     expect(resolveDropTarget(doc, 'a3', { chain: ['lC', 'a2', 'A'] })).toEqual({ kind: 'block', id: 'a2', index: null })
+  })
+})
+
+describe('resolveLinkTarget', () => {
+  const linked = addChild(makeDoc(), 'a2', { ...createLinkBlock('C'), id: 'lC' })
+
+  it('допустимый блок — цель', () => {
+    expect(resolveLinkTarget(linked, 'B', { chain: ['a1x', 'a1', 'A'] })).toEqual({
+      target: { kind: 'block', id: 'a1x', index: null },
+      deniedId: null,
+    })
+  })
+
+  it('свой корень или цикл — отказ с id блока', () => {
+    expect(resolveLinkTarget(linked, 'C', { chain: ['c1', 'C'] })).toEqual({ target: null, deniedId: 'c1' })
+    expect(resolveLinkTarget(linked, 'A', { chain: ['c1', 'C'] })).toEqual({ target: null, deniedId: 'c1' })
+  })
+
+  it('над плашкой — её родитель; поле и панели — ничего', () => {
+    expect(resolveLinkTarget(linked, 'B', { chain: ['lC', 'a2', 'A'] }).target).toMatchObject({ id: 'a2' })
+    expect(resolveLinkTarget(linked, 'B', { chain: [] })).toEqual({ target: null, deniedId: null })
+    expect(resolveLinkTarget(linked, 'B', null)).toEqual({ target: null, deniedId: null })
   })
 })

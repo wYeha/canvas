@@ -1,5 +1,5 @@
 /**
- * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок корня, строка «Слоёв» под курсором,
+ * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок и порт связи корня, строка «Слоёв» под курсором,
  * элемент и цепочка узлов под точкой (поиск приёмника при перетаскивании),
  * измерение прямоугольников узлов (в том числе прямых детей приёмника для позиции вставки)
  * и прокрутка строки в видимую часть панели.
@@ -17,6 +17,8 @@ import {
   LABEL_NODE_SELECTOR,
   LAYER_ID_ATTR,
   LAYER_SELECTOR,
+  LINK_PORT_ATTR,
+  LINK_PORT_SELECTOR,
   NODE_ID_ATTR,
   NODE_OR_REPEAT_SELECTOR,
   NODE_SELECTOR,
@@ -41,6 +43,12 @@ export function nodeIdFromTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null
   const el = target.closest(NODE_OR_REPEAT_SELECTOR)
   return el === null ? null : markedId(el)
+}
+
+/** Id корня, за порт связи которого взялись (`data-link-port-id`); `null`, если цель не порт. */
+export function linkPortIdFromTarget(target: EventTarget | null): string | null {
+  if (!(target instanceof Element)) return null
+  return target.closest(LINK_PORT_SELECTOR)?.getAttribute(LINK_PORT_ATTR) ?? null
 }
 
 /** Id корня, за заголовок которого взялись (`data-root-handle-id`); `null`, если цель не в заголовке корня. */

@@ -10,6 +10,7 @@
     <CanvasSelection />
     <CanvasDropInsert />
     <CanvasDragGhost />
+    <CanvasLinkDraft />
     <CanvasLabelEditor />
     <p v-if="isEmpty" class="canvas-viewport__hint">Нажмите F или G, чтобы создать блок</p>
     <slot />
@@ -19,6 +20,7 @@
 <script setup lang="ts">
 import CanvasDragGhost from '@/views/pages/canvas/CanvasDragGhost.vue'
 import CanvasDropInsert from '@/views/pages/canvas/CanvasDropInsert.vue'
+import CanvasLinkDraft from '@/views/pages/canvas/CanvasLinkDraft.vue'
 import CanvasLabelEditor from '@/views/pages/canvas/CanvasLabelEditor.vue'
 import CanvasSelection from '@/views/pages/canvas/CanvasSelection.vue'
 import CanvasRoot from '@/views/pages/canvas/CanvasRoot.vue'

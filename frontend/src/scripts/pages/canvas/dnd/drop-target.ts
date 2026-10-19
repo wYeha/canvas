@@ -1,9 +1,9 @@
 /**
- * Чистый выбор приёмника при перетаскивании узла: по цепочке id под курсором (от самого глубокого к корню)
- * решает, куда упадёт узел — в блок, на пустое поле или никуда. Без Vue и DOM; правила переноса — `canMoveNode`.
+ * Чистый выбор приёмника при перетаскивании узла и протягивании связи: по цепочке id под курсором (от самого глубокого
+ * к корню) решает, куда упадёт узел или встанет связь. Без Vue и DOM; правила — `canMoveNode` и `canConnectLink`.
  */
 
-import { isLinkBlock, type LayoutDocument, type NodeId } from '@shared'
+import { canConnectLink, isLinkBlock, type LayoutDocument, type NodeId } from '@shared'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
 import { canMoveNode } from '@/scripts/pages/canvas/tree-move'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
@@ -64,6 +64,24 @@ export function resolveDropTarget(doc: LayoutDocument, draggedId: NodeId, hit: D
   }
   const error = canMoveNode(doc, draggedId, { type: 'canvas', at: CANVAS_PROBE_POINT })
   return error === null ? { kind: 'canvas' } : null
+}
+
+/** Цель протягиваемой связи: блок, куда она встанет (`index` дополняет вызывающий), или блок, который отказал. */
+export interface LinkTargetResult {
+  target: DropTarget | null
+  deniedId: NodeId | null
+}
+
+/**
+ * Цель новой связи на источник `sourceId` под курсором: самый глубокий блок, не плашка (над плашкой — её родитель).
+ * Допустим по `canConnectLink` (не внутри источника и не в корне, который источник уже включает) — цель; иначе он
+ * отказал (красная подсветка). Пустое поле и панели — ни цели, ни отказа: связь не стоит на поле.
+ */
+export function resolveLinkTarget(doc: LayoutDocument, sourceId: NodeId, hit: DropHit): LinkTargetResult {
+  const blockId = hit === null ? null : firstBlockId(doc, hit.chain)
+  if (blockId === null) return { target: null, deniedId: null }
+  if (!canConnectLink(doc, sourceId, blockId)) return { target: null, deniedId: blockId }
+  return { target: { kind: 'block', id: blockId, index: null }, deniedId: null }
 }
 
 /** `true`, если цели одинаковы (оба `null`, оба поле или один и тот же блок с той же позицией вставки). */

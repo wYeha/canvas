@@ -52,6 +52,11 @@
     user-select: none;
   }
 
+  // Протягивание новой связи от порта корня: прицел вместо руки
+  &--linking {
+    cursor: crosshair;
+  }
+
   &--drop-denied {
     cursor: no-drop;
   }

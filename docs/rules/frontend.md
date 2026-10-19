@@ -207,7 +207,7 @@ src/
 
 Динамические стили камеры канваса тоже идут через `:style`: `transform` и переменная `--camera-zoom` (для обратного масштаба подписей) слоя `canvas-viewport__world` и `background-position` / `background-size` у `.canvas-viewport`. Они формируются **только** функциями из `scripts/pages/canvas/camera-style.ts`. Так же через `:style` задаются позиция и ширина превью корня на поле (`rootPlacementStyle()` из `node-view.ts`) и прямоугольники оверлея выделения (`overlayRectStyle()` из `selection.ts`). Всё остальное оформление поля — BEM-классы.
 
-Положение и размер индикаторов перетаскивания на канвасе в экранных координатах (призрак за курсором, линия вставки) задаются через `:style` **только** функциями из `scripts/pages/canvas/dnd/dnd-style.ts` (`dragGhostStyle()`, `dropInsertLineStyle()`). Подсветка блока-приёмника — BEM-класс `canvas-node--drop-target`. Наклон, тень, цвета, пунктир и точки на концах линии — BEM-классы.
+Положение и размер индикаторов перетаскивания на канвасе в экранных координатах (призрак за курсором, линия вставки, линия протягиваемой связи — с поворотом) задаются через `:style` **только** функциями из `scripts/pages/canvas/dnd/dnd-style.ts` (`dragGhostStyle()`, `dropInsertLineStyle()`, `linkDraftLineStyle()`). Подсветка блока-приёмника — BEM-класс `canvas-node--drop-target`. Наклон, тень, цвета, пунктир и точки на концах линии — BEM-классы.
 
 Положение и размер индикаторов перетаскивания в панели «Слои» (линия вставки между строками, призрак строки) задаются через `:style` **только** функциями из `scripts/pages/canvas/layers-drop-style.ts` (`layerDropLineStyle()`, `layerDragGhostStyle()`). Подсветка строки-приёмника, след источника и приглушение запрещённых строк — BEM-классы.
 

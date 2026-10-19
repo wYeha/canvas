@@ -9,6 +9,7 @@ import {
   isDragStart,
   rootDragPosition,
   rootGrabOffset,
+  screenSegment,
   toViewportPoint,
 } from '@/scripts/pages/canvas/dnd/dnd-geometry'
 import { dragGhostStyle } from '@/scripts/pages/canvas/dnd/dnd-style'
@@ -140,5 +141,17 @@ describe('dragGhostStyle', () => {
       width: '200px',
       height: '100px',
     })
+  })
+})
+
+describe('screenSegment', () => {
+  it('начало, длина и угол в градусах', () => {
+    expect(screenSegment({ x: 10, y: 10 }, { x: 13, y: 14 })).toEqual({
+      x: 10,
+      y: 10,
+      length: 5,
+      angle: expect.closeTo(53.13, 2),
+    })
+    expect(screenSegment({ x: 0, y: 0 }, { x: -2, y: 0 })).toMatchObject({ length: 2, angle: 180 })
   })
 })

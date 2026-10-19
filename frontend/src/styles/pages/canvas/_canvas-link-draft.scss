@@ -1,0 +1,11 @@
+// Стили фрагмента canvas-link-draft: пунктирная линия новой связи; положение, длину и поворот задаёт :style (dnd-style.ts)
+@use 'variables' as v;
+
+.canvas-link-draft {
+  position: absolute;
+  z-index: v.$z-drag-ghost;
+  height: 0;
+  pointer-events: none; // иначе поиск цели под курсором попадал бы в линию (node-dom.ts)
+  border-top: v.$link-draft-width dashed var(--color-accent);
+  transform-origin: left center;
+}

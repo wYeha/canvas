@@ -4,7 +4,8 @@
  * (Esc, потеря захвата, уход со страницы). Корень за заголовок при отпускании переезжает в новую точку поля;
  * для узла ищется приёмник под курсором (`use-drop-target.ts`): над пустым полем узел становится корнем,
  * над блоком с индексом вставки — переносится внутрь (`child`). `Alt` при отпускании — копия в цель;
- * у края видимого поля — автопан (`drag-autopan.ts`).
+ * у края видимого поля — автопан (`drag-autopan.ts`). От порта корня протягивается новая связь: при отпускании над
+ * допустимым блоком она встаёт в него на позицию вставки.
  */
 import { onBeforeUnmount, onMounted, watch, type Ref } from 'vue'
 import type { NodeId } from '@shared'
@@ -24,6 +25,7 @@ import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import {
   clientRectOf,
   measureNodeWorldRect,
+  linkPortIdFromTarget,
   nodeIdFromTarget,
   rootHandleIdFromTarget,
 } from '@/scripts/pages/canvas/node-dom'
@@ -34,7 +36,7 @@ import { createGrab, isDragStart, rootGrabOffset, toViewportPoint } from './dnd-
 import { useDragStore, type DragSession } from './drag-store'
 import { useDropTarget } from './use-drop-target'
 
-/** Нажатие ЛКМ на блоке (`node`) или на заголовке корня (`root`), которое ещё может стать перетаскиванием. */
+/** Нажатие ЛКМ на блоке (`node`), заголовке корня (`root`) или порте связи (`link`), которое ещё может стать перетаскиванием. */
 interface PendingPress {
   kind: DragSession['kind']
   pointerId: number
@@ -52,7 +54,7 @@ export function useCanvasDnd(
   const layoutStore = useLayoutStore()
   const cameraStore = useCameraStore()
   const labelEdit = useLabelEditStore()
-  const { refreshTarget, nodeDropMove } = useDropTarget(isSurface)
+  const { refreshTarget, nodeDropMove, linkDrop } = useDropTarget(isSurface)
   /** Нажатие до порога; `null` — не ждём. */
   let pending: PendingPress | null = null
   /** Указатель идущего перетаскивания (захвачен viewport). */
@@ -106,6 +108,12 @@ export function useCanvasDnd(
     pending = null
     if (e.button !== PRIMARY_BUTTON || !e.isPrimary || !isSurface(e.target) || isPanning()) return
     const start = { x: e.clientX, y: e.clientY }
+    // Порт лежит в заголовке корня: проверяется раньше заголовка, иначе нажатие начало бы перемещение корня
+    const portId = linkPortIdFromTarget(e.target)
+    if (portId !== null) {
+      pending = { kind: 'link', pointerId: e.pointerId, nodeId: portId, start }
+      return
+    }
     const nodeId = nodeIdFromTarget(e.target)
     if (nodeId !== null) {
       pending = { kind: 'node', pointerId: e.pointerId, nodeId, start }
@@ -129,6 +137,19 @@ export function useCanvasDnd(
     return { kind: 'root', nodeId: press.nodeId, offset: rootGrabOffset(pressWorld, entry.canvas), pointer }
   }
 
+  /** Сессия протягивания связи: линия начинается от точки нажатия на порт (на поле); `null`, если корня нет. */
+  function linkSession(press: PendingPress, pressWorld: CanvasPoint, pointer: CanvasPoint): DragSession | null {
+    if (findRootEntry(layoutStore.document, press.nodeId) === undefined) return null
+    return { kind: 'link', nodeId: press.nodeId, from: pressWorld, pointer }
+  }
+
+  /** Сессия по виду нажатия. */
+  function sessionFor(press: PendingPress, pressWorld: CanvasPoint, pointer: CanvasPoint): DragSession | null {
+    if (press.kind === 'node') return nodeSession(press, pressWorld, pointer)
+    if (press.kind === 'root') return rootSession(press, pressWorld, pointer)
+    return linkSession(press, pressWorld, pointer)
+  }
+
   /**
    * Начинает перетаскивание: захват считается от точки нажатия (а не от текущей, ушедшей на порог),
    * указатель захватывается только сейчас — иначе `pointerup` обычного клика пришёл бы во viewport и снял выделение.
@@ -140,13 +161,12 @@ export function useCanvasDnd(
     origin = { x: rect.x, y: rect.y }
     const pressWorld = screenToWorld(cameraStore.camera, toViewportPoint(press.start, origin))
     const pointer = toViewportPoint({ x: e.clientX, y: e.clientY }, origin)
-    const session =
-      press.kind === 'node' ? nodeSession(press, pressWorld, pointer) : rootSession(press, pressWorld, pointer)
+    const session = sessionFor(press, pressWorld, pointer)
     if (session === null) return
     dragStore.begin(session)
     activePointer = e.pointerId
     el.setPointerCapture(e.pointerId)
-    // Выделяем то, что тянем: свойства показывают перетаскиваемый блок, F2 — на канвасе
+    // Выделяем то, что тянем: свойства показывают перетаскиваемый блок, F2 — на канвасе (у связи — её источник)
     layoutStore.select(press.nodeId)
     labelEdit.pickInLayers(null)
     layoutStore.hover(null)
@@ -210,6 +230,12 @@ export function useCanvasDnd(
     dropForCopy = forCopy
     refreshTarget(client, { forCopy })
     const id = dragStore.session?.nodeId ?? null
+    if (dragStore.session?.kind === 'link') {
+      const drop = linkDrop()
+      stop()
+      if (id !== null && drop !== null) layoutStore.addLink(drop.parentId, id, drop.index)
+      return
+    }
     const target = releaseMove(client)
     stop()
     if (id === null || target === null) return

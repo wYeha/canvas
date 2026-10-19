@@ -15,7 +15,7 @@ import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { releaseNodeMoveTarget } from './dnd-release'
 import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
 import { useDragStore } from './drag-store'
-import { resolveDropTarget, type DropHit, type DropTarget } from './drop-target'
+import { resolveDropTarget, resolveLinkTarget, type DropHit, type DropTarget } from './drop-target'
 import { flexInsertIndex } from './flex-insert'
 import { gridInsertIndex } from './grid-insert'
 
@@ -24,10 +24,17 @@ export interface RefreshTargetOptions {
   forCopy?: boolean
 }
 
-/** Поиск приёмника: пересчёт по точке страницы и цель переноса на поле при отпускании. */
+/** Куда встанет новая связь: блок-цель и позиция среди его детей. */
+export interface LinkDrop {
+  parentId: NodeId
+  index: number
+}
+
+/** Поиск приёмника: пересчёт по точке страницы и цели при отпускании (перенос узла, новая связь). */
 export interface DropTargetApi {
   refreshTarget: (client: CanvasPoint, options?: RefreshTargetOptions) => void
   nodeDropMove: (pointer: CanvasPoint) => MoveTarget | null
+  linkDrop: () => LinkDrop | null
 }
 
 /** Подключает поиск приёмника; `isSurface` отличает поверхность поля от плавающих панелей. */
@@ -82,20 +89,40 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
     return { ...base, index: insertIndexIn(base.id, nodeId, client, forCopy) }
   }
 
-  /** Пересчитывает приёмник для перетаскиваемого узла по точке страницы; при других жестах ничего не делает. */
+  /** Цель протягиваемой связи на `sourceId` под точкой страницы (с позицией вставки) и блок, который отказал. */
+  function refreshLinkTarget(sourceId: NodeId, client: CanvasPoint): void {
+    const { target, deniedId } = resolveLinkTarget(layoutStore.document, sourceId, hitAt(client))
+    dragStore.setLinkDenied(deniedId)
+    if (target?.kind !== 'block') {
+      dragStore.setDropTarget(target)
+      return
+    }
+    // Источник не среди детей цели (иначе был бы цикл), поэтому исключать из расчёта индекса некого
+    dragStore.setDropTarget({ ...target, index: insertIndexIn(target.id, sourceId, client, false) })
+  }
+
+  /** Пересчитывает приёмник перетаскиваемого узла или цель протягиваемой связи по точке страницы. */
   function refreshTarget(client: CanvasPoint, options?: RefreshTargetOptions): void {
     lastClient = { x: client.x, y: client.y }
     const forCopy = options?.forCopy ?? false
     lastForCopy = forCopy
     dragStore.dropForCopy = forCopy
     const session = dragStore.session
+    if (session?.kind === 'link') refreshLinkTarget(session.nodeId, client)
     if (session?.kind !== 'node') return
     dragStore.setDropTarget(targetAt(session.nodeId, client, forCopy))
   }
 
-  /** Пересчёт по последней точке, если идёт перетаскивание узла (камера или документ сменились без движения мыши). */
+  /** Пересчёт по последней точке, если ищется приёмник (камера или документ сменились без движения мыши). */
   function refreshAtLast(): void {
-    if (dragStore.session?.kind === 'node') refreshTarget(lastClient, { forCopy: lastForCopy })
+    if (dragStore.isTargeting) refreshTarget(lastClient, { forCopy: lastForCopy })
+  }
+
+  /** Куда встанет протягиваемая связь при отпускании: блок-цель с позицией вставки; иначе `null`. */
+  function linkDrop(): LinkDrop | null {
+    const target = dragStore.dropTarget
+    if (dragStore.session?.kind !== 'link' || target?.kind !== 'block' || target.index === null) return null
+    return { parentId: target.id, index: target.index }
   }
 
   /**
@@ -113,5 +140,5 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
   watch(() => cameraStore.camera, refreshAtLast, { flush: 'post' })
   watch(() => layoutStore.document, refreshAtLast, { flush: 'post' })
 
-  return { refreshTarget, nodeDropMove }
+  return { refreshTarget, nodeDropMove, linkDrop }
 }

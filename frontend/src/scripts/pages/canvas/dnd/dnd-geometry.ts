@@ -1,7 +1,7 @@
 /**
  * Чистая геометрия перетаскивания на канвасе: порог старта, перевод точек страницы в координаты viewport,
  * точка захвата узла, экранный прямоугольник призрака, новая точка перемещаемого корня с учётом камеры
- * и цель переноса узла на пустое поле. Без Vue и DOM.
+ * цель переноса узла на пустое поле и отрезок линии протягиваемой связи. Без Vue и DOM.
  */
 import { screenToWorld, type Camera, type Rect, type Size } from '@/scripts/pages/canvas/camera'
 import type { CanvasPoint } from '@/scripts/pages/canvas/factories'
@@ -97,4 +97,22 @@ export function ghostRect(grab: DragGrab, pointer: CanvasPoint, zoom: number, ma
     width: screen.width * k,
     height: screen.height * k,
   }
+}
+
+/** Отрезок на экране: начало, длина и угол к оси X в градусах. */
+export interface ScreenSegment {
+  x: number
+  y: number
+  length: number
+  angle: number
+}
+
+/** Градусов в радиане: угол отрезка для CSS `rotate`. */
+const DEGREES_PER_RADIAN = 180 / Math.PI
+
+/** Отрезок от `from` до `to` на экране: начало, длина и угол в градусах (линия протягиваемой связи). */
+export function screenSegment(from: CanvasPoint, to: CanvasPoint): ScreenSegment {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  return { x: from.x, y: from.y, length: Math.hypot(dx, dy), angle: Math.atan2(dy, dx) * DEGREES_PER_RADIAN }
 }

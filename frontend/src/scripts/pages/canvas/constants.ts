@@ -251,6 +251,15 @@ export const ROOT_HANDLE_ATTR = 'data-root-handle-id'
 /** CSS-селектор заголовка корня на поле. */
 export const ROOT_HANDLE_SELECTOR = `[${ROOT_HANDLE_ATTR}]`
 
+/** Атрибут порта связи у корня: id корня-источника; нажатие на порт начинает протягивание новой связи. */
+export const LINK_PORT_ATTR = 'data-link-port-id'
+
+/** Селектор порта связи. */
+export const LINK_PORT_SELECTOR = `[${LINK_PORT_ATTR}]`
+
+/** Подсказка порта связи у корня. */
+export const LINK_PORT_TITLE = 'Протяните на блок, чтобы подключить туда этот корневой блок'
+
 /** Имя атрибута подписи блока на канвасе (заголовок корня, чип, подпись листа): двойной клик по ней переименовывает блок. */
 export const LABEL_NODE_ATTR = 'data-label-node-id'
 
