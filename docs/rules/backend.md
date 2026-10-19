@@ -7,7 +7,7 @@
 - Node.js LTS, TypeScript (`strict`), Fastify.
 - SQLite через `better-sqlite3`: файл базы на сервере, без отдельного сервера БД.
 - Валидация: zod-схемы из `@shared`. Это те же схемы, что проверяют импорт `.json` на фронте.
-- Пароль хранится в виде хэша argon2 в `.env`. Сессия — httpOnly cookie.
+- Пароль хранится в виде хэша argon2 в `.env`. Сессия — httpOnly cookie `lc_session` (SameSite=Strict, Secure, путь `/api`) со случайным токеном; в таблице `sessions` лежит только его хэш и срок.
 
 ## Структура `backend/src`
 
@@ -23,13 +23,16 @@ db/
   migrations/      — 001_init.sql, 002_... (только добавлять, не менять старые)
 plugins/
   errors.ts        — единый формат ошибок, обработчик 404
-  auth.ts          — проверка сессии, декоратор requireAuth
+  auth.ts          — разбор cookie, проверка сессии, декоратор requireAuth
 routes/
   health.ts        — GET /api/health
   auth.ts          — POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me
   documents.ts     — CRUD /api/documents
 services/
   documents.ts     — SQL-запросы к таблице documents
+  sessions.ts      — SQL-запросы к таблице sessions (в базе только SHA-256 токена)
+cli/
+  hash-password.ts — хэш argon2 для PASSWORD_HASH (npm run hash-password -w backend)
 ```
 
 ## Правила
