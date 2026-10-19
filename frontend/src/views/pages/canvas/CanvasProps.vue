@@ -45,7 +45,7 @@ import type { PropsSectionId } from '@/scripts/pages/canvas/props-sections'
 import { useCanvasProps } from '@/scripts/pages/canvas/use-canvas-props'
 import { useCanvasPropsSections } from '@/scripts/pages/canvas/use-canvas-props-sections'
 
-// Реестр готовых секций: секция связи добавится в этапе 8
+// Реестр секций панели свойств по id
 const registry: Partial<Record<PropsSectionId, Component>> = {
   preview: CanvasPropsPreview,
   block: CanvasPropsBlock,

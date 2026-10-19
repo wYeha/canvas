@@ -29,7 +29,7 @@ function withRoot() {
 /** Возвращает id первого ребёнка первого корня. */
 function firstChildId(store: ReturnType<typeof useLayoutStore>): string {
   const root = store.document.roots[0]?.node
-  return root?.type === 'block' ? (root.children[0]?.id ?? '') : ''
+  return root?.children[0]?.id ?? ''
 }
 
 describe('layout-store', () => {
@@ -45,8 +45,8 @@ describe('layout-store', () => {
     const { store, rootId } = withRoot()
     expect(store.addChild(rootId, 'grid', 'Дитя')).toBe(true)
     const root = store.document.roots[0]?.node
-    const child = root?.type === 'block' ? root.children[0] : undefined
-    expect(child?.type === 'block' && child.label).toBe('Дитя')
+    const child = root?.children[0]
+    expect(child?.label).toBe('Дитя')
     expect(store.rootOf(rootId)?.canvas.x).toBe(AT.x)
   })
 
@@ -130,7 +130,7 @@ describe('layout-store', () => {
     expect(store.selectedId).toBe(copyId)
     expect(store.document.roots).toHaveLength(2)
     const root = store.document.roots[0]?.node
-    expect(root?.type === 'block' && root.children.some((child) => child.id === childId)).toBe(true)
+    expect(root?.children.some((child) => child.id === childId)).toBe(true)
   })
 
   it('select игнорирует несуществующий id, hover принимает id и null', () => {

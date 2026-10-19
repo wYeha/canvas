@@ -1,11 +1,10 @@
-/** Тесты node-view: цвет по глубине, значки, пустой лист, подписи корня и связи, стиль положения корня. */
+/** Тесты node-view: цвет по глубине, значки, пустой лист, подпись корня, стиль положения корня. */
 import { describe, expect, it } from 'vitest'
-import { createBlock, createDocument, createLink, createRootEntry } from '@/scripts/pages/canvas/factories'
+import { createBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
   blockClasses,
   depthClass,
   directionIcon,
-  linkCaption,
   needsLeafMinHeight,
   paletteIndex,
   rootCaption,
@@ -49,13 +48,6 @@ describe('node-view', () => {
       'canvas-node--min-height',
     ])
     expect(blockClasses({ ...leaf, children: [leaf] }, 0, null)).toEqual(['canvas-node', 'canvas-node--depth-0'])
-  })
-
-  it('подпись плашки связи: по подписи источника, с запасным текстом', () => {
-    const doc = { ...createDocument(), roots: [createRootEntry('flex', 'KPI', { x: 0, y: 0 })] }
-    const id = doc.roots[0]?.node.id ?? ''
-    expect(linkCaption(doc, createLink(id).sourceId)).toBe('→ KPI')
-    expect(linkCaption(doc, 'нет')).toBe('→ без источника')
   })
 
   it('подпись корня и стиль положения', () => {

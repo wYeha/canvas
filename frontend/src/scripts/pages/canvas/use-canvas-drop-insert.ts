@@ -40,7 +40,7 @@ export function useCanvasDropInsert() {
       return
     }
     const parent = findNode(doc.value, target.id)
-    if (parent?.type !== 'block') {
+    if (!parent) {
       view.value = null
       return
     }

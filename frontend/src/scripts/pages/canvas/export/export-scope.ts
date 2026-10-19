@@ -8,7 +8,7 @@ import { EXPORT_NEWLINE } from './export-constants'
 
 /**
  * План корней: `doc.roots` (порядок слоёв), отфильтрованные по множеству id (`'all'` — все); несуществующие id
- * игнорируются. Пока все корни `standalone`; в 8.7 появится роль `component` (подключён связью, в «всех» не повторяется).
+ * игнорируются. Все корни выводятся самостоятельно (`standalone`).
  */
 export function planRoots(doc: LayoutDocument, rootIds: readonly NodeId[] | 'all'): ExportRootPlan[] {
   const wanted = rootIds === 'all' ? null : new Set<NodeId>(rootIds)

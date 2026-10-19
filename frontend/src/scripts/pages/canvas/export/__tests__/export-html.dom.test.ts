@@ -1,9 +1,9 @@
 /** DOM-тесты экспорта: разбор вывода браузерным парсером совпадает с моделью, инъекции в обход zod не дают лишних элементов и атрибутов. */
 import { describe, expect, it } from 'vitest'
 import type { BlockNode, ContainerKind, LayoutDocument, LayoutNode, LayoutTag, RootEntry } from '@shared'
-import { createBlock, createDocument, createGridContainer, createLink } from '@/scripts/pages/canvas/factories'
+import { createBlock, createDocument, createGridContainer } from '@/scripts/pages/canvas/factories'
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
-import { styleEntries, toInlineStyle, type StyleEntry } from '@/scripts/pages/canvas/node-style'
+import { toInlineStyle } from '@/scripts/pages/canvas/node-style'
 import { exportRootHtml } from '@/scripts/pages/canvas/export/export-html'
 import { exportStyleEntries, rootExportEntries } from '@/scripts/pages/canvas/export/export-style'
 import { docOf, root, smallTree } from './export-fixture'
@@ -20,20 +20,10 @@ function rootElement(dom: Document): Element {
   return element
 }
 
-/** Ожидаемые стили узла: у блока — `exportStyleEntries`, у связи — `styleEntries` (как в превью). */
-function expectedEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
-  return node.type === 'link' ? styleEntries(node, parentKind) : exportStyleEntries(node, parentKind)
-}
-
 /** Сверяет элемент с узлом модели рекурсивно: тег, стиль, число детей-элементов. */
 function expectMatches(element: Element, node: LayoutNode, parentKind: ContainerKind | null, extra = ''): void {
-  const style = [toInlineStyle(expectedEntries(node, parentKind)), extra].filter((part) => part !== '').join('; ')
+  const style = [toInlineStyle(exportStyleEntries(node, parentKind)), extra].filter((part) => part !== '').join('; ')
   expect(element.getAttribute('style') ?? '').toBe(style)
-  if (node.type === 'link') {
-    expect(element.tagName.toLowerCase()).toBe('div')
-    expect(element.children.length).toBe(0)
-    return
-  }
   expect(element.tagName.toLowerCase()).toBe(node.tag)
   expect(element.children.length).toBe(node.children.length)
   node.children.forEach((child, index) => {
@@ -51,9 +41,9 @@ function commentTexts(dom: Document): string[] {
   return texts
 }
 
-/** Число узлов в поддереве модели (блоки и связи). */
+/** Число узлов в поддереве модели. */
 function countNodes(node: LayoutNode): number {
-  return node.type === 'link' ? 1 : 1 + node.children.reduce((sum, child) => sum + countNodes(child), 0)
+  return 1 + node.children.reduce((sum, child) => sum + countNodes(child), 0)
 }
 
 /** Тег в обход типа: имитирует данные, не прошедшие zod. */
@@ -117,7 +107,6 @@ describe('инъекции в обход zod', () => {
         block('скрипт', { tag: unsafeTag('script') }),
         block('атрибут', { tag: unsafeTag('div onclick=x') }),
         block('описание', { description: 'строка --> раз\n<!-- два --!>' }),
-        createLink('нет'),
       ],
     )
     const entry: RootEntry = { canvas: { x: 0, y: 0, width: 960, height: null, exportMaxWidth: false }, node }

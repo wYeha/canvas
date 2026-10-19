@@ -17,7 +17,7 @@ export interface ExportOptions {
 export type ExportScope =
   { kind: 'selected'; nodeId: NodeId } | { kind: 'roots'; rootIds: readonly NodeId[] } | { kind: 'all' }
 
-/** План вывода корня; роль `component` (подключён связью) появится в 8.7. */
+/** План вывода корня: запись корня и роль (пока одна — самостоятельный корень). */
 export interface ExportRootPlan {
   entry: RootEntry
   role: 'standalone'

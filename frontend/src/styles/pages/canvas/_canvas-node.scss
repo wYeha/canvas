@@ -1,4 +1,4 @@
-// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи, заглушка связи); геометрию не меняет
+// Стили фрагмента canvas-node: оформление блока превью (цвет по глубине, чип подписи); геометрию не меняет
 @use 'sass:list';
 @use 'sass:map';
 @use 'variables' as v;
@@ -86,26 +86,7 @@
     color: var(--color-muted);
   }
 
-  // Заглушка плашки связи (полная плашка — итерация 8.4)
-  &--link {
-    --node-color: var(--color-link);
-
-    display: flex;
-    align-items: center;
-    min-height: v.$control-height;
-    padding: 0 v.$space-8;
-    font-size: v.$font-size-sm;
-    color: var(--color-text);
-    white-space: nowrap;
-    outline-style: dashed;
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in srgb, var(--node-color) calc(var(--alpha-link-hatch) * 100%), transparent) 0 v.$hatch-line,
-      transparent v.$hatch-line v.$hatch-step
-    );
-  }
-
-  // Перетаскиваемый узел на своём месте: пунктирный след акцентом (после --link, чтобы перебить его обводку)
+  // Перетаскиваемый узел на своём месте: пунктирный след акцентом
   &--drag-source {
     outline: 1px dashed var(--color-accent);
     opacity: v.$drag-source-opacity;

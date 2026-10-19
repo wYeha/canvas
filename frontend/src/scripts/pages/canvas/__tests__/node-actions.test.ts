@@ -26,8 +26,8 @@ describe('nodeActionStates', () => {
     expect(state('a1', 'move-down')).toMatchObject({ disabled: false, reason: null })
   })
 
-  it('последний ребёнок (связь): «ниже» недоступно', () => {
-    expect(state('linkB', 'move-down')).toMatchObject({ disabled: true, reason: NODE_ACTION_REASONS.last })
+  it('последний ребёнок: «ниже» недоступно', () => {
+    expect(state('a3', 'move-down')).toMatchObject({ disabled: true, reason: NODE_ACTION_REASONS.last })
   })
 
   it('корни: крайние недоступны в своём направлении', () => {
@@ -36,14 +36,14 @@ describe('nodeActionStates', () => {
     expect(state('C', 'move-down')?.disabled).toBe(true)
   })
 
-  it('«На канвас»: вложенный блок доступен, корень и связь нет', () => {
+  it('«На канвас»: вложенный блок доступен, корень нет', () => {
     expect(state('a1', 'to-canvas')?.disabled).toBe(false)
     expect(state('A', 'to-canvas')).toMatchObject({ disabled: true, reason: NODE_ACTION_REASONS.alreadyRoot })
-    expect(state('linkB', 'to-canvas')).toMatchObject({ disabled: true, reason: NODE_ACTION_REASONS.linkToCanvas })
+    expect(state('a3', 'to-canvas')?.disabled).toBe(false)
   })
 
   it('дублировать и удалить доступны всегда', () => {
-    for (const id of ['A', 'a1', 'linkB']) {
+    for (const id of ['A', 'a1', 'a3']) {
       expect(state(id, 'duplicate')?.disabled).toBe(false)
       expect(state(id, 'delete')?.disabled).toBe(false)
     }
@@ -54,14 +54,14 @@ describe('moveTargetFor', () => {
   it('«ниже» ребёнка меняет его с соседом', () => {
     const doc = makeDoc()
     const next = moveNode(doc, 'a1', mustTarget(moveTargetFor(doc, 'a1', 1)))
-    expect(childIds(next.roots[0]?.node)).toEqual(['a2', 'a1', 'linkB'])
+    expect(childIds(next.roots[0]?.node)).toEqual(['a2', 'a1', 'a3'])
     expectValid(next)
   })
 
   it('«выше» ребёнка меняет его с предыдущим соседом', () => {
     const doc = makeDoc()
-    const next = moveNode(doc, 'linkB', mustTarget(moveTargetFor(doc, 'linkB', -1)))
-    expect(childIds(next.roots[0]?.node)).toEqual(['a1', 'linkB', 'a2'])
+    const next = moveNode(doc, 'a3', mustTarget(moveTargetFor(doc, 'a3', -1)))
+    expect(childIds(next.roots[0]?.node)).toEqual(['a1', 'a3', 'a2'])
   })
 
   it('«ниже» корня меняет порядок roots, не двигая его по полю', () => {
@@ -81,7 +81,7 @@ describe('moveTargetFor', () => {
   it('на краю перемещение ничего не меняет', () => {
     const doc = makeDoc()
     expect(moveNode(doc, 'a1', mustTarget(moveTargetFor(doc, 'a1', -1)))).toBe(doc)
-    expect(moveNode(doc, 'linkB', mustTarget(moveTargetFor(doc, 'linkB', 1)))).toBe(doc)
+    expect(moveNode(doc, 'a3', mustTarget(moveTargetFor(doc, 'a3', 1)))).toBe(doc)
     expect(moveNode(doc, 'A', mustTarget(moveTargetFor(doc, 'A', -1)))).toBe(doc)
     expect(moveNode(doc, 'C', mustTarget(moveTargetFor(doc, 'C', 1)))).toBe(doc)
   })
@@ -102,10 +102,9 @@ describe('toCanvasTarget', () => {
     expectValid(next)
   })
 
-  it('корень, связь и несуществующий узел — null', () => {
+  it('корень и несуществующий узел — null', () => {
     const doc = makeDoc()
     expect(toCanvasTarget(doc, 'A')).toBeNull()
-    expect(toCanvasTarget(doc, 'linkB')).toBeNull()
     expect(toCanvasTarget(doc, 'nope')).toBeNull()
   })
 })

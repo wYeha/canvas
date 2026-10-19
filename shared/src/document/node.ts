@@ -1,6 +1,6 @@
-/** Zod-схемы и типы узлов дерева: блок (с детьми) и плашка связи, плюс их общие части. */
+/** Zod-схемы и типы узлов дерева: блок с детьми и его части; старые плашки отбрасываются при разборе. */
 import { z } from 'zod'
-import { LAYOUT_TAGS } from './constants'
+import { LAYOUT_TAGS, LEGACY_LINK_NODE_TYPE } from './constants'
 import { containerSchema, safeCssStringSchema } from './container'
 
 /** Идентификатор узла или документа: непустая строка. */
@@ -27,16 +27,15 @@ export const paddingSchema = z.object({
   left: z.number().min(0),
 })
 
-/**
- * Плашка связи: место, куда при экспорте подставляется корневой блок-источник.
- * Режим (вложение или слияние) вычисляется по подписям и не хранится.
- */
-export const linkNodeSchema = z.object({
-  id: nodeIdSchema,
-  type: z.literal('link'),
-  sourceId: nodeIdSchema,
-  self: selfPropsSchema,
-})
+/** Узел-плашка старого формата: объект с `type`, равным `LEGACY_LINK_NODE_TYPE`. */
+function isLegacyLinkNode(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && 'type' in value && value.type === LEGACY_LINK_NODE_TYPE
+}
+
+/** Миграция при разборе: убирает из списка детей узлы-плашки старых документов; прочие данные не трогает. */
+function dropLegacyLinkNodes(value: unknown): unknown {
+  return Array.isArray(value) ? value.filter((item) => !isLegacyLinkNode(item)) : value
+}
 
 /** Блок: flex- или grid-контейнер с детьми. Цвет не хранится — он вычисляется по глубине при рендере. */
 export const blockNodeSchema = z.object({
@@ -49,14 +48,11 @@ export const blockNodeSchema = z.object({
   self: selfPropsSchema,
   padding: paddingSchema.nullable(),
   repeat: z.int().min(1),
-  /** Дети блока; геттер нужен zod 4 для рекурсивной схемы (ссылка на ещё не объявленную `layoutNodeSchema`). */
-  get children(): z.ZodArray<typeof layoutNodeSchema> {
-    return z.array(layoutNodeSchema)
+  /** Дети блока; геттер нужен zod 4 для рекурсивной схемы. Плашки старых документов отбрасываются до проверки. */
+  get children(): z.ZodPreprocess<z.ZodArray<typeof blockNodeSchema>> {
+    return z.preprocess(dropLegacyLinkNodes, z.array(blockNodeSchema))
   },
 })
-
-/** Любой узел дерева: блок или плашка связи. */
-export const layoutNodeSchema = z.discriminatedUnion('type', [blockNodeSchema, linkNodeSchema])
 
 /** Идентификатор узла или документа. */
 export type NodeId = z.infer<typeof nodeIdSchema>
@@ -70,11 +66,8 @@ export type SelfProps = z.infer<typeof selfPropsSchema>
 /** Внутренние отступы блока. */
 export type Padding = z.infer<typeof paddingSchema>
 
-/** Плашка связи. */
-export type LinkNode = z.infer<typeof linkNodeSchema>
-
 /** Блок с детьми. */
 export type BlockNode = z.infer<typeof blockNodeSchema>
 
-/** Узел дерева: блок или плашка связи. */
-export type LayoutNode = z.infer<typeof layoutNodeSchema>
+/** Узел дерева; других видов узлов, кроме блока, нет. */
+export type LayoutNode = BlockNode

@@ -1,14 +1,12 @@
-/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, связи, версия схемы. */
+/** Тесты схем документа и parseDocument: валидный документ, битые поля, дубли id, отбрасывание старых плашек, версия схемы. */
 import { describe, expect, it } from 'vitest'
 import {
   SCHEMA_VERSION,
   blockNodeSchema,
   containerSchema,
-  layoutNodeSchema,
   parseDocument,
   type BlockNode,
   type LayoutDocument,
-  type LinkNode,
 } from '@shared'
 
 /** Собирает минимальный flex-блок с указанными детьми. */
@@ -27,8 +25,8 @@ function block(id: string, children: BlockNode['children'] = []): BlockNode {
   }
 }
 
-/** Собирает плашку связи на источник. */
-function link(id: string, sourceId: string): LinkNode {
+/** Собирает узел-плашку старого формата (до 8.1), который при разборе должен отбрасываться. */
+function legacyLink(id: string, sourceId: string): Record<string, unknown> {
   return { id, type: 'link', sourceId, self: {} }
 }
 
@@ -56,7 +54,7 @@ function errorOf(data: unknown): string {
 }
 
 describe('parseDocument', () => {
-  it('принимает валидный документ с вложенностью, grid и связью', () => {
+  it('принимает валидный документ с вложенностью и grid', () => {
     const grid: BlockNode = {
       ...block('grid'),
       container: {
@@ -72,7 +70,7 @@ describe('parseDocument', () => {
       padding: { top: 1, right: 2, bottom: 3, left: 4 },
       repeat: 3,
     }
-    const doc = documentOf(block('page', [grid, link('l1', 'card')]), block('card'))
+    const doc = documentOf(block('page', [grid]), block('card'))
     const result = parseDocument(doc)
     expect(result).toEqual({ ok: true, document: doc })
   })
@@ -118,40 +116,19 @@ describe('parseDocument', () => {
   it('отклоняет повторяющиеся id в разных корневых блоках', () => {
     expect(errorOf(documentOf(block('a', [block('x')]), block('b', [block('x')])))).toContain('Повторяющийся id')
   })
+})
 
-  it('отклоняет связь на несуществующий блок', () => {
-    expect(errorOf(documentOf(block('a', [link('l', 'nope')])))).toContain('не корневой блок')
+describe('миграция старых документов', () => {
+  it('молча отбрасывает плашки на любой глубине, в том числе битые и с циклами', () => {
+    const inner = { ...block('inner'), children: [legacyLink('l2', 'a'), block('leaf')] }
+    const page = { ...block('a'), children: [legacyLink('l1', 'nope'), inner, { type: 'link' }] }
+    const result = parseDocument(documentOf(page as unknown as BlockNode))
+    expect(result).toEqual({ ok: true, document: documentOf(block('a', [block('inner', [block('leaf')])])) })
   })
 
-  it('отклоняет связь на вложенный (некорневой) блок', () => {
-    const error = errorOf(documentOf(block('a', [block('inner'), link('l', 'inner')])))
-    expect(error).toContain('roots[0].node.children[1].sourceId')
-  })
-
-  it('отклоняет связь одного корня в другой и обратно (A ↔ B)', () => {
-    const doc = documentOf(block('a', [block('slot', [link('l1', 'b')])]), block('b', [link('l2', 'a')]))
-    expect(errorOf(doc)).toContain('замыкает цикл')
-  })
-
-  it('отклоняет цепочку A → B → C → A', () => {
-    const doc = documentOf(block('a', [link('ab', 'b')]), block('b', [link('bc', 'c')]), block('c', [link('ca', 'a')]))
-    expect(errorOf(doc)).toContain('замыкает цикл')
-  })
-
-  it('принимает цепочку без замыкания и несколько связей на один источник', () => {
-    const doc = documentOf(block('a', [link('ab', 'b'), link('ac', 'c')]), block('b', [link('bc', 'c')]), block('c'))
-    expect(parseDocument(doc).ok).toBe(true)
-  })
-
-  it('отклоняет связь внутри собственного источника с путём и русским сообщением', () => {
-    const error = errorOf(documentOf(block('a', [block('inner', [link('l', 'a')])])))
-    expect(error).toContain('замыкает цикл')
-    expect(error).toContain('roots[0].node.children[0].children[0].sourceId')
-    expect(error).not.toMatch(/Invalid/i)
-  })
-
-  it('отклоняет связь корня прямо в себе', () => {
-    expect(errorOf(documentOf(block('a', [link('l', 'a')])))).toContain('замыкает цикл')
+  it('не трогает прочие ошибки в детях', () => {
+    const page = { ...block('a'), children: [legacyLink('l', 'x'), { ...block('b'), tag: 'span' }] }
+    expect(errorOf(documentOf(page as unknown as BlockNode))).toContain('roots[0].node.children[0].tag')
   })
 })
 
@@ -162,8 +139,8 @@ describe('схемы узлов', () => {
   })
 
   it('проверяют детей рекурсивно', () => {
-    expect(blockNodeSchema.safeParse(block('a', [block('b', [link('l', 'x')])])).success).toBe(true)
-    expect(layoutNodeSchema.safeParse({ ...link('l', 'x'), sourceId: '' }).success).toBe(false)
+    expect(blockNodeSchema.safeParse(block('a', [block('b', [block('c')])])).success).toBe(true)
+    expect(blockNodeSchema.safeParse(block('a', [block('b', [{ ...block('c'), id: '' }])])).success).toBe(false)
   })
 
   it('отклоняют colSpan меньше 1', () => {

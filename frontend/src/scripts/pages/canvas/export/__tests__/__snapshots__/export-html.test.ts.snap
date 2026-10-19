@@ -26,10 +26,10 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
     <div style="display:flex; flex-direction:column; gap:24px; padding:24px">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
       </div>
       <!-- charts -->
       <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px">

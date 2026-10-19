@@ -1,10 +1,10 @@
 /** Чистая логика панели «Слои»: значок, подпись и дети строки, свёрнутые ветки, классы строки. Без Vue и DOM. */
-import type { LayoutNode, NodeId } from '@shared'
+import type { ContainerKind, LayoutNode, NodeId } from '@shared'
 import { LAYER_COLLAPSE_LABEL, LAYER_EXPAND_LABEL, ROOT_UNTITLED_LABEL } from './constants'
-import { blockLabel, linkCaptionFromLabel } from './node-view'
+import { blockLabel } from './node-view'
 
-/** Значок строки слоя: вид контейнера блока или связь. */
-export type LayerIcon = 'flex' | 'grid' | 'link'
+/** Значок строки слоя: вид контейнера блока. */
+export type LayerIcon = ContainerKind
 
 /** Состояние строки слоя для классов. */
 export interface LayerRowState {
@@ -19,21 +19,15 @@ export interface LayerRowState {
   dropForbidden?: boolean
 }
 
-/** Значок строки: `flex` / `grid` у блока, `link` у плашки связи. */
+/** Значок строки: `flex` / `grid` по виду контейнера блока. */
 export function layerIcon(node: LayoutNode): LayerIcon {
-  return node.type === 'link' ? 'link' : node.container.kind
+  return node.container.kind
 }
 
-/** Подпись строки: подпись блока (или заглушка без подписи) либо `→ <источник>` у связи. */
-export function layerCaption(node: LayoutNode, rootLabels: ReadonlyMap<NodeId, string>): string {
-  if (node.type === 'link') return linkCaptionFromLabel(rootLabels.get(node.sourceId))
+/** Подпись строки: подпись блока или заглушка без подписи. */
+export function layerCaption(node: LayoutNode): string {
   const label = blockLabel(node)
   return label === '' ? ROOT_UNTITLED_LABEL : label
-}
-
-/** Дети строки: у блока — его дети, у связи — никого (источник показан своим корнем). */
-export function layerChildren(node: LayoutNode): readonly LayoutNode[] {
-  return node.type === 'block' ? node.children : []
 }
 
 /** Переключает ветку `id` между свёрнутой и раскрытой; возвращает новое множество свёрнутых. */

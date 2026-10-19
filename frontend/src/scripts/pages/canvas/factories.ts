@@ -1,4 +1,4 @@
-/** Фабрики модели: новые контейнеры, блоки, связи, корневые блоки и документы со значениями по умолчанию. */
+/** Фабрики модели: новые контейнеры, блоки, корневые блоки и документы со значениями по умолчанию. */
 import {
   SCHEMA_VERSION,
   type BlockNode,
@@ -6,8 +6,6 @@ import {
   type FlexContainer,
   type GridContainer,
   type LayoutDocument,
-  type LinkNode,
-  type NodeId,
   type RootEntry,
 } from '@shared'
 import { createId } from '@/scripts/globals/id'
@@ -58,11 +56,6 @@ export function createBlock(kind: ContainerKind, label: string): BlockNode {
     repeat: DEFAULT_REPEAT,
     children: [],
   }
-}
-
-/** Создаёт плашку связи на корневой блок-источник. */
-export function createLink(sourceId: NodeId): LinkNode {
-  return { id: createId(), type: 'link', sourceId, self: {} }
 }
 
 /** Создаёт корневой блок в точке поля; flex-корень по умолчанию раскладывает детей в колонку. */

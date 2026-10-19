@@ -1,7 +1,6 @@
 /** Тесты перемещения узлов: внутри родителя, между блоками и корнями, на канвас, запреты и no-op. */
 import { describe, expect, it } from 'vitest'
 import {
-  addChild,
   canMoveNode,
   findNode,
   findParent,
@@ -9,7 +8,6 @@ import {
   moveNode,
   type MoveTarget,
 } from '@/scripts/pages/canvas/tree'
-import { createLink } from '@/scripts/pages/canvas/factories'
 import { childIds, expectValid, makeDoc } from './tree-fixture'
 
 /** Цель «ребёнком блока». */
@@ -27,15 +25,15 @@ describe('внутри одного родителя', () => {
 
   it('назад', () => {
     const doc = makeDoc()
-    const result = moveNode(doc, 'linkB', child('A', 0))
+    const result = moveNode(doc, 'a3', child('A', 0))
     expectValid(result)
-    expect(childIds(findNode(result, 'A'))).toEqual(['linkB', 'a1', 'a2'])
+    expect(childIds(findNode(result, 'A'))).toEqual(['a3', 'a1', 'a2'])
   })
 
   it('«вверх» = from − 1, «вниз» = from + 2', () => {
     const doc = makeDoc()
-    expect(childIds(findNode(moveNode(doc, 'a2', child('A', 0)), 'A'))).toEqual(['a2', 'a1', 'linkB'])
-    expect(childIds(findNode(moveNode(doc, 'a2', child('A', 3)), 'A'))).toEqual(['a1', 'linkB', 'a2'])
+    expect(childIds(findNode(moveNode(doc, 'a2', child('A', 0)), 'A'))).toEqual(['a2', 'a1', 'a3'])
+    expect(childIds(findNode(moveNode(doc, 'a2', child('A', 3)), 'A'))).toEqual(['a1', 'a3', 'a2'])
   })
 
   it('на своё же место (index = from и from + 1) → тот же doc', () => {
@@ -46,8 +44,8 @@ describe('внутри одного родителя', () => {
 
   it('индекс вне диапазона зажимается', () => {
     const doc = makeDoc()
-    expect(childIds(findNode(moveNode(doc, 'a1', child('A', 99)), 'A'))).toEqual(['a2', 'linkB', 'a1'])
-    expect(childIds(findNode(moveNode(doc, 'linkB', child('A', -3)), 'A'))).toEqual(['linkB', 'a1', 'a2'])
+    expect(childIds(findNode(moveNode(doc, 'a1', child('A', 99)), 'A'))).toEqual(['a2', 'a3', 'a1'])
+    expect(childIds(findNode(moveNode(doc, 'a3', child('A', -3)), 'A'))).toEqual(['a3', 'a1', 'a2'])
   })
 })
 
@@ -57,7 +55,7 @@ describe('между блоками', () => {
     const result = moveNode(doc, 'a2', child('a1', 1))
     expectValid(result)
     expect(childIds(findNode(result, 'a1'))).toEqual(['a1x', 'a2', 'a1y'])
-    expect(childIds(findNode(result, 'A'))).toEqual(['a1', 'linkB'])
+    expect(childIds(findNode(result, 'A'))).toEqual(['a1', 'a3'])
     expect(result.roots[1]).toBe(doc.roots[1])
   })
 
@@ -65,7 +63,7 @@ describe('между блоками', () => {
     const doc = makeDoc()
     const result = moveNode(doc, 'a1x', child('A', 0))
     expectValid(result)
-    expect(childIds(findNode(result, 'A'))).toEqual(['a1x', 'a1', 'a2', 'linkB'])
+    expect(childIds(findNode(result, 'A'))).toEqual(['a1x', 'a1', 'a2', 'a3'])
   })
 
   it('в блок другого корня (C.c1 → A.a1)', () => {
@@ -79,61 +77,25 @@ describe('между блоками', () => {
 
   it('self сохраняется при переносе', () => {
     const doc = makeDoc()
-    const result = moveNode(doc, 'linkB', child('b1', 0))
-    expect(findNode(result, 'linkB')?.self).toBe(findNode(doc, 'linkB')?.self)
+    const result = moveNode(doc, 'a3', child('b1', 0))
+    expect(findNode(result, 'a3')?.self).toBe(findNode(doc, 'a3')?.self)
   })
 })
 
-describe('связи', () => {
-  it('связь в другой блок → ок', () => {
+describe('между корнями', () => {
+  it('вложенный блок в блок другого корня → ок', () => {
     const doc = makeDoc()
-    const result = moveNode(doc, 'linkB', child('c1', 0))
+    const result = moveNode(doc, 'a3', child('c1', 0))
     expectValid(result)
-    expect(findParent(result, 'linkB')?.id).toBe('c1')
+    expect(findParent(result, 'a3')?.id).toBe('c1')
   })
 
-  it('связь внутрь собственного источника → link-cycle', () => {
+  it('любой корень можно вложить в блок другого корня', () => {
     const doc = makeDoc()
-    expect(canMoveNode(doc, 'linkB', child('B', 0))).toBe('link-cycle')
-    expect(canMoveNode(doc, 'linkB', child('b1', 0))).toBe('link-cycle')
-    expect(moveNode(doc, 'linkB', child('b1', 0))).toBe(doc)
-  })
-
-  it('блок с плашкой внутрь источника этой плашки → link-cycle', () => {
-    const doc = makeDoc()
-    expect(canMoveNode(doc, 'A', child('b1', 0))).toBe('link-cycle')
-    expect(moveNode(doc, 'A', child('B', 0))).toBe(doc)
-  })
-
-  it('блок с плашкой в корень, который ссылается назад (C → A, перенос c1 в B) → link-cycle', () => {
-    const doc = moveNode(makeDoc(), 'linkB', child('a2', 0))
-    const withBack = addChild(doc, 'c1', createLink('A'))
-    expectValid(withBack)
-    // c1 несёт связь на A; в B она замкнёт A → B → A
-    expect(canMoveNode(withBack, 'c1', child('B', 0))).toBe('link-cycle')
-    expect(moveNode(withBack, 'c1', child('b1', 0))).toBe(withBack)
-    // a2 несёт связь на B: в C она даст C → B, а A без a2 на B уже не ссылается — цикла нет
-    const moved = moveNode(withBack, 'a2', child('C', 0))
-    expectValid(moved)
-    expect(findParent(moved, 'a2')?.id).toBe('C')
-  })
-
-  it('блок с плашкой глубже внутри своего корня или в другой корень → ок', () => {
-    const doc = makeDoc()
-    const withLink = moveNode(doc, 'linkB', child('a2', 0))
-    const deeper = moveNode(withLink, 'a2', child('a1x', 0))
-    expectValid(deeper)
-    expect(findParent(deeper, 'a2')?.id).toBe('a1x')
-    const other = moveNode(withLink, 'a2', child('c1', 0))
-    expectValid(other)
-    expect(findParent(other, 'linkB')?.id).toBe('a2')
-  })
-
-  it('связь на канвас → link-to-canvas', () => {
-    const doc = makeDoc()
-    const target: MoveTarget = { type: 'canvas', at: { x: 0, y: 0 } }
-    expect(canMoveNode(doc, 'linkB', target)).toBe('link-to-canvas')
-    expect(moveNode(doc, 'linkB', target)).toBe(doc)
+    expect(canMoveNode(doc, 'B', child('c1', 0))).toBeNull()
+    const result = moveNode(doc, 'B', child('c1', 0))
+    expectValid(result)
+    expect(findParent(result, 'B')?.id).toBe('c1')
   })
 })
 
@@ -143,18 +105,6 @@ describe('запреты', () => {
     expect(canMoveNode(doc, 'a1', child('a1', 0))).toBe('into-self-or-descendant')
     expect(canMoveNode(doc, 'A', child('a1x', 0))).toBe('into-self-or-descendant')
     expect(moveNode(doc, 'a1', child('a1x', 0))).toBe(doc)
-  })
-
-  it('в связь → parent-is-link', () => {
-    const doc = makeDoc()
-    expect(canMoveNode(doc, 'a2', child('linkB', 0))).toBe('parent-is-link')
-    expect(moveNode(doc, 'a2', child('linkB', 0))).toBe(doc)
-  })
-
-  it('корень-источник в блок → source-into-block', () => {
-    const doc = makeDoc()
-    expect(canMoveNode(doc, 'B', child('c1', 0))).toBe('source-into-block')
-    expect(moveNode(doc, 'B', child('c1', 0))).toBe(doc)
   })
 
   it('несуществующие узел и цель → тот же doc', () => {
@@ -184,7 +134,7 @@ describe('корень в блок', () => {
     expectValid(result)
     expect(result.roots.map((root) => root.node.id)).toEqual(['B', 'C'])
     expect(childIds(findNode(result, 'c1'))).toEqual(['A'])
-    expect(findParent(result, 'linkB')?.id).toBe('A')
+    expect(findParent(result, 'a3')?.id).toBe('A')
     expect(result.roots[0]).toBe(doc.roots[1])
   })
 })
@@ -202,7 +152,7 @@ describe('на канвас', () => {
       height: null,
       exportMaxWidth: false,
     })
-    expect(childIds(findNode(result, 'A'))).toEqual(['a2', 'linkB'])
+    expect(childIds(findNode(result, 'A'))).toEqual(['a2', 'a3'])
   })
 
   it('из корня с height/exportMaxWidth они не наследуются', () => {

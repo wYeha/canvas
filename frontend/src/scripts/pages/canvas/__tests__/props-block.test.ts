@@ -97,7 +97,7 @@ describe('useCanvasPropsBlock', () => {
     const rootId = root?.id ?? ''
     layoutStore.addChild(rootId, 'grid', 'Вложенный')
     const nested = layoutStore.document.roots[0]?.node
-    const childId = nested?.type === 'block' ? (nested.children[0]?.id ?? '') : ''
+    const childId = nested?.children[0]?.id ?? ''
     layoutStore.select(rootId)
     return { layoutStore, rootId, childId, props: useCanvasPropsBlock() }
   }
@@ -105,7 +105,7 @@ describe('useCanvasPropsBlock', () => {
   /** Корневой блок документа (в тестах правится именно он). */
   function rootBlock(layoutStore: ReturnType<typeof useLayoutStore>) {
     const node = layoutStore.document.roots[0]?.node
-    if (node?.type !== 'block') throw new Error('нет корня')
+    if (!node) throw new Error('нет корня')
     return node
   }
 
@@ -131,7 +131,7 @@ describe('useCanvasPropsBlock', () => {
     expect(rootBlock(layoutStore).label).toBe('Шапка')
     expect(props.label.value).toBe('Вложенный')
     const child = rootBlock(layoutStore).children[0]
-    expect(child?.type === 'block' ? child.label : '').toBe('Вложенный')
+    expect(child?.label ?? '').toBe('Вложенный')
     layoutStore.select(rootId)
     await nextTick()
     expect(props.label.value).toBe('Шапка')

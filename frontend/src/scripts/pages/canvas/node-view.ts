@@ -1,11 +1,9 @@
 /** Чистая логика оформления блоков на канвасе: глубина и цвет, значки, подписи, классы, позиция корня. */
-import type { BlockNode, CanvasPlacement, ContainerKind, LayoutDocument, NodeId } from '@shared'
+import type { BlockNode, CanvasPlacement, ContainerKind } from '@shared'
 import {
   BLOCK_PALETTE_SIZE,
   CSS_PX_UNIT,
   DIRECTION_ICONS,
-  LINK_ICON,
-  LINK_MISSING_LABEL,
   ROOT_TITLE_SEPARATOR,
   ROOT_UNTITLED_LABEL,
 } from './constants'
@@ -49,11 +47,6 @@ export function blockClasses(block: BlockNode, depth: number, parentKind: Contai
   return classes
 }
 
-/** BEM-классы плашки связи. */
-export function linkClasses(): string[] {
-  return ['canvas-node', 'canvas-node--link']
-}
-
 /** Подпись блока без пробелов по краям; пустая строка, если подписи нет. */
 export function blockLabel(block: BlockNode): string {
   return block.label.trim()
@@ -73,21 +66,6 @@ export function rootWidthText(canvas: CanvasPlacement): string {
 /** Полный текст заголовка корня для подсказки: `Дашборд · 1440`. */
 export function rootCaption(block: BlockNode, canvas: CanvasPlacement): string {
   return `${rootTitle(block)}${ROOT_TITLE_SEPARATOR}${rootWidthText(canvas)}`
-}
-
-/** Подпись плашки связи: `→ <подпись источника>`. */
-export function linkCaption(doc: Pick<LayoutDocument, 'roots'>, sourceId: NodeId): string {
-  return linkCaptionFromLabel(rootLabels(doc).get(sourceId))
-}
-
-/** Карта «id корня → подпись» по документу: плашки связей берут подпись источника отсюда без поиска по корням. */
-export function rootLabels(doc: Pick<LayoutDocument, 'roots'>): Map<NodeId, string> {
-  return new Map(doc.roots.map((root) => [root.node.id, blockLabel(root.node)]))
-}
-
-/** Подпись плашки связи по подписи источника (`undefined` — источника нет). */
-export function linkCaptionFromLabel(label: string | undefined): string {
-  return `${LINK_ICON} ${label === undefined || label === '' ? LINK_MISSING_LABEL : label}`
 }
 
 /** Динамический стиль корня: позиция и ширина превью на поле; высота — только если задана. */

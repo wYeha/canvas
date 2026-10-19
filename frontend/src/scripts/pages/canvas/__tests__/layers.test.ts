@@ -1,11 +1,9 @@
-/** Тесты чистой логики панели «Слои»: значок, подпись, дети, сворачивание, раскрытие пути, классы строки. */
+/** Тесты чистой логики панели «Слои»: значок, подпись, сворачивание, раскрытие пути, классы строки. */
 import { describe, expect, it } from 'vitest'
-import { rootLabels } from '@/scripts/pages/canvas/node-view'
 import {
   expandPath,
   layerCaption,
   layerChevronClasses,
-  layerChildren,
   layerIcon,
   layerRowClasses,
   layerToggleLabel,
@@ -23,22 +21,15 @@ function node(id: string) {
   return found
 }
 
-describe('layerIcon / layerCaption / layerChildren', () => {
-  it('блок: значок по виду контейнера, подпись, дети', () => {
+describe('layerIcon / layerCaption', () => {
+  it('блок: значок по виду контейнера и подпись', () => {
     expect(layerIcon(node('A'))).toBe('flex')
     expect(layerIcon(node('a1'))).toBe('grid')
-    expect(layerCaption(node('a1'), rootLabels(doc))).toBe('a1')
-    expect(layerChildren(node('a1')).map((child) => child.id)).toEqual(['a1x', 'a1y'])
+    expect(layerCaption(node('a1'))).toBe('a1')
   })
 
   it('пустая подпись — заглушка', () => {
-    expect(layerCaption({ ...block('x', 'flex'), label: '  ' }, rootLabels(doc))).toBe('Без подписи')
-  })
-
-  it('связь: значок link, подпись по источнику, детей нет', () => {
-    expect(layerIcon(node('linkB'))).toBe('link')
-    expect(layerCaption(node('linkB'), rootLabels(doc))).toBe('→ B')
-    expect(layerChildren(node('linkB'))).toEqual([])
+    expect(layerCaption({ ...block('x', 'flex'), label: '  ' })).toBe('Без подписи')
   })
 })
 

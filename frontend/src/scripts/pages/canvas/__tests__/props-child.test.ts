@@ -181,10 +181,9 @@ describe('useCanvasPropsChild', () => {
     expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '1', width: '5px', colSpan: 2 })
   })
 
-  it('плашка связи тоже правится', () => {
-    const { layoutStore, props } = setup('linkB')
-    expect(props.node.value?.type).toBe('link')
+  it('пресет flex правит self вложенного листа', () => {
+    const { layoutStore, props } = setup('a3')
     props.flexPreset.value = 'auto'
-    expect(selfOf(layoutStore, 'linkB')).toEqual({ flex: 'auto' })
+    expect(selfOf(layoutStore, 'a3')).toEqual({ flex: 'auto' })
   })
 })

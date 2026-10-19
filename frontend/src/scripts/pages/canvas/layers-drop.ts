@@ -37,7 +37,7 @@ export function isLayersDropForbidden(doc: LayoutDocument, draggedId: NodeId, ov
 /** Цель вставки «внутрь» блока (последний ребёнок). */
 function insideTarget(doc: LayoutDocument, overId: NodeId): MoveTarget | null {
   const node = findNode(doc, overId)
-  if (node?.type !== 'block') return null
+  if (!node) return null
   return { type: 'child', parentId: overId, index: node.children.length }
 }
 

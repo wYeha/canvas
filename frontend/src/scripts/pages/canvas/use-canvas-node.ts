@@ -3,21 +3,11 @@ import { computed, type ComputedRef } from 'vue'
 import type { BlockNode } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
 import { useDragStore } from './dnd/drag-store'
-import { useLayoutStore } from './layout-store'
 import { styleEntries, toStyleObject } from './node-style'
-import { blockClasses, blockLabel, directionIcon, isLeafBlock, linkCaptionFromLabel, linkClasses } from './node-view'
+import { blockClasses, blockLabel, directionIcon, isLeafBlock } from './node-view'
 
-/** Вид плашки связи. */
-export interface LinkView {
-  kind: 'link'
-  classes: string[]
-  style: Record<string, string>
-  text: string
-}
-
-/** Вид блока: классы, стили, значок типа, подпись и дети. */
-export interface BlockView {
-  kind: 'block'
+/** Вид блока для шаблона: классы, стили, значок типа, подпись и дети. */
+export interface NodeView {
   classes: string[]
   style: Record<string, string>
   icon: string
@@ -25,9 +15,6 @@ export interface BlockView {
   leaf: boolean
   children: BlockNode['children']
 }
-
-/** Вид узла для шаблона. */
-export type NodeView = LinkView | BlockView
 
 /** Результат `useCanvasNode`: вид узла и его итоговые классы (с состоянием перетаскивания). */
 export interface CanvasNodeState {
@@ -37,21 +24,14 @@ export interface CanvasNodeState {
 
 /** Возвращает вычисляемый вид узла; глубина и цвет считаются при рендере, в данных не хранятся. */
 export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
-  const store = useLayoutStore()
   const dragStore = useDragStore()
 
-  /** Вид узла: заглушка связи или оформленный блок. */
+  /** Вид оформленного блока. */
   const view = computed<NodeView>(() => {
     const { node, depth, parentKind } = props
-    const style = toStyleObject(styleEntries(node, parentKind))
-    if (node.type === 'link') {
-      const text = linkCaptionFromLabel(store.rootLabelMap.get(node.sourceId))
-      return { kind: 'link', classes: linkClasses(), style, text }
-    }
     return {
-      kind: 'block',
       classes: blockClasses(node, depth, parentKind),
-      style,
+      style: toStyleObject(styleEntries(node, parentKind)),
       icon: directionIcon(node),
       label: blockLabel(node),
       leaf: isLeafBlock(node),

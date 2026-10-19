@@ -10,7 +10,7 @@ export function useCanvasBreadcrumbs() {
   const layoutStore = useLayoutStore()
 
   /** Сегменты пути: корень, затем вложенные, последний — выделенный. */
-  const segments = computed(() => breadcrumbSegments(layoutStore.document, layoutStore.selectedPath))
+  const segments = computed(() => breadcrumbSegments(layoutStore.selectedPath))
 
   /** Выделяет узел по клику на сегмент. */
   function selectSegment(id: NodeId): void {

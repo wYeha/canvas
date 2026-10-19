@@ -5,7 +5,6 @@ import { parseDocument } from '@shared'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import { useNodeClipboardStore } from '@/scripts/pages/canvas/node-clipboard-store'
-import { createLink } from '@/scripts/pages/canvas/factories'
 import { block, makeDoc } from './tree-fixture'
 
 beforeEach(() => {
@@ -22,8 +21,8 @@ function loadedStore() {
 /** Подпись блока a2 (второй ребёнок корня A). */
 function a2Label(store: ReturnType<typeof useLayoutStore>): string {
   const a = store.document.roots[0]?.node
-  const a2 = a?.type === 'block' ? a.children[1] : undefined
-  return a2?.type === 'block' ? a2.label : ''
+  const a2 = a?.children[1]
+  return a2?.label ?? ''
 }
 
 describe('буфер блоков', () => {
@@ -42,7 +41,7 @@ describe('pasteChild / pasteRoot', () => {
   it('pasteChild: копия с новыми id, выделяется, документ валиден', () => {
     const store = loadedStore()
     const a = store.document.roots[0]?.node
-    const source = a?.type === 'block' ? a.children[0] : undefined
+    const source = a?.children[0]
     if (source === undefined) throw new Error('нет a1')
     const id = store.pasteChild('b1', source)
     expect(id).not.toBeNull()
@@ -51,30 +50,28 @@ describe('pasteChild / pasteRoot', () => {
     expect(parseDocument(store.document).ok).toBe(true)
   })
 
-  it('pasteChild в плашку связи или в несуществующий блок - null, документ не меняется', () => {
+  it('pasteChild в несуществующий блок - null, документ не меняется', () => {
     const store = loadedStore()
     const before = store.document
-    expect(store.pasteChild('linkB', block('x', 'flex'))).toBeNull()
     expect(store.pasteChild('nope', block('x', 'flex'))).toBeNull()
     expect(store.document).toBe(before)
   })
 
-  it('pasteRoot: новый корень в точке; связь корнем не вставляется', () => {
+  it('pasteRoot: новый корень в точке', () => {
     const store = loadedStore()
     const id = store.pasteRoot(block('x', 'grid'), { x: 7, y: 8 }, 321)
     expect(store.document.roots.at(-1)?.canvas).toMatchObject({ x: 7, y: 8, width: 321 })
     expect(store.selectedId).toBe(id)
-    expect(store.pasteRoot(createLink('B'), { x: 0, y: 0 }, 480)).toBeNull()
     expect(parseDocument(store.document).ok).toBe(true)
   })
 
-  it('связи на удалённый после копирования корень убираются при вставке, документ валиден', () => {
+  it('вставка корня, который уже есть в документе, даёт копию с новыми id', () => {
     const store = loadedStore()
     const a = store.document.roots[0]?.node
     if (a === undefined) throw new Error('нет A')
-    store.removeNode('B')
     const id = store.pasteRoot(a, { x: 0, y: 0 }, 480)
     expect(id).not.toBeNull()
+    expect(id).not.toBe('A')
     expect(parseDocument(store.document).ok).toBe(true)
   })
 })

@@ -37,12 +37,12 @@ export function useCanvasClipboard() {
   }
 
   /**
-   * Открывает ввод подписи выделенного блока с текущим значением; у связи подписи нет — ничего. Поле открывается
+   * Открывает ввод подписи выделенного блока с текущим значением; без выделения — ничего. Поле открывается
    * в строке «Слоёв», если `F2` нажат с фокусом в строке или блок выбран там последним кликом, иначе на канвасе.
    */
   function renameSelected(fromLayers = false): boolean {
     const node = layoutStore.selectedNode
-    if (node?.type !== 'block') return false
+    if (!node) return false
     labelEdit.beginRename(node.id, node.label, fromLayers ? 'layers' : labelEdit.renamePlaceFor(node.id))
     return true
   }

@@ -1,12 +1,11 @@
 /** Тесты фабрик модели: значения по умолчанию, уникальные id и соответствие схемам из @shared. */
 import { describe, expect, it } from 'vitest'
-import { blockNodeSchema, containerSchema, linkNodeSchema, parseDocument, rootEntrySchema } from '@shared'
+import { blockNodeSchema, containerSchema, parseDocument, rootEntrySchema } from '@shared'
 import {
   createBlock,
   createDocument,
   createFlexContainer,
   createGridContainer,
-  createLink,
   createRootEntry,
   nextAutoLabel,
 } from '@/scripts/pages/canvas/factories'
@@ -67,14 +66,6 @@ describe('createBlock', () => {
   })
 })
 
-describe('createLink', () => {
-  it('создаёт плашку связи на источник', () => {
-    const link = createLink('source-id')
-    expect(link).toMatchObject({ type: 'link', sourceId: 'source-id', self: {} })
-    expect(linkNodeSchema.safeParse(link).success).toBe(true)
-  })
-})
-
 describe('createRootEntry', () => {
   it('flex-корень раскладывает детей в колонку, ширина превью 1440 по умолчанию', () => {
     const root = createRootEntry('flex', 'Страница', { x: 10, y: 20 })
@@ -98,10 +89,10 @@ describe('createDocument', () => {
     expect(parseDocument(doc).ok).toBe(true)
   })
 
-  it('документ с корнями и связью проходит parseDocument', () => {
+  it('документ с корнями и вложенным блоком проходит parseDocument', () => {
     const card = createRootEntry('grid', 'Карточка', { x: 0, y: 0 }, 480)
     const page = createRootEntry('flex', 'Страница', { x: 600, y: 0 })
-    page.node.children.push(createBlock('flex', 'Шапка'), createLink(card.node.id))
+    page.node.children.push(createBlock('flex', 'Шапка'))
     const doc = { ...createDocument('Дашборд'), roots: [card, page] }
     expect(parseDocument(doc)).toEqual({ ok: true, document: doc })
   })

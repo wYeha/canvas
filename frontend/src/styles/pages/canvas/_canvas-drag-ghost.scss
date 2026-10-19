@@ -5,7 +5,7 @@
 
 .canvas-drag-ghost {
   position: absolute;
-  z-index: v.$z-port;
+  z-index: v.$z-drag-ghost;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
@@ -25,10 +25,6 @@
     &--depth-#{$i} {
       --node-color: var(--block-#{$i});
     }
-  }
-
-  &--link {
-    --node-color: var(--color-link);
   }
 
   &__label {

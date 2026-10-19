@@ -53,7 +53,7 @@ export function useCanvasSelection() {
       kind,
       classes: ['canvas-selection__box', `canvas-selection__box--${kind}`],
       style: overlayRectStyle(rect),
-      badge: kind === 'selected' ? selectionBadgeText(document, node, size) : size,
+      badge: kind === 'selected' ? selectionBadgeText(node, size) : size,
       badgeClasses: [
         'canvas-selection__badge',
         `canvas-selection__badge--${kind}`,

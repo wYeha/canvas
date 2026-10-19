@@ -4,7 +4,7 @@
 .canvas-drop-insert-layer {
   position: absolute;
   inset: 0;
-  z-index: v.$z-link;
+  z-index: v.$z-drop-insert;
   overflow: hidden;
   pointer-events: none;
 }

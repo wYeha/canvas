@@ -36,7 +36,7 @@ describe('layersMoveTarget', () => {
     const target = layersMoveTarget(doc, 'a2', 'a1', 'before')
     expect(target).toEqual({ type: 'child', parentId: 'A', index: 0 })
     const next = moveNode(doc, 'a2', mustTarget(target))
-    expect(childIds(next.roots[0]?.node)).toEqual(['a2', 'a1', 'linkB'])
+    expect(childIds(next.roots[0]?.node)).toEqual(['a2', 'a1', 'a3'])
     expectValid(next)
   })
 
@@ -65,9 +65,9 @@ describe('layersMoveTarget', () => {
     expect(layersDropAllowed(doc, 'a1', 'a1x', 'inside')).toBe(false)
   })
 
-  it('внутрь связи запрещено', () => {
+  it('внутрь листа можно: становится его первым ребёнком', () => {
     const doc = makeDoc()
-    expect(layersMoveTarget(doc, 'a2', 'linkB', 'inside')).toBeNull()
+    expect(layersMoveTarget(doc, 'a2', 'a3', 'inside')).toEqual({ type: 'child', parentId: 'a3', index: 0 })
   })
 
   it('внутрь grid-блока a1', () => {

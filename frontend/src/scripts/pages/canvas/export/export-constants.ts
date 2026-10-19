@@ -66,12 +66,6 @@ export const EXPORT_CSS_PROPERTY_PATTERN = /^[a-z]+(-[a-z]+)*$/
 /** Тег, которым заменяется недопустимый тег блока. */
 export const EXPORT_FALLBACK_TAG = 'div'
 
-/** Тег плейсхолдера связи (до подстановки источника в 8.7). */
-export const EXPORT_LINK_TAG = 'div'
-
-/** Начало комментария плейсхолдера связи: `компонент «KPI-плашка»`. */
-export const EXPORT_LINK_COMPONENT = 'компонент'
-
 /** Разделитель слов в комментарии: подпись и `×N`, заголовок корня и пометки. */
 export const EXPORT_WORD_SEPARATOR = ' '
 

@@ -4,16 +4,9 @@
  */
 import type { LayoutDocument, LayoutNode, NodeId } from '@shared'
 import type { Rect } from './camera'
-import {
-  BADGE_SEPARATOR,
-  CSS_PX_UNIT,
-  LINK_TYPE_LABEL,
-  ROOT_UNTITLED_LABEL,
-  SELECTION_BADGE_OFFSET,
-  SIZE_SEPARATOR,
-} from './constants'
+import { BADGE_SEPARATOR, CSS_PX_UNIT, ROOT_UNTITLED_LABEL, SELECTION_BADGE_OFFSET, SIZE_SEPARATOR } from './constants'
 import type { CanvasPoint } from './factories'
-import { blockLabel, linkCaption } from './node-view'
+import { blockLabel } from './node-view'
 import { findNode, findParent } from './tree-query'
 
 /** Сегмент плашки пути: id узла и текст кнопки. */
@@ -38,12 +31,10 @@ export function parentSelection(doc: LayoutDocument, id: NodeId | null): NodeId 
   return findParent(doc, id)?.id ?? null
 }
 
-/** Enter: первый ребёнок выделенного блока; у листа и у плашки связи выделение не меняется. */
+/** Enter: первый ребёнок выделенного блока; у листа выделение не меняется. */
 export function firstChildSelection(doc: LayoutDocument, id: NodeId | null): NodeId | null {
   if (id === null) return null
-  const node = findNode(doc, id)
-  if (node?.type !== 'block') return id
-  return node.children[0]?.id ?? id
+  return findNode(doc, id)?.children[0]?.id ?? id
 }
 
 /** Id для подсветки наведения: поверх выделенного узла наведение не показываем. */
@@ -51,14 +42,13 @@ export function visibleHoverId(hoveredId: NodeId | null, selectedId: NodeId | nu
   return hoveredId !== null && hoveredId === selectedId ? null : hoveredId
 }
 
-/** Тип узла для бейджа: `flex` / `grid` у блока, `связь` у плашки. */
+/** Тип узла для бейджа: вид контейнера блока, `flex` / `grid`. */
 export function nodeTypeLabel(node: LayoutNode): string {
-  return node.type === 'link' ? LINK_TYPE_LABEL : node.container.kind
+  return node.container.kind
 }
 
-/** Подпись узла: подпись блока (или заглушка без подписи) либо текст плашки связи. */
-export function nodeCaption(doc: LayoutDocument, node: LayoutNode): string {
-  if (node.type === 'link') return linkCaption(doc, node.sourceId)
+/** Подпись узла: подпись блока или заглушка без подписи. */
+export function nodeCaption(node: LayoutNode): string {
   const label = blockLabel(node)
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
@@ -69,8 +59,8 @@ export function sizeText(rect: Rect, zoom: number): string {
 }
 
 /** Текст бейджа выделения: `подпись · тип · Ш×В`. */
-export function selectionBadgeText(doc: LayoutDocument, node: LayoutNode, size: string): string {
-  return [nodeCaption(doc, node), nodeTypeLabel(node), size].join(BADGE_SEPARATOR)
+export function selectionBadgeText(node: LayoutNode, size: string): string {
+  return [nodeCaption(node), nodeTypeLabel(node), size].join(BADGE_SEPARATOR)
 }
 
 /** Переводит экранный прямоугольник страницы в локальный прямоугольник оверлея (минус его начало). */
@@ -109,6 +99,6 @@ export function overlayRectStyle(rect: Rect): Record<string, string> {
 }
 
 /** Сегменты плашки пути по цепочке узлов от корня до выделенного. */
-export function breadcrumbSegments(doc: LayoutDocument, path: readonly LayoutNode[]): BreadcrumbSegment[] {
-  return path.map((node) => ({ id: node.id, text: nodeCaption(doc, node) }))
+export function breadcrumbSegments(path: readonly LayoutNode[]): BreadcrumbSegment[] {
+  return path.map((node) => ({ id: node.id, text: nodeCaption(node) }))
 }

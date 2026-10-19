@@ -1,7 +1,7 @@
-/** Тесты контекста вложенного блока и экспорта выделенного узла: flex/grid-родитель, замеры, повтор, связь, инъекции. */
+/** Тесты контекста вложенного блока и экспорта выделенного узла: flex/grid-родитель, замеры, повтор, инъекции. */
 import { describe, expect, it } from 'vitest'
 import type { BlockNode, FlexContainer, GridContainer, LayoutDocument, LayoutNode, NodeId, SelfProps } from '@shared'
-import { createFlexContainer, createGridContainer, createLink } from '@/scripts/pages/canvas/factories'
+import { createFlexContainer, createGridContainer } from '@/scripts/pages/canvas/factories'
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
 import { contextLines } from '@/scripts/pages/canvas/export/export-context'
 import { exportRootHtml } from '@/scripts/pages/canvas/export/export-html'
@@ -12,8 +12,8 @@ import { block, docOf, root, smallTree } from './export-fixture'
 function findByLabel(doc: LayoutDocument, label: string): LayoutNode {
   const stack: LayoutNode[] = doc.roots.map((entry) => entry.node)
   for (let node = stack.shift(); node; node = stack.shift()) {
-    if (node.type === 'block' && node.label === label) return node
-    if (node.type === 'block') stack.unshift(...node.children)
+    if (node.label === label) return node
+    stack.unshift(...node.children)
   }
   throw new Error(`нет узла «${label}»`)
 }
@@ -251,22 +251,6 @@ describe('exportSelectedHtml', () => {
 
   it('отсутствующий узел → пустая строка', () => {
     expect(exportSelectedHtml(createDemoDocument(), 'missing', {})).toBe('')
-  })
-
-  it('связь как выделенный узел: контекст и плейсхолдер со стилями «как ребёнок»', () => {
-    const source = block('flex', 'Карточка', {})
-    const link = { ...createLink(source.id), self: { colSpan: 2 } }
-    const parent = block('grid', 'grid', {}, [block('flex', 'a', {}), link])
-    const doc = docOf(root(block('flex', 'Страница', {}, [parent]), 1024, null, false), root(source, 300, null, false))
-    expect(exportSelectedHtml(doc, link.id, {})).toMatchInlineSnapshot(`
-      "<!-- Фрагмент корневого блока «Страница» (ширина превью 1024px)
-        Путь: Страница › grid › компонент «Карточка»
-        Родитель «grid» (div): grid, колонки «repeat(2, 1fr)» (2 колонки)
-        Место: 2-й ребёнок из 2; ширина — занимает 2 колонки (span 2); высота — по содержимому строки
-      -->
-      <div style="grid-column:span 2"><!-- компонент «Карточка» --></div>
-      "
-    `)
   })
 
   it('демо: «charts» с замером', () => {

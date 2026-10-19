@@ -32,8 +32,7 @@ export function useCanvasDragGhost() {
     const doc = layoutStore.document
     const node = id === null ? undefined : findNode(doc, id)
     if (node === undefined) return null
-    const text = nodeCaption(doc, node)
-    if (node.type === 'link') return { classes: ['canvas-drag-ghost', 'canvas-drag-ghost--link'], icon: '', text }
+    const text = nodeCaption(node)
     const depth = getPath(doc, node.id).length - 1
     const classes = ['canvas-drag-ghost', `canvas-drag-ghost--depth-${String(paletteIndex(depth))}`]
     return { classes, icon: directionIcon(node), text }

@@ -1,7 +1,7 @@
 /** Тесты node-style: только отличия от CSS по умолчанию, порядок свойств, учёт родителя для self, инлайн-строка. */
 import { describe, expect, it } from 'vitest'
 import type { BlockNode, ContainerKind, LayoutNode, SelfProps } from '@shared'
-import { createBlock, createLink } from '@/scripts/pages/canvas/factories'
+import { createBlock } from '@/scripts/pages/canvas/factories'
 import { styleEntries, toInlineStyle, toStyleObject } from '@/scripts/pages/canvas/node-style'
 
 /** Блок нужного вида с подмешанными полями контейнера, padding и self. */
@@ -150,20 +150,6 @@ describe('self', () => {
   it('пустые и пробельные строки не выводятся', () => {
     const node = make('flex', {}, { self: { flex: '', width: '  ', height: '', minHeight: ' ' } })
     expect(styles(node, 'flex')).toEqual({ display: 'flex' })
-  })
-})
-
-describe('связь', () => {
-  const link = { ...createLink('src'), self: { flex: '1', width: '10px', height: '5px', colSpan: 2 } }
-
-  it('выводит только self по правилам родителя', () => {
-    expect(styles(link, 'flex')).toEqual({ flex: '1', width: '10px', height: '5px' })
-    expect(styles(link, 'grid')).toEqual({ 'grid-column': 'span 2', height: '5px' })
-  })
-
-  it('без родителя и без self — пусто', () => {
-    expect(styleEntries(link, null)).toEqual([])
-    expect(styleEntries(createLink('src'), 'flex')).toEqual([])
   })
 })
 

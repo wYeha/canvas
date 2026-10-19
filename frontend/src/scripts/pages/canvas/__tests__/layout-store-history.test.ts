@@ -29,7 +29,7 @@ function storeWithRoot() {
 /** Подпись узла в текущем документе. */
 function labelOf(store: ReturnType<typeof useLayoutStore>, id: string): string | undefined {
   const node = findNode(store.document, id)
-  return node?.type === 'block' ? node.label : undefined
+  return node?.label
 }
 
 describe('создание блока', () => {
@@ -75,8 +75,7 @@ describe('создание блока', () => {
 /** Пишет gap flex-контейнера узла, как числовое поле панели. */
 function setGap(store: ReturnType<typeof useLayoutStore>, id: string, gap: number): void {
   const node = findNode(store.document, id)
-  if (node?.type === 'block' && node.container.kind === 'flex')
-    store.updateNode(id, { container: { ...node.container, gap } })
+  if (node?.container.kind === 'flex') store.updateNode(id, { container: { ...node.container, gap } })
 }
 
 describe('правки панели', () => {

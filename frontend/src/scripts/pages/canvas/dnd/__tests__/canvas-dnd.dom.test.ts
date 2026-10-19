@@ -101,13 +101,6 @@ describe('перетаскивание на поле: старт', () => {
     await wrapper.vm.$nextTick()
     expect(useDragStore().isDragging).toBe(false)
   })
-
-  it('плашку связи тоже можно тянуть', async () => {
-    const wrapper = setup()
-    await pressAndMove(wrapper, 'linkB', 10, 10)
-    expect(useDragStore().draggingId).toBe('linkB')
-    expect(wrapper.get('.canvas-drag-ghost').classes()).toContain('canvas-drag-ghost--link')
-  })
 })
 
 describe('перетаскивание на поле: завершение', () => {
@@ -315,7 +308,7 @@ describe('отпускание над пустым полем', () => {
     expect(store.document.roots.at(-1)?.node.id).toBe('a2')
     expect(store.selectedId).toBe('a2')
     store.undo()
-    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'a2', 'linkB'])
+    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'a2', 'a3'])
     expect(store.canUndo).toBe(false)
   })
 
@@ -338,16 +331,6 @@ describe('отпускание над пустым полем', () => {
     expect(store.document.roots.map((root) => root.node.id)).toEqual(['A', 'B', 'C'])
     store.undo()
     expect(findRootEntry(store.document, 'C')?.canvas).toMatchObject({ x: 3000, y: 0 })
-  })
-
-  it('плашка связи над полем — «нельзя», отпускание ничего не меняет', async () => {
-    const wrapper = setup()
-    const before = useLayoutStore().document
-    hitAt(wrapper.element)
-    await pressAndMove(wrapper, 'linkB', 20, 0)
-    expect(wrapper.classes()).toContain('canvas-viewport--drop-denied')
-    pointer(wrapper.element, 'pointerup', 40, 40)
-    expect(useLayoutStore().document).toBe(before)
   })
 
   it('отпускание над блоком с индексом переносит узел внутрь', async () => {
@@ -380,11 +363,11 @@ describe('Alt-копия на канвасе', () => {
 })
 
 describe('индекс вставки во flex', () => {
-  /** Ставит детей корня A (flex row) в линию: a1, a2, linkB по x 0/100/200, каждый 100×40. */
+  /** Ставит детей корня A (flex row) в линию: a1, a2, a3 по x 0/100/200, каждый 100×40. */
   function layoutA(wrapper: VueWrapper): void {
     stubRect(nodeEl(wrapper, 'a1'), 0, 0, 100, 40)
     stubRect(nodeEl(wrapper, 'a2'), 100, 0, 100, 40)
-    stubRect(nodeEl(wrapper, 'linkB'), 200, 0, 100, 40)
+    stubRect(nodeEl(wrapper, 'a3'), 200, 0, 100, 40)
   }
 
   it('узел из другого корня над областью A — индекс по серединам детей, смена индекса заменяет цель', async () => {
@@ -427,7 +410,7 @@ describe('индекс вставки во flex', () => {
     pointer(wrapper.element, 'pointerup', 120, 10)
     expect(useDragStore().isDragging).toBe(false)
     const store = useLayoutStore()
-    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'c1', 'a2', 'linkB'])
+    expect(childIds(findNode(store.document, 'A'))).toEqual(['a1', 'c1', 'a2', 'a3'])
     store.undo()
     expect(childIds(findNode(store.document, 'C'))).toEqual(['c1'])
   })

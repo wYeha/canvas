@@ -23,7 +23,7 @@ export function useCanvasPropsContainer() {
   /** Выделенный блок (секция показывается только для блока). */
   const block = computed<BlockNode | null>(() => {
     const node = layoutStore.selectedNode
-    return node?.type === 'block' ? node : null
+    return node ?? null
   })
 
   /** Flex-контейнер выделенного блока; у grid — `null`. */

@@ -28,7 +28,7 @@ export function useCanvasPropsContainerGrid(block: ComputedRef<BlockNode | null>
   /** Правит grid-поля блока по id; у не-grid блока ничего не делает. */
   function patchGrid(id: NodeId, change: Partial<Omit<GridContainer, 'kind'>>): void {
     const node = findNode(layoutStore.document, id)
-    if (node?.type === 'block' && node.container.kind === 'grid') {
+    if (node?.container.kind === 'grid') {
       layoutStore.updateNode(id, { container: { ...node.container, ...change } })
     }
   }

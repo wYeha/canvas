@@ -4,9 +4,9 @@ import { areaCenter, screenToWorld, type Camera, type Rect } from './camera'
 import { NEW_ROOT_HEIGHT_ESTIMATE, NEW_ROOT_MAX_SHIFTS, NEW_ROOT_OFFSET } from './constants'
 import type { CanvasPoint } from './factories'
 
-/** Родитель для нового блока: id выделенного блока; у плашки связи и без выделения — `null` (будет новый корень). */
+/** Родитель для нового блока: id выделенного блока; без выделения — `null` (будет новый корень). */
 export function newBlockParentId(selected: LayoutNode | undefined): NodeId | null {
-  return selected?.type === 'block' ? selected.id : null
+  return selected?.id ?? null
 }
 
 /** Левый верхний угол нового корня шириной `width`, при котором его центр лежит в центре видимой области `area`. */

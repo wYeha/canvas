@@ -1,6 +1,6 @@
 /** Скачиваемый файл экспорта: полный HTML-документ, имя файла и статистика (строки, размер) для предпросмотра. */
 import type { LayoutDocument, NodeId } from '@shared'
-import { LINK_MISSING_LABEL, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
+import { ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
 import { escapeHtmlAttr, toSingleLine } from './export-escape'
 import {
@@ -19,7 +19,6 @@ import {
   EXPORT_NEWLINE,
   EXPORT_SIZE_UNITS,
 } from './export-constants'
-import { sourceLabel } from './export-link'
 import type { ExportScope } from './export-types'
 
 /** Статистика текста для строки меты предпросмотра. */
@@ -70,12 +69,11 @@ export function sanitizeFileName(name: string): string {
   return cut.replace(EXPORT_FILE_RESERVED, `$1${EXPORT_FILE_RESERVED_SUFFIX}`)
 }
 
-/** Подпись выделенного узла для имени файла: блок — его подпись, связь — подпись источника; нет узла — пусто. */
+/** Подпись выделенного блока для имени файла; нет узла — пусто. */
 function selectedLabel(doc: LayoutDocument, nodeId: NodeId): string {
   const node = findNode(doc, nodeId)
   if (!node) return ''
-  const label = node.type === 'link' ? sourceLabel(doc, node) : toSingleLine(node.label)
-  if (label === LINK_MISSING_LABEL) return ''
+  const label = toSingleLine(node.label)
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
 

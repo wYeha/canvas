@@ -1,6 +1,6 @@
 /** Демо-документ «Дашборд» для визуальной проверки канваса до импорта и сохранения (загружается по `?demo` в dev). */
 import { SCHEMA_VERSION, type BlockNode, type LayoutDocument, type LayoutNode, type RootEntry } from '@shared'
-import { createBlock, createDocument, createLink } from './factories'
+import { createBlock, createDocument } from './factories'
 
 /** Поля блока, которые демо переопределяет поверх значений по умолчанию. */
 type BlockSpec = Partial<Omit<BlockNode, 'id' | 'type' | 'label' | 'children'>>
@@ -44,6 +44,9 @@ function grid(columns: string, gap: number) {
   }
 }
 
+/** Подпись KPI-карточки: и отдельного корня-заготовки, и карточек в ряду KPI дашборда. */
+const KPI_LABEL = 'KPI-карточка'
+
 /** Корень на поле. */
 function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
   return { canvas: { x, y, width, height: null, exportMaxWidth: false }, node }
@@ -71,11 +74,11 @@ function buildSidebar(): BlockNode {
   ])
 }
 
-/** Основная область: ряд KPI-связей, графики и таблица. */
-function buildMain(kpiSourceId: string): BlockNode {
-  const kpiLinks = [0, 1, 2, 3].map(() => createLink(kpiSourceId))
+/** Основная область: ряд из четырёх KPI, графики и таблица. */
+function buildMain(): BlockNode {
+  const kpiCards = [0, 1, 2, 3].map(() => block(KPI_LABEL, {}))
   return block('main', { container: flex('column', 24), padding: pad(24), self: { flex: '1' } }, [
-    block('kpi-row', { container: grid('repeat(4, 1fr)', 16) }, kpiLinks),
+    block('kpi-row', { container: grid('repeat(4, 1fr)', 16) }, kpiCards),
     block('charts', { container: grid('repeat(2, 1fr)', 16) }, [
       block('chart-left', { self: { minHeight: '200px' } }),
       block('chart-right', { self: { minHeight: '200px' } }),
@@ -84,9 +87,9 @@ function buildMain(kpiSourceId: string): BlockNode {
   ])
 }
 
-/** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-плашка» (240) и «Карточка графика» (480). */
+/** Создаёт демо-документ: корни «Дашборд» (1440), «KPI-карточка» (240) и «Карточка графика» (480). */
 export function createDemoDocument(): LayoutDocument {
-  const kpi = block('KPI-плашка', { container: flex('column', 8), padding: pad(16) }, [
+  const kpi = block(KPI_LABEL, { container: flex('column', 8), padding: pad(16) }, [
     block('kpi-title', {}),
     block('kpi-value', {}),
   ])
@@ -96,7 +99,7 @@ export function createDemoDocument(): LayoutDocument {
   ])
   const dashboard = block('Дашборд', { container: flex('column', null) }, [
     buildHeader(),
-    block('body', { container: grid('240px 1fr', 0) }, [buildSidebar(), buildMain(kpi.id)]),
+    block('body', { container: grid('240px 1fr', 0) }, [buildSidebar(), buildMain()]),
   ])
   return {
     ...createDocument('Дашборд аналитики'),

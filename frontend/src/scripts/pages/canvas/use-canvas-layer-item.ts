@@ -9,7 +9,6 @@ import type { CanvasLayerItemProps } from './canvas-layer-item.types'
 import {
   layerCaption,
   layerChevronClasses,
-  layerChildren,
   layerIcon,
   layerRowClasses,
   layerToggleLabel,
@@ -64,11 +63,11 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
   /** Под курсором ли блок строки (на канвасе или в «Слоях»). */
   const hovered = computed(() => store.hoveredId === props.node.id)
   /** Дети строки. */
-  const children = computed(() => layerChildren(props.node))
+  const children = computed(() => props.node.children)
   /** Раскрыта ли ветка: есть дети и она не свёрнута. */
   const expanded = computed(() => children.value.length > 0 && !context.collapsed.value.has(props.node.id))
-  /** Подпись строки (у связи — по подписи источника). */
-  const caption = computed(() => layerCaption(props.node, store.rootLabelMap))
+  /** Подпись строки. */
+  const caption = computed(() => layerCaption(props.node))
 
   /** Вид строки: всё, что нужно шаблону. */
   const view = computed<LayerItemView>(() => {

@@ -97,7 +97,7 @@ describe('useCanvasPropsContainer (grid)', () => {
   /** Контейнер корня документа. */
   function container(layoutStore: ReturnType<typeof useLayoutStore>) {
     const node = layoutStore.document.roots[0]?.node
-    if (node?.type !== 'block') throw new Error('нет корня')
+    if (!node) throw new Error('нет корня')
     return node.container
   }
 

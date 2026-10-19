@@ -33,9 +33,9 @@ function chainOutsideDragged(chain: NodeId[], draggedId: NodeId): NodeId[] {
   return index === -1 ? chain : chain.slice(index + 1)
 }
 
-/** Первый id цепочки, который есть в документе и является блоком (плашки связи и устаревшие id пропускаются). */
+/** Первый id цепочки, который есть в документе (устаревшие id пропускаются). */
 function firstBlockId(doc: LayoutDocument, chain: NodeId[]): NodeId | null {
-  return chain.find((id) => findNode(doc, id)?.type === 'block') ?? null
+  return chain.find((id) => findNode(doc, id) !== undefined) ?? null
 }
 
 /**

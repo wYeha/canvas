@@ -1,4 +1,4 @@
-/** Тесты выбора приёмника: прозрачность перетаскиваемого поддерева, плашки связи, пустое поле, запреты переноса. */
+/** Тесты выбора приёмника: прозрачность перетаскиваемого поддерева, пустое поле, устаревшие id. */
 import { describe, expect, it } from 'vitest'
 import { resolveDropTarget, sameDropTarget } from '@/scripts/pages/canvas/dnd/drop-target'
 import { makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
@@ -10,9 +10,8 @@ describe('resolveDropTarget', () => {
     expect(resolveDropTarget(doc, 'a2', null)).toBeNull()
   })
 
-  it('пустое поле: блок становится корнем, плашку связи на поле вынести нельзя', () => {
+  it('пустое поле: блок становится корнем', () => {
     expect(resolveDropTarget(doc, 'a2', { chain: [] })).toEqual({ kind: 'canvas' })
-    expect(resolveDropTarget(doc, 'linkB', { chain: [] })).toBeNull()
   })
 
   it('самый глубокий блок под курсором — приёмник, в том числе в другом корне', () => {
@@ -24,8 +23,8 @@ describe('resolveDropTarget', () => {
     expect(resolveDropTarget(doc, 'a2', { chain: ['c1', 'C'] })).toEqual({ kind: 'block', id: 'c1', index: null })
   })
 
-  it('плашка связи под курсором — приёмник её ближайший блок-предок', () => {
-    expect(resolveDropTarget(doc, 'a2', { chain: ['linkB', 'A'] })).toEqual({ kind: 'block', id: 'A', index: null })
+  it('лист под курсором — приёмник сам лист', () => {
+    expect(resolveDropTarget(doc, 'a2', { chain: ['a3', 'A'] })).toEqual({ kind: 'block', id: 'a3', index: null })
   })
 
   it('перетаскиваемое поддерево прозрачно: над собой и над потомком — родитель', () => {
@@ -42,8 +41,8 @@ describe('resolveDropTarget', () => {
     expect(resolveDropTarget(doc, 'a2', { chain: ['C'] })).toEqual({ kind: 'block', id: 'C', index: null })
   })
 
-  it('корень-источник связи: над блоком нельзя, над пустым полем — можно', () => {
-    expect(resolveDropTarget(doc, 'B', { chain: ['c1', 'C'] })).toBeNull()
+  it('корень над блоком другого корня — приёмник этот блок', () => {
+    expect(resolveDropTarget(doc, 'B', { chain: ['c1', 'C'] })).toEqual({ kind: 'block', id: 'c1', index: null })
     expect(resolveDropTarget(doc, 'B', { chain: [] })).toEqual({ kind: 'canvas' })
   })
 

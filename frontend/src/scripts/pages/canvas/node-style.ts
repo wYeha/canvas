@@ -103,7 +103,6 @@ export function containerEntries(container: Container): StyleEntry[] {
 
 /** Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня). */
 export function styleEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
-  if (node.type === 'link') return selfEntries(node.self, parentKind)
   const entries = containerEntries(node.container)
   push(entries, 'padding', paddingValue(node.padding))
   entries.push(...selfEntries(node.self, parentKind))

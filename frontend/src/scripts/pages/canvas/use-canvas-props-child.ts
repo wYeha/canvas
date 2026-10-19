@@ -23,7 +23,7 @@ export function useCanvasPropsChild() {
     return selected ? findParent(layoutStore.document, selected.id) : undefined
   })
 
-  /** Выделенный узел с родителем (блок или связь); у корня — `null`. */
+  /** Выделенный блок с родителем; у корня — `null`. */
   const node = computed<LayoutNode | null>(() => (parent.value ? (layoutStore.selectedNode ?? null) : null))
 
   /** Вид контейнера родителя: определяет, какие поля показывать. */

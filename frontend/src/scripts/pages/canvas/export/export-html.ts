@@ -5,7 +5,6 @@
 import type { BlockNode, ContainerKind, LayoutDocument, LayoutNode, RootEntry } from '@shared'
 import type { StyleEntry } from '@/scripts/pages/canvas/node-style'
 import { formatComment, nodeCommentParts, rootHeaderComment, warningComments } from './export-comment'
-import { exportLinkLines } from './export-link'
 import { closeTag, exportStyleEntries, openTag, rootExportEntries, safeStyle, safeTag } from './export-style'
 import type { CommentParts, RootOrder } from './export-types'
 import { EXPORT_INDENT, EXPORT_NEWLINE } from './export-constants'
@@ -70,7 +69,6 @@ export function exportNodeLines(
   parentKind: ContainerKind | null,
   depth: number,
 ): string[] {
-  if (node.type === 'link') return exportLinkLines(doc, node, parentKind, depth)
   return renderBlock(doc, { block: node, parentKind, depth, comment: nodeCommentParts(node), extraEntries: [] })
 }
 

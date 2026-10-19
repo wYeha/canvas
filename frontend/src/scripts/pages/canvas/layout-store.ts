@@ -9,8 +9,6 @@ import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId
 import { HISTORY_LIMIT, HISTORY_MERGE_MS } from './constants'
 import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
 import { createBlock, createDocument, createRootEntry, nextAutoLabel, type CanvasPoint } from './factories'
-import { rootLabels } from './node-view'
-import { prepareForPaste } from './node-paste'
 import * as tree from './tree'
 import type { MoveTarget, NodePatch } from './tree'
 
@@ -53,9 +51,6 @@ export const useLayoutStore = defineStore('layout', () => {
   const selectedNode = computed<LayoutNode | undefined>(() =>
     selectedId.value === null ? undefined : tree.findNode(document.value, selectedId.value),
   )
-
-  /** Подписи корней по id: общий кеш для плашек связей. */
-  const rootLabelMap = computed(() => rootLabels(document.value))
 
   /** Путь от корня до выделенного узла включительно; пусто без выделения. */
   const selectedPath = computed<LayoutNode[]>(() =>
@@ -167,20 +162,19 @@ export const useLayoutStore = defineStore('layout', () => {
   }
 
   /**
-   * Вставляет копию поддерева ребёнком `parentId` (в конец) с новыми id и выделяет её; связи на удалённые корни
-   * убираются. Возвращает id копии или `null` при отказе (нет блока-родителя, скопирована осиротевшая связь).
+   * Вставляет копию поддерева ребёнком `parentId` (в конец) с новыми id и выделяет её.
+   * Возвращает id копии или `null` при отказе (нет блока-родителя).
    */
   function pasteChild(parentId: NodeId, copied: LayoutNode): NodeId | null {
-    const node = prepareForPaste(document.value, copied)
-    if (node === null || !commit(tree.addChild(document.value, parentId, node))) return null
+    const node = tree.cloneSubtree(copied)
+    if (!commit(tree.addChild(document.value, parentId, node))) return null
     selectedId.value = node.id
     return node.id
   }
 
-  /** Вставляет копию блока новым корнем в точку поля (шириной `width`) и выделяет; связь корнем быть не может — `null`. */
+  /** Вставляет копию блока новым корнем в точку поля (шириной `width`) и выделяет; `null` при отказе. */
   function pasteRoot(copied: LayoutNode, at: CanvasPoint, width: number): NodeId | null {
-    const node = prepareForPaste(document.value, copied)
-    if (node?.type !== 'block') return null
+    const node = tree.cloneSubtree(copied)
     const canvas = { x: at.x, y: at.y, width, height: null, exportMaxWidth: false }
     if (!commit(tree.addRoot(document.value, { canvas, node }))) return null
     selectedId.value = node.id
@@ -277,7 +271,6 @@ export const useLayoutStore = defineStore('layout', () => {
     hoveredId,
     selectedNode,
     selectedPath,
-    rootLabelMap,
     canUndo,
     canRedo,
     rootOf,

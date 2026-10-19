@@ -1,4 +1,4 @@
-/** Экспорт выделенного узла: корень — как корневой блок с заголовком, вложенный блок или связь — контекст + поддерево. */
+/** Экспорт выделенного узла: корень — как корневой блок с заголовком, вложенный блок — контекст + поддерево. */
 import type { LayoutDocument, NodeId } from '@shared'
 import { findParent, findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { contextLines } from './export-context'

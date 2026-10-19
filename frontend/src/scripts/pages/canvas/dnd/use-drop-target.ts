@@ -52,7 +52,7 @@ export function useDropTarget(isSurface: (target: EventTarget | null) => boolean
    */
   function insertIndexIn(parentId: NodeId, draggedId: NodeId, client: CanvasPoint, forCopy: boolean): number | null {
     const parent = findNode(layoutStore.document, parentId)
-    if (parent?.type !== 'block') return null
+    if (!parent) return null
     const ids = parent.children.map((child) => child.id)
     const rects = measureChildClientRects(parentId, ids)
     if (rects === null) return null

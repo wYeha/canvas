@@ -1,7 +1,6 @@
 /** Копирование узла в цель drop без изъятия исходника (Alt при отпускании на канвасе). */
 import type { BlockNode, CanvasPlacement, LayoutDocument, NodeId } from '@shared'
-import { prepareForPaste } from './node-paste'
-import { addChild, addRoot } from './tree'
+import { addChild, addRoot, cloneSubtree } from './tree'
 import { findNode, locateNode } from './tree-query'
 import { canMoveNode, moveNode } from './tree-move'
 import type { MoveTarget } from './tree-types'
@@ -46,18 +45,16 @@ export function copyNodeToTarget(
 
   const node = findNode(doc, sourceId)
   if (!node) return { document: doc, copyId: null }
-  const prepared = prepareForPaste(doc, node)
-  if (prepared === null) return { document: doc, copyId: null }
+  const prepared = cloneSubtree(node)
 
   if (target.type === 'child') {
     const parent = findNode(doc, target.parentId)
-    if (parent?.type !== 'block') return { document: doc, copyId: null }
+    if (!parent) return { document: doc, copyId: null }
     const index = Math.min(Math.max(target.index, 0), parent.children.length)
     const next = addChild(doc, target.parentId, prepared, index)
     return next === doc ? { document: doc, copyId: null } : { document: next, copyId: prepared.id }
   }
 
-  if (prepared.type !== 'block') return { document: doc, copyId: null }
   const next = copyToCanvas(doc, sourceId, prepared, target)
   return next === doc ? { document: doc, copyId: null } : { document: next, copyId: prepared.id }
 }

@@ -50,7 +50,7 @@ export function useCanvasSelect(
     if (e.button !== PRIMARY_BUTTON || !isSurface(e.target) || isPanning()) return
     const id = labelNodeIdAt(e.target, { x: e.clientX, y: e.clientY })
     const node = id === null ? undefined : findNode(layoutStore.document, id)
-    if (node?.type !== 'block') return
+    if (!node) return
     layoutStore.select(node.id)
     labelEdit.beginRename(node.id, node.label, 'canvas')
   }

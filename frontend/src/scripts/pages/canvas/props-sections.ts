@@ -1,15 +1,7 @@
 /** Чистая логика панели свойств: состав секций по выделению, заголовок и состояние сворачивания. Без Vue. */
-import type { ContainerKind, LayoutDocument, LayoutNode } from '@shared'
-import {
-  LINK_ICON,
-  PROPS_LINK_TITLE,
-  PROPS_META_CHILD,
-  PROPS_META_LINK,
-  PROPS_META_ROOT,
-  PROPS_META_SEPARATOR,
-  PROPS_SECTION_TITLES,
-} from './constants'
-import { directionIcon, linkCaption } from './node-view'
+import type { ContainerKind, LayoutNode } from '@shared'
+import { PROPS_META_CHILD, PROPS_META_ROOT, PROPS_META_SEPARATOR, PROPS_SECTION_TITLES } from './constants'
+import { directionIcon } from './node-view'
 import { nodeCaption } from './selection'
 
 /** Id секции панели свойств. */
@@ -25,20 +17,16 @@ export interface PropsHeader {
   meta: string
 }
 
-/** Состав секций по типу узла и виду контейнера родителя (`null` — корень): «Ширина превью» только у корня, «Как ребёнок» не у корня (у связи — после секции связи). */
-export function propsSectionIds(type: LayoutNode['type'], parentKind: ContainerKind | null): PropsSectionId[] {
-  if (type === 'link') return ['link', 'child']
+/** Состав секций по виду контейнера родителя (`null` — корень): «Ширина превью» только у корня, «Как ребёнок» не у корня. */
+export function propsSectionIds(parentKind: ContainerKind | null): PropsSectionId[] {
   return parentKind === null ? ['preview', 'block', 'container'] : ['block', 'container', 'child']
 }
 
-/** Заголовок панели: `flex · ребёнок grid`, `корневой · flex` или `связь → <цель>`. */
-export function propsHeader(doc: LayoutDocument, node: LayoutNode, parentKind: ContainerKind | null): PropsHeader {
-  if (node.type === 'link') {
-    return { icon: LINK_ICON, title: PROPS_LINK_TITLE, meta: `${PROPS_META_LINK} ${linkCaption(doc, node.sourceId)}` }
-  }
+/** Заголовок панели: `flex · ребёнок grid` или `корневой · flex`. */
+export function propsHeader(node: LayoutNode, parentKind: ContainerKind | null): PropsHeader {
   const kind = node.container.kind
   const meta = parentKind === null ? [PROPS_META_ROOT, kind] : [kind, `${PROPS_META_CHILD} ${parentKind}`]
-  return { icon: directionIcon(node), title: nodeCaption(doc, node), meta: meta.join(PROPS_META_SEPARATOR) }
+  return { icon: directionIcon(node), title: nodeCaption(node), meta: meta.join(PROPS_META_SEPARATOR) }
 }
 
 /** Разбирает сохранённую строку состояния; мусор и не-булевы значения отбрасываются. */

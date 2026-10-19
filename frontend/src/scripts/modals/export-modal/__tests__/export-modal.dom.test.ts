@@ -21,7 +21,7 @@ function prepareStore(select: boolean, rootLabel = 'Дашборд') {
   const rootId = store.document.roots[0]?.node.id ?? ''
   store.addChild(rootId, 'flex', 'Карточка')
   const root = store.document.roots[0]?.node
-  const childId = root?.type === 'block' ? (root.children[0]?.id ?? '') : ''
+  const childId = root?.children[0]?.id ?? ''
   store.select(select ? childId : null)
   return store
 }

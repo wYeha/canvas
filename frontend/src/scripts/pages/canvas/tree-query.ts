@@ -4,7 +4,6 @@ import type { NodeLocation } from './tree-types'
 
 /** Ищет узел в поддереве `node` (сам узел не проверяется) и возвращает индексы детей до него. */
 function findIndicesIn(node: LayoutNode, nodeId: NodeId): number[] | undefined {
-  if (node.type !== 'block') return undefined
   for (const [index, child] of node.children.entries()) {
     if (child.id === nodeId) return [index]
     const rest = findIndicesIn(child, nodeId)
@@ -30,7 +29,6 @@ function nodesAt(doc: LayoutDocument, loc: NodeLocation): LayoutNode[] {
   const path: LayoutNode[] = [root.node]
   let current: LayoutNode = root.node
   for (const index of loc.indices) {
-    if (current.type !== 'block') return []
     const child: LayoutNode | undefined = current.children[index]
     if (!child) return []
     path.push(child)
@@ -45,7 +43,7 @@ export function getPath(doc: LayoutDocument, nodeId: NodeId): LayoutNode[] {
   return loc ? nodesAt(doc, loc) : []
 }
 
-/** Находит узел (блок или связь) в любом корне документа. */
+/** Находит узел в любом корне документа. */
 export function findNode(doc: LayoutDocument, nodeId: NodeId): LayoutNode | undefined {
   return getPath(doc, nodeId).at(-1)
 }
@@ -57,8 +55,7 @@ export function findRootEntry(doc: LayoutDocument, nodeId: NodeId): RootEntry | 
 
 /** Возвращает родительский блок узла; `undefined` для корня и для отсутствующего узла. */
 export function findParent(doc: LayoutDocument, nodeId: NodeId): BlockNode | undefined {
-  const parent = getPath(doc, nodeId).at(-2)
-  return parent?.type === 'block' ? parent : undefined
+  return getPath(doc, nodeId).at(-2)
 }
 
 /** Проверяет, что `nodeId` лежит строго внутри поддерева `ancestorId` (сам узел потомком не считается). */

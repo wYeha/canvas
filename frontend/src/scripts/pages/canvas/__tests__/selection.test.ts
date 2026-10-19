@@ -40,7 +40,7 @@ describe('selection: клик и цель', () => {
 
   it('цель клика: существующий id или null', () => {
     expect(resolveClickTarget(doc, 'a1x')).toBe('a1x')
-    expect(resolveClickTarget(doc, 'linkB')).toBe('linkB')
+    expect(resolveClickTarget(doc, 'a3')).toBe('a3')
     expect(resolveClickTarget(doc, 'нет')).toBeNull()
     expect(resolveClickTarget(doc, null)).toBeNull()
   })
@@ -56,16 +56,16 @@ describe('selection: навигация', () => {
   it('Esc: к родителю, с корня и без выделения — снять', () => {
     expect(parentSelection(doc, 'a1x')).toBe('a1')
     expect(parentSelection(doc, 'a1')).toBe('A')
-    expect(parentSelection(doc, 'linkB')).toBe('A')
+    expect(parentSelection(doc, 'a3')).toBe('A')
     expect(parentSelection(doc, 'A')).toBeNull()
     expect(parentSelection(doc, null)).toBeNull()
   })
 
-  it('Enter: к первому ребёнку; лист и связь остаются', () => {
+  it('Enter: к первому ребёнку; лист остаётся', () => {
     expect(firstChildSelection(doc, 'A')).toBe('a1')
     expect(firstChildSelection(doc, 'a1')).toBe('a1x')
     expect(firstChildSelection(doc, 'a2')).toBe('a2')
-    expect(firstChildSelection(doc, 'linkB')).toBe('linkB')
+    expect(firstChildSelection(doc, 'a3')).toBe('a3')
     expect(firstChildSelection(doc, null)).toBeNull()
   })
 
@@ -104,9 +104,9 @@ describe('selection: геометрия и тексты', () => {
     expect(sizeText({ x: 0, y: 0, width: 100.4, height: 33.3 }, 1)).toBe('100×33')
   })
 
-  it('бейдж: подпись · тип · размер; у связи — её текст и тип «связь»', () => {
-    expect(selectionBadgeText(doc, node('a1'), '10×20')).toBe('a1 · grid · 10×20')
-    expect(selectionBadgeText(doc, node('linkB'), '1×2')).toBe('→ B · связь · 1×2')
+  it('бейдж: подпись · тип · размер', () => {
+    expect(selectionBadgeText(node('a1'), '10×20')).toBe('a1 · grid · 10×20')
+    expect(selectionBadgeText({ ...node('a3'), label: '' }, '1×2')).toBe('Без подписи · flex · 1×2')
     expect(nodeTypeLabel(node('A'))).toBe('flex')
   })
 
@@ -125,10 +125,10 @@ describe('selection: геометрия и тексты', () => {
   })
 
   it('плашка пути: сегменты от корня до выделенного', () => {
-    const segments = breadcrumbSegments(doc, getPath(doc, 'a1x'))
+    const segments = breadcrumbSegments(getPath(doc, 'a1x'))
     expect(segments.map((s) => s.id)).toEqual(['A', 'a1', 'a1x'])
     expect(segments.map((s) => s.text)).toEqual(['A', 'a1', 'a1x'])
-    expect(breadcrumbSegments(doc, [])).toEqual([])
+    expect(breadcrumbSegments([])).toEqual([])
   })
 })
 

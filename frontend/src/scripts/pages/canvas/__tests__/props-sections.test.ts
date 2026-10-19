@@ -22,34 +22,26 @@ function node(id: string) {
 
 describe('propsSectionIds', () => {
   it('корневой блок: превью, блок, контейнер', () => {
-    expect(propsSectionIds('block', null)).toEqual(['preview', 'block', 'container'])
+    expect(propsSectionIds(null)).toEqual(['preview', 'block', 'container'])
   })
 
   it('вложенный блок: блок, контейнер, как ребёнок', () => {
-    expect(propsSectionIds('block', 'flex')).toEqual(['block', 'container', 'child'])
-    expect(propsSectionIds('block', 'grid')).toEqual(['block', 'container', 'child'])
-  })
-
-  it('связь: секция связи и «как ребёнок»', () => {
-    expect(propsSectionIds('link', 'flex')).toEqual(['link', 'child'])
+    expect(propsSectionIds('flex')).toEqual(['block', 'container', 'child'])
+    expect(propsSectionIds('grid')).toEqual(['block', 'container', 'child'])
   })
 })
 
 describe('propsHeader', () => {
   it('корень: «корневой · flex»', () => {
-    expect(propsHeader(doc, node('A'), null)).toMatchObject({ title: 'A', meta: 'корневой · flex' })
+    expect(propsHeader(node('A'), null)).toMatchObject({ title: 'A', meta: 'корневой · flex' })
   })
 
   it('вложенный блок: «grid · ребёнок flex»', () => {
-    expect(propsHeader(doc, node('a1'), 'flex')).toMatchObject({ icon: '#', meta: 'grid · ребёнок flex' })
-  })
-
-  it('связь: «связь → цель»', () => {
-    expect(propsHeader(doc, node('linkB'), 'flex')).toMatchObject({ icon: '→', title: 'Связь', meta: 'связь → B' })
+    expect(propsHeader(node('a1'), 'flex')).toMatchObject({ icon: '#', meta: 'grid · ребёнок flex' })
   })
 
   it('блок без подписи получает заглушку', () => {
-    expect(propsHeader(doc, { ...createBlock('flex', ''), id: 'x' }, null).title).toBe('Без подписи')
+    expect(propsHeader({ ...createBlock('flex', ''), id: 'x' }, null).title).toBe('Без подписи')
   })
 })
 

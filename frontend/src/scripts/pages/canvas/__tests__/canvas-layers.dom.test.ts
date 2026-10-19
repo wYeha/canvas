@@ -71,11 +71,11 @@ describe('CanvasLayers', () => {
     expect(wrapper.text()).toContain('Нет блоков')
   })
 
-  it('корни верхним уровнем, внутри деревья; связь — строкой «→ источник»', () => {
+  it('корни верхним уровнем, внутри деревья', () => {
     const wrapper = setup()
-    expect(labels(wrapper)).toEqual(['A', 'a1', 'a1x', 'a1y', 'a2', '→ B', 'B', 'b1', 'C', 'c1'])
+    expect(labels(wrapper)).toEqual(['A', 'a1', 'a1x', 'a1y', 'a2', 'a3', 'B', 'b1', 'C', 'c1'])
     expect(row(wrapper, 'a1').find('.canvas-layer-item__type').text()).toBe('grid')
-    expect(row(wrapper, 'linkB').find('.canvas-layer-item__type').text()).toBe('связь')
+    expect(row(wrapper, 'a3').find('.canvas-layer-item__type').text()).toBe('flex')
   })
 
   it('шеврон сворачивает и раскрывает ветку', async () => {
@@ -125,7 +125,7 @@ describe('CanvasLayers: переименование', () => {
   /** Подпись блока в документе. */
   function labelOf(id: string): string | undefined {
     const node = findNode(useLayoutStore().document, id)
-    return node?.type === 'block' ? node.label : undefined
+    return node?.label
   }
 
   it('двойной клик открывает поле с текущей подписью в фокусе, Enter записывает', async () => {
@@ -142,14 +142,13 @@ describe('CanvasLayers: переименование', () => {
     expect(row(wrapper, 'a2').find('input').exists()).toBe(false)
   })
 
-  it('Esc откатывает, у связи двойной клик ничего не открывает', async () => {
+  it('Esc откатывает подпись', async () => {
     const wrapper = setup()
     await row(wrapper, 'a2').find('.canvas-layer-item__select').trigger('dblclick')
     const input = row(wrapper, 'a2').find('input')
     await input.setValue('Другое')
     await input.trigger('keydown', { code: 'Escape' })
     expect(labelOf('a2')).toBe('a2')
-    await row(wrapper, 'linkB').find('.canvas-layer-item__select').trigger('dblclick')
     expect(useLabelEditStore().editingId).toBeNull()
   })
 
@@ -218,7 +217,7 @@ describe('CanvasLayers: перетаскивание (7.7)', () => {
     pointer(list, 'pointerup', 100, 64)
     await wrapper.vm.$nextTick()
     expect(isLayersDragging.value).toBe(false)
-    expect(childIds(useLayoutStore().document.roots[0]?.node)).toEqual(['a2', 'a1', 'linkB'])
+    expect(childIds(useLayoutStore().document.roots[0]?.node)).toEqual(['a2', 'a1', 'a3'])
     const beforeEsc = childIds(useLayoutStore().document.roots[0]?.node)
     pointer(a2Row, 'pointerdown', 100, 115)
     pointer(list, 'pointermove', 108, 123)

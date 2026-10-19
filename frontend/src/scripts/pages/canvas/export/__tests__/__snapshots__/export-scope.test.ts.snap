@@ -28,10 +28,10 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
     <div style="display:flex; flex-direction:column; gap:24px; padding:24px">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «KPI-плашка» --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
+        <div><!-- KPI-карточка --></div>
       </div>
       <!-- charts -->
       <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px">
@@ -43,7 +43,7 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
   </div>
 </div>
 
-<!-- 2 из 3. Корневой блок «KPI-плашка», ширина превью 240px -->
+<!-- 2 из 3. Корневой блок «KPI-карточка», ширина превью 240px -->
 <div style="display:flex; flex-direction:column; gap:8px; padding:16px">
   <div><!-- kpi-title --></div>
   <div><!-- kpi-value --></div>

@@ -1,6 +1,6 @@
 /** Тесты генератора HTML: формат комментариев и тегов на небольшом дереве, снапшот демо-документа, детерминированность. */
 import { describe, expect, it } from 'vitest'
-import { createFlexContainer, createLink } from '@/scripts/pages/canvas/factories'
+import { createFlexContainer } from '@/scripts/pages/canvas/factories'
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
 import { exportNodeLines, exportRootHtml } from '@/scripts/pages/canvas/export/export-html'
 import { block, docOf, root, smallTree } from './export-fixture'
@@ -52,21 +52,6 @@ describe('exportRootHtml', () => {
         Одна строка
       -->
       <div></div>
-      "
-    `)
-  })
-
-  it('связь — плейсхолдер компонента со стилями «как ребёнок»', () => {
-    const source = root(block('flex', 'KPI-плашка'), 240, null, false)
-    const link = { ...createLink(source.node.id), self: { flex: '1' } }
-    const missing = createLink('нет-такого')
-    const target = root(block('flex', 'Ряд', {}, [link, missing]), 960, null, false)
-    expect(exportRootHtml(docOf(target, source), target)).toMatchInlineSnapshot(`
-      "<!-- Корневой блок «Ряд», ширина превью 960px -->
-      <div style="display:flex">
-        <div style="flex:1"><!-- компонент «KPI-плашка» --></div>
-        <div><!-- компонент «без источника» --></div>
-      </div>
       "
     `)
   })

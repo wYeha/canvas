@@ -2,8 +2,6 @@
 import { describe, expect, it } from 'vitest'
 import type { MoveTarget } from '@/scripts/pages/canvas/tree-types'
 import { copyNodeToTarget } from '@/scripts/pages/canvas/tree-copy'
-import { addChild, duplicateNode, moveNode } from '@/scripts/pages/canvas/tree'
-import { createLink } from '@/scripts/pages/canvas/factories'
 import { findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { childIds, expectValid, makeDoc } from '@/scripts/pages/canvas/__tests__/tree-fixture'
 
@@ -18,7 +16,7 @@ describe('copyNodeToTarget', () => {
     const { document: next, copyId } = copyNodeToTarget(doc, 'a2', child('a1', 0))
     expectValid(next)
     expect(copyId).not.toBe('a2')
-    expect(childIds(findNode(doc, 'A'))).toEqual(['a1', 'a2', 'linkB'])
+    expect(childIds(findNode(doc, 'A'))).toEqual(['a1', 'a2', 'a3'])
     expect(childIds(findNode(next, 'a1'))).toEqual([copyId, 'a1x', 'a1y'])
     expect(findNode(next, 'a2')).toBe(findNode(doc, 'a2'))
   })
@@ -32,16 +30,13 @@ describe('copyNodeToTarget', () => {
     expect(next.roots).toHaveLength(4)
     if (copyId === null) return
     expect(findRootEntry(next, copyId)?.canvas).toMatchObject({ x: 100, y: 200, width: 1440 })
-    expect(childIds(findNode(doc, 'A'))).toEqual(['a1', 'a2', 'linkB'])
+    expect(childIds(findNode(doc, 'A'))).toEqual(['a1', 'a2', 'a3'])
   })
 
   it('отказывает при canMoveNode', () => {
     const doc = makeDoc()
-    expect(copyNodeToTarget(doc, 'B', child('c1', 0))).toEqual({ document: doc, copyId: null })
-    expect(copyNodeToTarget(doc, 'linkB', { type: 'canvas', at: { x: 0, y: 0 } })).toEqual({
-      document: doc,
-      copyId: null,
-    })
+    expect(copyNodeToTarget(doc, 'A', child('a1x', 0))).toEqual({ document: doc, copyId: null })
+    expect(copyNodeToTarget(doc, 'a2', child('нет', 0))).toEqual({ document: doc, copyId: null })
   })
 
   it('no-op на том же месте, что и перенос', () => {
@@ -58,20 +53,6 @@ describe('copyNodeToTarget', () => {
     const { document: next, copyId } = copyNodeToTarget(doc, 'a2', child('A', 0))
     expectValid(next)
     expect(copyId).not.toBeNull()
-    expect(childIds(findNode(next, 'A'))).toEqual([copyId, 'a1', 'a2', 'linkB'])
-  })
-
-  it('копия поддерева с плашкой, замыкающей цикл, не вставляется', () => {
-    const withBack = addChild(makeDoc(), 'c1', createLink('A'))
-    const { document: next, copyId } = copyNodeToTarget(withBack, 'c1', child('B', 0))
-    expect(next).toBe(withBack)
-    expect(copyId).toBeNull()
-  })
-
-  it('дублирование блока с плашкой остаётся в том же корне и цикла не даёт', () => {
-    const { document: next } = duplicateNode(makeDoc(), 'A')
-    expectValid(next)
-    const inner = duplicateNode(moveNode(makeDoc(), 'linkB', { type: 'child', parentId: 'a2', index: 0 }), 'a2')
-    expectValid(inner.document)
+    expect(childIds(findNode(next, 'A'))).toEqual([copyId, 'a1', 'a2', 'a3'])
   })
 })

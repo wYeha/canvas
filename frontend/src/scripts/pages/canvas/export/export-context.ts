@@ -28,7 +28,6 @@ import { countGridColumns } from '@/scripts/pages/canvas/props-child'
 import { getPath, locateNode } from '@/scripts/pages/canvas/tree-query'
 import { formatComment, quoted, rootSizeText } from './export-comment'
 import { toSingleLine } from './export-escape'
-import { sourceLabel } from './export-link'
 import { safeTag } from './export-style'
 import type { ExportOptions } from './export-types'
 import {
@@ -64,7 +63,6 @@ import {
   EXPORT_CONTEXT_STRETCH_WIDTH,
   EXPORT_CONTEXT_WIDTH_LABEL,
   EXPORT_CONTEXT_WITHIN,
-  EXPORT_LINK_COMPONENT,
   EXPORT_LIST_SEPARATOR,
   EXPORT_PERCENT,
   EXPORT_PLURAL_LOCALE,
@@ -102,12 +100,6 @@ function blockLabel(block: BlockNode): string {
   return label === '' ? ROOT_UNTITLED_LABEL : label
 }
 
-/** Подпись узла в пути: блок — своя подпись, связь (может быть только последней) — `компонент «источник»`. */
-function pathLabel(doc: LayoutDocument, node: LayoutNode): string {
-  if (node.type === 'block') return blockLabel(node)
-  return `${EXPORT_LINK_COMPONENT}${EXPORT_WORD_SEPARATOR}${quoted(sourceLabel(doc, node))}`
-}
-
 /** Свойство и значение через пробел: `gap 24px`. */
 function named(property: string, value: string): string {
   return `${property}${EXPORT_WORD_SEPARATOR}${value}`
@@ -143,7 +135,7 @@ function locatePlace(doc: LayoutDocument, nodeId: NodeId): NodePlace | undefined
   const path = getPath(doc, nodeId)
   const node = path.at(-1)
   const parent = path.at(-2)
-  if (!entry || index === undefined || !node || parent?.type !== 'block') return undefined
+  if (!entry || index === undefined || !node || !parent) return undefined
   return { entry, path, node, parent, index }
 }
 
@@ -153,8 +145,8 @@ function rootLine(entry: RootEntry): string {
 }
 
 /** Путь от корня до узла: `Путь: Дашборд › body › main › charts`. */
-function pathLine(doc: LayoutDocument, path: readonly LayoutNode[]): string {
-  const labels = path.map((node) => pathLabel(doc, node))
+function pathLine(path: readonly LayoutNode[]): string {
+  const labels = path.map((node) => blockLabel(node))
   return `${EXPORT_CONTEXT_PATH} ${labels.join(EXPORT_CONTEXT_PATH_SEPARATOR)}`
 }
 
@@ -354,7 +346,7 @@ function placeLine(place: NodePlace, options: ExportOptions): string {
   )
   const { container } = parent
   const axes = container.kind === 'flex' ? flexAxes(node.self, container) : gridAxes(node.self, container)
-  const repeat = node.type === 'block' && node.repeat > 1 ? node.repeat : null
+  const repeat = node.repeat > 1 ? node.repeat : null
   const parts = [
     position,
     axisPart(EXPORT_CONTEXT_WIDTH_LABEL, `${axes.width}${measuredText(place, options)}`),
@@ -371,6 +363,6 @@ function placeLine(place: NodePlace, options: ExportOptions): string {
 export function contextLines(doc: LayoutDocument, nodeId: NodeId, options: ExportOptions): string[] {
   const place = locatePlace(doc, nodeId)
   if (!place) return []
-  const body = [pathLine(doc, place.path), parentLine(place.parent), placeLine(place, options)]
+  const body = [pathLine(place.path), parentLine(place.parent), placeLine(place, options)]
   return formatComment(rootLine(place.entry), body, '')
 }

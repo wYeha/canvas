@@ -39,10 +39,9 @@ export function useCanvasLayerRename(node: () => LayoutNode, rowEl: Ref<HTMLElem
   watch(renaming, () => void focusIfRenaming())
   onMounted(() => void focusIfRenaming())
 
-  /** Двойной клик по строке: переименование блока прямо в строке; у связи подписи нет. */
+  /** Двойной клик по строке: переименование блока прямо в строке. */
   function startRename(): void {
     const target = node()
-    if (target.type !== 'block') return
     labelEdit.beginRename(target.id, target.label, 'layers')
   }
 

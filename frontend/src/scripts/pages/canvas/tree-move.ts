@@ -1,6 +1,6 @@
 /** Перемещение узлов: проверка допустимости заранее (для DnD) и сам перенос в блок или на канвас. */
-import { isLinkSource, type CanvasPlacement, type LayoutDocument, type LayoutNode, type NodeId } from '@shared'
-import { insertAt, nodeAt, removeAtLocation, subtreeHasLinkCycle, updateAtLocation } from './tree-internal'
+import type { CanvasPlacement, LayoutDocument, LayoutNode, NodeId } from '@shared'
+import { insertAt, nodeAt, removeAtLocation, updateAtLocation } from './tree-internal'
 import { findNode, isDescendant, locateNode } from './tree-query'
 import type { MoveTarget, NodeLocation, TreeError } from './tree-types'
 
@@ -18,37 +18,18 @@ interface Detached {
   sourceCanvas: CanvasPlacement
 }
 
-/**
- * Проверяет, замкнут ли цикл связей плашки переносимого поддерева на новом месте. Граф корней берётся у документа
- * уже без узла: его плашки уходят из старого корня, а новые рёбра выходят только из корня-цели.
- */
-function movedLinksCycle(doc: LayoutDocument, nodeId: NodeId, parentId: NodeId): boolean {
-  const loc = locateNode(doc, nodeId)
-  const node = loc && nodeAt(doc, loc)
-  if (!loc || !node) return false
-  return subtreeHasLinkCycle(removeAtLocation(doc, loc), node, parentId)
-}
-
-/**
- * Проверяет перенос ребёнком блока: цель существует, это блок, не сам узел и не потомок, не корень-источник,
- * и плашки переносимого поддерева не замкнут цикл связей.
- */
+/** Проверяет перенос ребёнком блока: цель существует и это не сам узел и не его потомок. */
 function checkChildTarget(doc: LayoutDocument, nodeId: NodeId, target: ChildTarget): TreeError | null {
-  const parent = findNode(doc, target.parentId)
-  if (!parent) return 'target-not-found'
-  if (parent.type === 'link') return 'parent-is-link'
+  if (!findNode(doc, target.parentId)) return 'target-not-found'
   if (target.parentId === nodeId || isDescendant(doc, nodeId, target.parentId)) return 'into-self-or-descendant'
-  // Источник — только корневой блок (DESIGN.md): вложение тихо сломало бы связи, которых пользователь не видит
-  if (doc.roots.some((root) => root.node.id === nodeId) && isLinkSource(doc, nodeId)) return 'source-into-block'
-  return movedLinksCycle(doc, nodeId, target.parentId) ? 'link-cycle' : null
+  return null
 }
 
 /** Проверяет, можно ли переместить узел; возвращает причину отказа или `null`. */
 export function canMoveNode(doc: LayoutDocument, nodeId: NodeId, target: MoveTarget): TreeError | null {
   const node = findNode(doc, nodeId)
   if (!node) return 'node-not-found'
-  if (target.type === 'child') return checkChildTarget(doc, nodeId, target)
-  return node.type === 'link' ? 'link-to-canvas' : null
+  return target.type === 'child' ? checkChildTarget(doc, nodeId, target) : null
 }
 
 /** Вынимает узел из документа, запоминая его положение и размещение корня, из которого он вынут. */
@@ -63,9 +44,10 @@ function detach(doc: LayoutDocument, loc: NodeLocation): Detached | undefined {
 function attachChild(detached: Detached, parentId: NodeId, index: number): LayoutDocument {
   const loc = locateNode(detached.doc, parentId)
   if (!loc) return detached.doc
-  return updateAtLocation(detached.doc, loc, (parent) =>
-    parent.type === 'block' ? { ...parent, children: insertAt(parent.children, index, detached.node) } : parent,
-  )
+  return updateAtLocation(detached.doc, loc, (parent) => ({
+    ...parent,
+    children: insertAt(parent.children, index, detached.node),
+  }))
 }
 
 /**
@@ -74,7 +56,6 @@ function attachChild(detached: Detached, parentId: NodeId, index: number): Layou
  */
 function attachCanvas(detached: Detached, target: CanvasTarget): LayoutDocument {
   const { node, loc, sourceCanvas } = detached
-  if (node.type !== 'block') return detached.doc
   const wasRoot = loc.indices.length === 0
   const width = targetWidth(target, sourceCanvas.width)
   const base: CanvasPlacement = wasRoot ? sourceCanvas : { ...sourceCanvas, height: null, exportMaxWidth: false }
@@ -98,7 +79,7 @@ function sameParentIndex(from: number, index: number): number | null {
 function moveToChild(doc: LayoutDocument, nodeId: NodeId, target: ChildTarget): LayoutDocument {
   const parent = findNode(doc, target.parentId)
   const loc = locateNode(doc, nodeId)
-  if (parent?.type !== 'block' || !loc) return doc
+  if (!parent || !loc) return doc
   let index = Math.min(Math.max(target.index, 0), parent.children.length)
   const from = loc.indices.at(-1)
   const parentLoc: NodeLocation = { rootIndex: loc.rootIndex, indices: loc.indices.slice(0, -1) }

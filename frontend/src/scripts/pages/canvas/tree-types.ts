@@ -20,24 +20,10 @@ export type MoveTarget =
  * Причина, по которой операция над деревом недопустима.
  * - `node-not-found` — перемещаемого узла нет;
  * - `target-not-found` — нет блока-цели;
- * - `parent-is-link` — у плашки связи не бывает детей;
  * - `into-self-or-descendant` — узел нельзя вложить в себя или своего потомка;
- * - `link-to-canvas` — плашка связи не может стать корнем;
- * - `source-into-block` — корень, на который ссылаются связи, нельзя вложить в блок;
- * - `duplicate-id` — в добавляемом поддереве есть id, который уже есть в документе;
- * - `dangling-link` — в добавляемом поддереве есть связь на блок, который не корень документа;
- * - `link-cycle` — плашка связи окажется внутри собственного источника (в нём самом или в его потомке).
+ * - `duplicate-id` — в добавляемом поддереве есть id, который уже есть в документе.
  */
-export type TreeError =
-  | 'node-not-found'
-  | 'target-not-found'
-  | 'parent-is-link'
-  | 'into-self-or-descendant'
-  | 'link-to-canvas'
-  | 'source-into-block'
-  | 'duplicate-id'
-  | 'dangling-link'
-  | 'link-cycle'
+export type TreeError = 'node-not-found' | 'target-not-found' | 'into-self-or-descendant' | 'duplicate-id'
 
 /**
  * Правка полей узла: вложенные объекты (`container`, `self`, `padding`) заменяются целиком.

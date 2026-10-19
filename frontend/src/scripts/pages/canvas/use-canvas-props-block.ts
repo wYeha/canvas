@@ -19,10 +19,10 @@ import { useBlockTextDraft } from './use-block-text-draft'
 export function useCanvasPropsBlock() {
   const layoutStore = useLayoutStore()
 
-  /** Выделенный блок (секция показывается только для блока, не для связи). */
+  /** Выделенный блок; `null` без выделения. */
   const block = computed<BlockNode | null>(() => {
     const node = layoutStore.selectedNode
-    return node?.type === 'block' ? node : null
+    return node ?? null
   })
 
   /** Правит поля выделенного блока по id; без изменений стор ничего не пишет. */

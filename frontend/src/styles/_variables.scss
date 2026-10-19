@@ -28,7 +28,6 @@ $theme-light: (
     'danger': #c42b43,
     'danger-soft': #fcecee,
     'on-danger': #fff,
-    'link': #7a8597,
     'toast': #1a1d21,
     'on-toast': #f3f4f6,
     'syntax-tag': #2443a8,
@@ -70,7 +69,6 @@ $theme-dark: (
     'danger': #ff7a8c,
     'danger-soft': #3a1f25,
     'on-danger': #1a0b0e,
-    'link': #8a93a3,
     'toast': #e6e8eb,
     'on-toast': #141619,
     'syntax-tag': #9db2ff,
@@ -128,7 +126,6 @@ $block-alpha-light: (
   'stroke': 0.55,
   'chip': 0.22,
   'icon': 0.22,
-  'link-hatch': 0.18,
   'spacing-hatch': 0.25,
   'drop-fill': 0.12,
 );
@@ -137,7 +134,6 @@ $block-alpha-dark: (
   'stroke': 0.42,
   'chip': 0.24,
   'icon': 0.3,
-  'link-hatch': 0.26,
   'spacing-hatch': 0.35,
   'drop-fill': 0.12,
 );
@@ -202,8 +198,6 @@ $layer-toggle-width: 18px; // колонка шеврона сворачиван
 $label-chip-height: 16px;
 $label-chip-offset: 4px; // отступ чипа от угла блока (4–5)
 $root-header-gap: 6px; // зазор между подписью корня и блоком
-$hatch-line: 2px; // толщина штриховки плашки связи
-$hatch-step: 6px; // шаг штриховки плашки связи
 $preset-chip-height: 22px;
 $switch-width: 32px;
 $switch-height: 18px;
@@ -213,8 +207,6 @@ $selection-badge-offset: 20px; // бейдж над блоком на 20–22; �
 $selection-outline-width: 2px; // обводка выделенного блока
 $hover-outline-width: 1px; // обводка наведения
 $label-editor-height: 24px; // поле ввода подписи на канвасе; продублировано в LABEL_EDITOR_HEIGHT (constants.ts)
-$link-port-size: 10px;
-$link-port-border: 2px;
 $export-modal-width: 1040px;
 $export-modal-height: 700px;
 $modal-compact-width: 480px; // компактная модалка (подтверждения), высота по содержимому
@@ -260,8 +252,8 @@ $z-canvas: 0; // поле и блоки
 $z-moving-root: 1; // перемещаемый корень поверх соседних (внутри слоя мира)
 $z-chip: 2; // чипы подписей
 $z-badge: 3; // бейдж выделения
-$z-link: 4; // стрелки связей
-$z-port: 5; // порты, призрак перетаскивания
+$z-drop-insert: 4; // линия вставки при перетаскивании
+$z-drag-ghost: 5; // призрак перетаскивания
 $z-panel: 6; // плавающие панели
 $z-dropdown: 10;
 $z-modal: 20;

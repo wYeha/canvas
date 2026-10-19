@@ -157,12 +157,6 @@ export const DIRECTION_ICONS = {
   grid: '#',
 } as const
 
-/** Значок плашки связи. */
-export const LINK_ICON = '→'
-
-/** Подпись источника связи, если корень не найден. */
-export const LINK_MISSING_LABEL = 'без источника'
-
 /** Подпись корня, если у блока нет подписи. */
 export const ROOT_UNTITLED_LABEL = 'Без подписи'
 
@@ -199,7 +193,7 @@ export const DROP_INSERT_LINE_WIDTH = 2
 /** Радиус точек на концах линии вставки, экранные px (рисуются в SCSS). */
 export const DROP_INSERT_DOT_RADIUS = 3
 
-/** Имя атрибута, которым помечены элементы блоков и плашек связей: по нему ищется цель клика. */
+/** Имя атрибута, которым помечены элементы блоков: по нему ищется цель клика. */
 export const NODE_ID_ATTR = 'data-node-id'
 
 /** CSS-селектор элемента, помеченного id узла. */
@@ -265,9 +259,6 @@ export const BADGE_SEPARATOR = ' · '
 /** Разделитель ширины и высоты в бейдже. */
 export const SIZE_SEPARATOR = '×'
 
-/** Тип узла-плашки связи в бейдже. */
-export const LINK_TYPE_LABEL = 'связь'
-
 /** Разделитель сегментов плашки пути. */
 export const BREADCRUMB_SEPARATOR = '›'
 
@@ -295,7 +286,6 @@ export const PROPS_SECTION_TITLES = {
   block: 'Блок',
   container: 'Контейнер',
   child: 'Как ребёнок',
-  link: 'Связь',
 } as const
 
 /** Разделитель частей меты в заголовке панели свойств. */
@@ -306,12 +296,6 @@ export const PROPS_META_ROOT = 'корневой'
 
 /** Приставка меты вложенного блока: `ребёнок grid`. */
 export const PROPS_META_CHILD = 'ребёнок'
-
-/** Заголовок панели для выделенной плашки связи. */
-export const PROPS_LINK_TITLE = 'Связь'
-
-/** Приставка меты плашки связи: `связь → цель`. */
-export const PROPS_META_LINK = 'связь'
 
 /** Текст пустого состояния панели свойств. */
 export const PROPS_EMPTY_TEXT = 'Ничего не выделено'
@@ -571,7 +555,6 @@ export const NODE_ACTION_REASONS = {
   first: 'Уже первый среди соседей',
   last: 'Уже последний среди соседей',
   alreadyRoot: 'Блок уже лежит на канвасе',
-  linkToCanvas: 'Связь нельзя вынести на канвас',
   missing: 'Ничего не выделено',
 } as const
 

@@ -33,14 +33,14 @@ export function useCanvasProps(registry: Partial<Record<PropsSectionId, Componen
   /** Заголовок панели; `null`, если ничего не выделено. */
   const header = computed(() => {
     const node = layoutStore.selectedNode
-    return node === undefined ? null : propsHeader(layoutStore.document, node, parentKind.value)
+    return node === undefined ? null : propsHeader(node, parentKind.value)
   })
 
   /** Секции выделенного узла в порядке показа. */
   const sections = computed<PropsSectionView[]>(() => {
     const node = layoutStore.selectedNode
     if (node === undefined) return []
-    return propsSectionIds(node.type, parentKind.value).flatMap((id) => {
+    return propsSectionIds(parentKind.value).flatMap((id) => {
       const component = registry[id]
       if (component === undefined) return []
       return [{ id, title: PROPS_SECTION_TITLES[id], component, hint: id === 'child' ? hint.value : undefined }]

@@ -25,7 +25,7 @@ describe('createRoot / createChild', () => {
     const first = store.createChild(rootId, 'flex')
     const second = store.createChild(rootId, 'grid')
     const root = store.document.roots[0]?.node
-    expect(root?.type === 'block' ? root.children.map((c) => c.id) : []).toEqual([first, second])
+    expect(root?.children.map((c) => c.id) ?? []).toEqual([first, second])
     expect(store.selectedId).toBe(second)
   })
 
@@ -53,9 +53,9 @@ describe('setLabelOrAuto', () => {
     store.setLabelOrAuto(a, '   ')
     store.setLabelOrAuto(b, '')
     const root = store.document.roots[0]?.node
-    expect(root?.type === 'block' ? root.label : '').toBe('Блок-1')
-    const child = root?.type === 'block' ? root.children[0] : undefined
-    expect(child?.type === 'block' ? child.label : '').toBe('Блок-2')
+    expect(root?.label ?? '').toBe('Блок-1')
+    const child = root?.children[0]
+    expect(child?.label ?? '').toBe('Блок-2')
     expect(store.document.labelCounter).toBe(2)
   })
 

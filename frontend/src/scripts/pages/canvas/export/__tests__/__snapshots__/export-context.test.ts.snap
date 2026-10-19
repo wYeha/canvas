@@ -22,10 +22,10 @@ exports[`exportSelectedHtml > демо: «kpi-row» без замера 1`] = `
 -->
 <!-- kpi-row -->
 <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px">
-  <div><!-- компонент «KPI-плашка» --></div>
-  <div><!-- компонент «KPI-плашка» --></div>
-  <div><!-- компонент «KPI-плашка» --></div>
-  <div><!-- компонент «KPI-плашка» --></div>
+  <div><!-- KPI-карточка --></div>
+  <div><!-- KPI-карточка --></div>
+  <div><!-- KPI-карточка --></div>
+  <div><!-- KPI-карточка --></div>
 </div>
 "
 `;

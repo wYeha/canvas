@@ -25,5 +25,8 @@ export const FLEX_ALIGN_VALUES = ['flex-start', 'center', 'flex-end', 'stretch',
 /** Значения `justify-items` и `align-items` в grid-контейнере. */
 export const GRID_ALIGN_VALUES = ['start', 'center', 'end', 'stretch'] as const
 
-/** Режимы связи: слияние источника с целью или вложение источника ребёнком цели. Вычисляются, не хранятся. */
-export const LINK_MODE = { merge: 'merge', embed: 'embed' } as const
+/**
+ * Тип узла-плашки из старых документов (до упрощения в 8.1). Такие узлы при разборе молча отбрасываются,
+ * поэтому версия схемы не меняется: старые сохранения и `.json` открываются без них.
+ */
+export const LEGACY_LINK_NODE_TYPE = 'link'

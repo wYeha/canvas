@@ -1,7 +1,7 @@
 /** Тесты операций над деревом: добавление, удаление, правка, дублирование и структурное разделение. */
 import { describe, expect, it } from 'vitest'
 import type { LayoutDocument, LayoutNode } from '@shared'
-import { createLink, createRootEntry } from '@/scripts/pages/canvas/factories'
+import { createBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
   addChild,
   addRoot,
@@ -10,7 +10,6 @@ import {
   cloneSubtree,
   duplicateNode,
   findNode,
-  findParent,
   moveNode,
   removeNode,
   updateNode,
@@ -26,7 +25,7 @@ function allIds(doc: LayoutDocument): string[] {
 /** Собирает id поддерева узла. */
 function collect(node: LayoutNode | undefined): string[] {
   if (!node) return []
-  return node.type === 'block' ? [node.id, ...node.children.flatMap(collect)] : [node.id]
+  return [node.id, ...node.children.flatMap(collect)]
 }
 
 describe('структурное разделение', () => {
@@ -58,12 +57,6 @@ describe('addChild', () => {
     expect(childIds(findNode(addChild(doc, 'a1', block('n1', 'flex'), -5), 'a1'))).toEqual(['n1', 'a1x', 'a1y'])
   })
 
-  it('в связь нельзя', () => {
-    const doc = makeDoc()
-    expect(canAddChild(doc, 'linkB', block('n1', 'flex'))).toBe('parent-is-link')
-    expect(addChild(doc, 'linkB', block('n1', 'flex'))).toBe(doc)
-  })
-
   it('несуществующий родитель', () => {
     const doc = makeDoc()
     expect(canAddChild(doc, 'нет', block('n1', 'flex'))).toBe('target-not-found')
@@ -75,41 +68,6 @@ describe('addChild', () => {
     expect(canAddChild(doc, 'a1', block('a2', 'flex'))).toBe('duplicate-id')
     expect(canAddChild(doc, 'a1', block('n1', 'flex', [block('b1', 'flex')]))).toBe('duplicate-id')
     expect(addChild(doc, 'a1', block('a2', 'flex'))).toBe(doc)
-  })
-
-  it('связь на некорень → dangling-link, на корень → ок', () => {
-    const doc = makeDoc()
-    expect(canAddChild(doc, 'a1', createLink('b1'))).toBe('dangling-link')
-    expect(addChild(doc, 'a1', createLink('b1'))).toBe(doc)
-    const link = createLink('C')
-    expect(canAddChild(doc, 'a1', link)).toBeNull()
-    const result = addChild(doc, 'a1', link)
-    expectValid(result)
-    expect(findParent(result, link.id)?.id).toBe('a1')
-  })
-
-  it('связь внутри собственного источника → link-cycle', () => {
-    const doc = makeDoc()
-    expect(canAddChild(doc, 'B', createLink('B'))).toBe('link-cycle')
-    expect(canAddChild(doc, 'b1', createLink('B'))).toBe('link-cycle')
-    expect(addChild(doc, 'b1', createLink('B'))).toBe(doc)
-    expect(canAddChild(doc, 'b1', block('n1', 'flex', [createLink('B')]))).toBe('link-cycle')
-    expect(canAddChild(doc, 'c1', block('n1', 'flex', [createLink('B')]))).toBeNull()
-  })
-
-  it('A ↔ B: связь на A внутри B, где A уже включает B → link-cycle', () => {
-    const doc = makeDoc()
-    expect(canAddChild(doc, 'b1', createLink('A'))).toBe('link-cycle')
-    expect(addChild(doc, 'B', createLink('A'))).toBe(doc)
-  })
-
-  it('A → B → C → A: замыкающая связь → link-cycle, остальные ок', () => {
-    const doc = makeDoc()
-    const bc = addChild(doc, 'b1', createLink('C'))
-    expectValid(bc)
-    expect(canAddChild(bc, 'c1', createLink('A'))).toBe('link-cycle')
-    expect(canAddChild(bc, 'c1', block('n1', 'flex', [block('n2', 'flex', [createLink('A')])]))).toBe('link-cycle')
-    expect(addChild(bc, 'c1', createLink('A'))).toBe(bc)
   })
 })
 
@@ -128,39 +86,8 @@ describe('addRoot', () => {
   it('дубль id → тот же doc', () => {
     const doc = makeDoc()
     const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
+    expect(canAddRoot(doc, { ...entry.node, id: 'a1' })).toBe('duplicate-id')
     expect(addRoot(doc, { ...entry, node: { ...entry.node, id: 'a1' } })).toBe(doc)
-  })
-
-  it('связь на отсутствующий корень → тот же doc', () => {
-    const doc = makeDoc()
-    const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
-    expect(addRoot(doc, { ...entry, node: { ...entry.node, children: [createLink('нет')] } })).toBe(doc)
-  })
-
-  it('связь внутри нового корня на сам этот корень → link-cycle, тот же doc', () => {
-    const doc = makeDoc()
-    const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
-    const self = { ...entry, node: { ...entry.node, children: [createLink(entry.node.id)] } }
-    expect(canAddRoot(doc, self.node)).toBe('link-cycle')
-    expect(addRoot(doc, self)).toBe(doc)
-    const deep = { ...entry, node: { ...entry.node, children: [block('d1', 'flex', [createLink(entry.node.id)])] } }
-    expect(canAddRoot(doc, deep.node)).toBe('link-cycle')
-    expect(addRoot(doc, deep)).toBe(doc)
-  })
-
-  it('новый корень со связями на существующие корни цикла не даёт', () => {
-    const doc = makeDoc()
-    const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
-    expect(canAddRoot(doc, { ...entry.node, children: [createLink('A'), createLink('B')] })).toBeNull()
-    expect(canAddRoot(doc, { ...entry.node, children: [createLink('нет')] })).toBe('dangling-link')
-  })
-
-  it('связь на существующий корень → ок', () => {
-    const doc = makeDoc()
-    const entry = createRootEntry('flex', 'D', { x: 0, y: 0 })
-    const result = addRoot(doc, { ...entry, node: { ...entry.node, children: [createLink('C')] } })
-    expectValid(result)
-    expect(result.roots).toHaveLength(4)
   })
 
   it('ширина <= 0 → тот же doc', () => {
@@ -176,28 +103,11 @@ describe('removeNode', () => {
     const doc = makeDoc()
     const result = removeNode(doc, 'a1')
     expectValid(result)
-    expect(childIds(findNode(result, 'A'))).toEqual(['a2', 'linkB'])
+    expect(childIds(findNode(result, 'A'))).toEqual(['a2', 'a3'])
     expect(findNode(result, 'a1x')).toBeUndefined()
   })
 
-  it('связь', () => {
-    const doc = makeDoc()
-    const result = removeNode(doc, 'linkB')
-    expectValid(result)
-    expect(childIds(findNode(result, 'A'))).toEqual(['a1', 'a2'])
-  })
-
-  it('корень-источник удаляется вместе со связями на него', () => {
-    const doc = makeDoc()
-    const result = removeNode(doc, 'B')
-    expectValid(result)
-    expect(result.roots.map((root) => root.node.id)).toEqual(['A', 'C'])
-    expect(findNode(result, 'linkB')).toBeUndefined()
-    expect(result.roots[1]).toBe(doc.roots[2])
-    expect(findNode(result, 'a1')).toBe(findNode(doc, 'a1'))
-  })
-
-  it('корень без связей не трогает остальные корни', () => {
+  it('корень не трогает остальные корни', () => {
     const doc = makeDoc()
     const result = removeNode(doc, 'C')
     expectValid(result)
@@ -217,15 +127,6 @@ describe('updateNode', () => {
     const result = updateNode(doc, 'a2', { self: { flex: '1' } })
     expectValid(result)
     expect(findNode(result, 'a2')?.self).toEqual({ flex: '1' })
-  })
-
-  it('у связи можно менять только self', () => {
-    const doc = makeDoc()
-    const result = updateNode(doc, 'linkB', { self: { colSpan: 2 } })
-    expectValid(result)
-    expect(findNode(result, 'linkB')).toEqual({ id: 'linkB', type: 'link', sourceId: 'B', self: { colSpan: 2 } })
-    expect(updateNode(doc, 'linkB', { label: 'x' })).toBe(doc)
-    expect(updateNode(doc, 'linkB', { label: 'x', self: {} })).toBe(doc)
   })
 
   it('патч с равными значениями, пустой патч и чужой id → тот же doc', () => {
@@ -266,17 +167,13 @@ describe('cloneSubtree', () => {
   it('новые уникальные id, структура и подписи как у оригинала', () => {
     const doc = makeDoc()
     const original = findNode(doc, 'A')
-    if (original?.type !== 'block') throw new Error('нет A')
+    if (!original) throw new Error('нет A')
     const copy = cloneSubtree(original)
     const originalIds = collect(original)
     const copyIds = collect(copy)
     expect(new Set(copyIds).size).toBe(copyIds.length)
     expect(copyIds.some((id) => originalIds.includes(id))).toBe(false)
-    expect(copy.children.map((child) => (child.type === 'block' ? child.label : child.sourceId))).toEqual([
-      'a1',
-      'a2',
-      'B',
-    ])
+    expect(copy.children.map((child) => child.label)).toEqual(['a1', 'a2', 'a3'])
     expect(childIds(copy.children[0])).toHaveLength(2)
     expect(copy.label).toBe('A')
   })
@@ -288,7 +185,7 @@ describe('duplicateNode', () => {
     const { document, copyId } = duplicateNode(doc, 'a1')
     expectValid(document)
     const ids = childIds(findNode(document, 'A'))
-    expect(ids).toEqual(['a1', copyId, 'a2', 'linkB'])
+    expect(ids).toEqual(['a1', copyId, 'a2', 'a3'])
     const copy = findNode(document, copyId ?? '')
     expect(copy).toMatchObject({ type: 'block', label: 'a1' })
     expect(childIds(copy)).toHaveLength(2)
@@ -296,16 +193,7 @@ describe('duplicateNode', () => {
     expect(document.roots[1]).toBe(doc.roots[1])
   })
 
-  it('дубль связи: новый id, тот же sourceId', () => {
-    const doc = makeDoc()
-    const { document, copyId } = duplicateNode(doc, 'linkB')
-    expectValid(document)
-    expect(copyId).not.toBe('linkB')
-    expect(findNode(document, copyId ?? '')).toMatchObject({ type: 'link', sourceId: 'B' })
-    expect(childIds(findNode(document, 'A'))).toEqual(['a1', 'a2', 'linkB', copyId])
-  })
-
-  it('дубль корня-источника: новый корень справа, связи остаются на оригинале', () => {
+  it('дубль корня: новый корень справа с тем же размещением', () => {
     const doc = makeDoc()
     const { document, copyId } = duplicateNode(doc, 'B')
     expectValid(document)
@@ -317,7 +205,6 @@ describe('duplicateNode', () => {
       height: 300,
       exportMaxWidth: true,
     })
-    expect(findNode(document, 'linkB')).toMatchObject({ sourceId: 'B' })
     expect(document.roots[0]).toBe(doc.roots[0])
   })
 
@@ -355,7 +242,7 @@ function randomStep(doc: LayoutDocument, random: () => number): LayoutDocument {
     case 3:
       return moveNode(doc, pick(), { type: 'canvas', at: { x: index, y: index }, rootIndex: index })
     case 4:
-      return addChild(doc, pick(), createLink(doc.roots[0]?.node.id ?? 'нет'), index)
+      return addChild(doc, pick(), createBlock('flex', 'N'), index)
     default:
       return addRoot(doc, createRootEntry('grid', 'R', { x: 0, y: 0 }), index)
   }

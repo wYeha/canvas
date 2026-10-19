@@ -7,7 +7,7 @@ import {
   rootShiftStep,
 } from '@/scripts/pages/canvas/block-create'
 import { NEW_ROOT_HEIGHT_ESTIMATE, NEW_ROOT_OFFSET } from '@/scripts/pages/canvas/constants'
-import { createLink, createRootEntry } from '@/scripts/pages/canvas/factories'
+import { createRootEntry } from '@/scripts/pages/canvas/factories'
 import { block } from './tree-fixture'
 
 const AREA = { x: 260, y: 0, width: 800, height: 600 }
@@ -17,8 +17,7 @@ describe('newBlockParentId', () => {
     expect(newBlockParentId(block('a', 'flex'))).toBe('a')
   })
 
-  it('связь и отсутствие выделения — новый корень (null)', () => {
-    expect(newBlockParentId(createLink('x'))).toBeNull()
+  it('без выделения — новый корень (null)', () => {
     expect(newBlockParentId(undefined)).toBeNull()
   })
 })

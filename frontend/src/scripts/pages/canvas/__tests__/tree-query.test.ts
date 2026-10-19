@@ -6,10 +6,10 @@ import { makeDoc } from './tree-fixture'
 describe('findNode', () => {
   const doc = makeDoc()
 
-  it('находит корень, вложенный узел и связь', () => {
+  it('находит корень и вложенные узлы', () => {
     expect(findNode(doc, 'B')?.id).toBe('B')
     expect(findNode(doc, 'a1x')?.id).toBe('a1x')
-    expect(findNode(doc, 'linkB')?.type).toBe('link')
+    expect(findNode(doc, 'a3')?.label).toBe('a3')
   })
 
   it('чужой id → undefined', () => {
@@ -31,7 +31,7 @@ describe('findParent', () => {
 
   it('возвращает родительский блок', () => {
     expect(findParent(doc, 'a1x')?.id).toBe('a1')
-    expect(findParent(doc, 'linkB')?.id).toBe('A')
+    expect(findParent(doc, 'a3')?.id).toBe('A')
   })
 
   it('у корня и отсутствующего узла → undefined', () => {
