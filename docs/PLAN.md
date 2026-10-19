@@ -191,7 +191,8 @@
 
 ## Этап 10. Бэкенд
 
-- [ ] **10.1 Каркас.** Workspace `backend`: Fastify + TS, `config.ts` с `.env`, `GET /api/health`.
+- [x] **10.1 Каркас.** Workspace `backend`: Fastify + TS, `config.ts` с `.env`, `GET /api/health`.
+  > Workspace `backend` (Fastify 5, zod, TS 6 как во фронте; запуск через `tsx`: `npm run dev:backend` из корня или `npm run dev`/`start` в `backend/`). `config.ts`: `loadEnvFile` (встроенный `process.loadEnvFile` Node 22, без dotenv; нет файла — значения по умолчанию) и чистая `parseConfig` (zod: `HOST` = 127.0.0.1, `PORT` = 3000, `LOG_LEVEL` = info; ошибка — понятное сообщение и выход с кодом 1). `.env.example` в `backend/`. Сверх структуры из backend.md: `main.ts` — запуск (`server.ts` только собирает сервер `buildServer`, чтобы тесты шли через `inject` без порта), `constants.ts` — значения по умолчанию, лимит тела 1 МБ, коды и тексты ошибок, `plugins/errors.ts` — единый формат `{ error: { code, message } }` уже сейчас (4xx — код Fastify и текст, 5xx — общий текст без подробностей, 404 для неизвестных маршрутов), `routes/health.ts` — `GET /api/health` → `{ status: 'ok' }`. Алиас `@/` → `backend/src` (tsconfig + vitest), ESLint по `backend/tsconfig.json`; корневые `typecheck` и `test` включают бэкенд. Сборки в JS нет — решится в этапе 11 (или `tsx` на сервере). Тесты: `config.test.ts`, `server.test.ts` (health, 404, 500 без подробностей, битый JSON → 400). USER_GUIDE не менялся: действий пользователя нет. Проверено запуском: `curl /api/health`, 404, чтение `.env`, неверный `PORT`.
 - [ ] **10.2 База.** SQLite + миграции, таблица `documents (id, name, data, schema_version, created_at, updated_at)`, сервис + тесты.
 - [ ] **10.3 API документов.** `GET/POST /api/documents`, `GET/PUT/DELETE /api/documents/:id`, валидация zod.
 - [ ] **10.4 Авторизация.** Один пользователь: пароль (хэш argon2 в `.env`), httpOnly cookie-сессия, rate limit на вход.

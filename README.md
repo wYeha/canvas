@@ -52,9 +52,9 @@
 ```
 layout-canvas/
   frontend/     — Vue-приложение
-  backend/      — API (этап 9)
+  backend/      — API (этап 10)
   shared/       — общие типы и схемы
-  deploy/       — конфиги nginx/systemd и инструкция (этап 10)
+  deploy/       — конфиги nginx/systemd и инструкция (этап 11)
   docs/
     PLAN.md            — план работ с чеклистом
     DESIGN.md          — принятые дизайн-решения

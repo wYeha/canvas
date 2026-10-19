@@ -1,4 +1,4 @@
-/** Конфигурация ESLint для всего репозитория: frontend, shared и корневые конфиги (Vue + TypeScript, type-aware). */
+/** Конфигурация ESLint для всего репозитория: frontend, backend, shared и корневые конфиги (Vue + TypeScript, type-aware). */
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import pluginJsdoc from 'eslint-plugin-jsdoc'
@@ -167,6 +167,17 @@ export default defineConfigWithVueTs(
       parserOptions: {
         projectService: false,
         project: ['./shared/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    // backend линтится по своему tsconfig (Node, алиас @/ → backend/src)
+    files: ['backend/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: ['./backend/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
