@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import {
   CHILD_FLEX_OPTIONS,
+  displayChildFlex,
   childHint,
   countGridColumns,
   normalizeChildFlex,
@@ -67,6 +68,14 @@ describe('нормализация', () => {
 
   it('быстрые значения flex: 0 1 auto, 1, auto, none', () => {
     expect(CHILD_FLEX_OPTIONS.map((o) => o.value)).toEqual(['0 1 auto', '1', 'auto', 'none'])
+  })
+})
+
+describe('displayChildFlex', () => {
+  it('пусто, пробелы и регистр дают 0 1 auto, своё значение сохраняется', () => {
+    expect(displayChildFlex(undefined)).toBe('0 1 auto')
+    expect(displayChildFlex('  0  1 AUTO ')).toBe('0 1 auto')
+    expect(displayChildFlex(' 1 ')).toBe('1')
   })
 })
 

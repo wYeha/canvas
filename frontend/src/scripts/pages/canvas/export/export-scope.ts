@@ -8,13 +8,11 @@ import { EXPORT_NEWLINE } from './export-constants'
 
 /**
  * План корней: `doc.roots` (порядок слоёв), отфильтрованные по множеству id (`'all'` — все); несуществующие id
- * игнорируются. Все корни выводятся самостоятельно (`standalone`).
+ * игнорируются.
  */
 export function planRoots(doc: LayoutDocument, rootIds: readonly NodeId[] | 'all'): ExportRootPlan[] {
   const wanted = rootIds === 'all' ? null : new Set<NodeId>(rootIds)
-  return doc.roots
-    .filter((entry) => wanted === null || wanted.has(entry.node.id))
-    .map((entry) => ({ entry, role: 'standalone' as const }))
+  return doc.roots.filter((entry) => wanted === null || wanted.has(entry.node.id)).map((entry) => ({ entry }))
 }
 
 /**

@@ -79,7 +79,7 @@ export function exportNodeLines(
  */
 export function exportRootLines(doc: LayoutDocument, entry: RootEntry, order?: RootOrder): string[] {
   return [
-    ...rootHeaderComment(entry, [], '', order),
+    ...rootHeaderComment(entry, '', order),
     ...renderBlock(doc, {
       block: entry.node,
       parentKind: null,

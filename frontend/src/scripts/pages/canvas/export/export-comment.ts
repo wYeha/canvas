@@ -91,25 +91,16 @@ export function rootSizeText(entry: RootEntry): string {
 }
 
 /**
- * Заголовок корня: `Корневой блок «{подпись}» ×N, {размер}` и дополнительные пометки (`extraNotes`, в 8.7 —
- * «подставлен в …»); описание корня — следующими строками этого же комментария. `order` (несколько корней) —
+ * Заголовок корня: `Корневой блок «{подпись}» ×N, {размер}`; описание корня — следующими строками этого же комментария. `order` (несколько корней) —
  * префикс `{i} из {n}. `.
  */
-export function rootHeaderComment(
-  entry: RootEntry,
-  extraNotes: readonly string[],
-  indent: string,
-  order?: RootOrder,
-): string[] {
+export function rootHeaderComment(entry: RootEntry, indent: string, order?: RootOrder): string[] {
   const label = toSingleLine(entry.node.label)
   const title = joinParts(
     [EXPORT_ROOT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label), repeatMark(entry.node)],
     EXPORT_WORD_SEPARATOR,
   )
-  const head = joinParts(
-    [`${title}${EXPORT_LIST_SEPARATOR}${rootSizeText(entry)}`, ...extraNotes.map(toSingleLine)],
-    EXPORT_WORD_SEPARATOR,
-  )
+  const head = `${title}${EXPORT_LIST_SEPARATOR}${rootSizeText(entry)}`
   return formatComment(`${orderPrefix(order)}${head}`, toCommentLines(entry.node.description), indent)
 }
 

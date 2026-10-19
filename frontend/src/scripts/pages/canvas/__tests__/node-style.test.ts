@@ -124,6 +124,10 @@ describe('self', () => {
     })
   })
 
+  it('flex 0 1 AUTO (регистр) не выводится', () => {
+    expect(styles(make('flex', {}, { self: { flex: '0 1 AUTO' } }), 'flex')).toEqual({ display: 'flex' })
+  })
+
   it('span 1 не выводится', () => {
     expect(styles(make('flex', {}, { self: { colSpan: 1, rowSpan: 1 } }), 'grid')).toEqual({ display: 'flex' })
   })

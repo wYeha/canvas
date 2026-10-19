@@ -21,6 +21,12 @@ export type StyleEntry = readonly [property: string, value: string]
 /** Последовательность пробельных символов: в `flex` схлопывается до одного пробела перед сравнением. */
 const WHITESPACE_RUN = /\s+/g
 
+/** `flex` пуст или равен значению CSS по умолчанию `0 1 auto` (без учёта регистра и лишних пробелов). */
+export function isDefaultFlex(value: string | undefined): boolean {
+  const text = (value ?? '').trim().replace(WHITESPACE_RUN, ' ').toLowerCase()
+  return text === '' || text === CSS_DEFAULT_FLEX
+}
+
 /** Число px как CSS-значение: `16` → `16px`. */
 function px(value: number): string {
   return `${String(value)}${CSS_PX_UNIT}`
@@ -75,8 +81,7 @@ function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEn
   if (parentKind === null) return []
   const entries: StyleEntry[] = []
   if (parentKind === 'flex') {
-    const flex = clean(self.flex)?.replace(WHITESPACE_RUN, ' ') ?? null
-    if (flex !== CSS_DEFAULT_FLEX) push(entries, 'flex', flex)
+    if (!isDefaultFlex(self.flex)) push(entries, 'flex', clean(self.flex)?.replace(WHITESPACE_RUN, ' ') ?? null)
     push(entries, 'width', clean(self.width))
   } else {
     if (self.colSpan !== undefined && self.colSpan > CSS_MIN_SPAN) {

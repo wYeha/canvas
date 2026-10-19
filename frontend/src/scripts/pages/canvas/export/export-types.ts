@@ -17,10 +17,9 @@ export interface ExportOptions {
 export type ExportScope =
   { kind: 'selected'; nodeId: NodeId } | { kind: 'roots'; rootIds: readonly NodeId[] } | { kind: 'all' }
 
-/** План вывода корня: запись корня и роль (пока одна — самостоятельный корень). */
+/** План вывода корня: запись корня. */
 export interface ExportRootPlan {
   entry: RootEntry
-  role: 'standalone'
 }
 
 /** Номер корня среди выводимых (с 1) и их общее число: для заголовка `1 из 3. `. */

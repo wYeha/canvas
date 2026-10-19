@@ -14,17 +14,17 @@ import {
   type SelfProps,
 } from '@shared'
 import {
+  BLOCK_PADDING_PX,
   CSS_DEFAULT_ALIGN,
-  CSS_DEFAULT_FLEX,
   CSS_DEFAULT_GRID_ROWS,
   CSS_DEFAULT_JUSTIFY_CONTENT,
   CSS_FLEX_WRAP,
   CSS_GRID_SPAN,
   CSS_MIN_SPAN,
-  BLOCK_PADDING_PX,
   CSS_PX_UNIT,
   ROOT_UNTITLED_LABEL,
 } from '@/scripts/pages/canvas/constants'
+import { isDefaultFlex } from '@/scripts/pages/canvas/node-style'
 import { countGridColumns } from '@/scripts/pages/canvas/props-child'
 import { getPath, locateNode } from '@/scripts/pages/canvas/tree-query'
 import { formatComment, quoted, rootSizeText } from './export-comment'
@@ -214,12 +214,6 @@ function selfPart(property: string, value: string | undefined): string {
   if (value === undefined || !isSafeCssValue(value)) return ''
   const text = toSingleLine(value)
   return text === '' ? '' : `${property}:${text}`
-}
-
-/** `flex` не задан или равен значению CSS по умолчанию `0 1 auto`: в контексте, как и в экспорте, не упоминается. */
-function isDefaultFlex(value: string | undefined): boolean {
-  const text = (value ?? '').trim().replace(/\s+/g, ' ')
-  return text === '' || text === CSS_DEFAULT_FLEX
 }
 
 /** Текст растяжения по поперечной оси flex: на весь родитель или (при переносе) на свою строку. */

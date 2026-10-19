@@ -11,6 +11,7 @@ import {
 import { createId } from '@/scripts/globals/id'
 import {
   AUTO_LABEL_PREFIX,
+  CSS_DEFAULT_FLEX,
   DEFAULT_DOCUMENT_NAME,
   DEFAULT_FLEX,
   DEFAULT_GRID,
@@ -18,7 +19,6 @@ import {
   DEFAULT_ROOT_FLEX_DIRECTION,
   DEFAULT_ROOT_WIDTH,
   DEFAULT_TAG,
-  CSS_DEFAULT_FLEX,
 } from './constants'
 
 /** Точка на поле. */

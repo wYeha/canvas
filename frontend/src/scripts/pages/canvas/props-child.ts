@@ -1,5 +1,6 @@
 /** Чистая логика секции «Как ребёнок»: подсказка в заголовке, нормализация размеров, правка `self` без мутации. Без Vue. */
 import { parseCssValue, type Container, type SelfProps } from '@shared'
+import { isDefaultFlex } from './node-style'
 import type { UiChipOption } from '@/scripts/components/ui-chips/ui-chips.types'
 import {
   CHILD_AUTO_VALUE,
@@ -82,8 +83,7 @@ export function normalizeChildFlex(value: string): string | null {
 
 /** Значение `flex` для показа в поле и чипах: пустое или отсутствующее (старые документы) — `0 1 auto`. */
 export function displayChildFlex(value: string | undefined): string {
-  const trimmed = value?.trim() ?? ''
-  return trimmed === '' ? CSS_DEFAULT_FLEX : trimmed
+  return isDefaultFlex(value) ? CSS_DEFAULT_FLEX : (value ?? '').trim()
 }
 
 /** Нормализует размер: пусто и `auto` — нет значения; чистое число — `Npx`; небезопасное — `null`. */

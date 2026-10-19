@@ -18,7 +18,6 @@ describe('planRoots', () => {
     const { doc, a, c } = threeRoots()
     const plans = planRoots(doc, [c.node.id, 'нет-такого', a.node.id])
     expect(plans.map((p) => p.entry.node.label)).toEqual(['A', 'C'])
-    expect(plans.map((p) => p.role)).toEqual(['standalone', 'standalone'])
   })
 
   it('all возвращает все корни', () => {
