@@ -1,5 +1,5 @@
-/** Логика окна экспорта: код по охвату, промпт, подсветка двух частей, мета предпросмотра, копирование и скачивание. */
-import { computed, toRef, type ComputedRef, type Ref } from 'vue'
+/** Логика окна экспорта: код по охвату, промпт и правила документа, подсветка двух частей, мета предпросмотра, копирование и скачивание. */
+import { computed, toRef, type ComputedRef, type Ref, type WritableComputedRef } from 'vue'
 import { exportFileName, formatExportStats } from '@/scripts/pages/canvas/export/export-file'
 import { highlightCode } from '@/scripts/pages/canvas/export/export-highlight'
 import { withPrompt } from '@/scripts/pages/canvas/export/export-prompt'
@@ -28,6 +28,8 @@ export interface ExportModalState extends ExportScopeState, ExportActionsState, 
   isEmpty: ComputedRef<boolean>
   /** Классы токена подсветки. */
   tokenClasses: (kind: HighlightKind) => string[]
+  /** Правила документа (v-model): хранятся в документе, идут в промпт. */
+  rules: WritableComputedRef<string>
 }
 
 /** Склоняет «строка» по числу: 1 строка, 2 строки, 5 строк. */
@@ -53,7 +55,7 @@ export function useExportModal(open: Ref<boolean>): ExportModalState {
     if (!open.value || scope.value === null) return ''
     return exportScopeHtml(layoutStore.document, scope.value, { measuredWidths: measuredWidths.value })
   })
-  const text = computed(() => withPrompt(promptState.prompt.value, code.value))
+  const text = computed(() => withPrompt(promptState.prompt.value, code.value, layoutStore.document.rules))
   const fileName = computed(() =>
     exportFileName(layoutStore.document.name, scope.value ?? { kind: 'all' }, layoutStore.document),
   )
@@ -85,5 +87,14 @@ export function useExportModal(open: Ref<boolean>): ExportModalState {
     toRef(() => layoutStore.document.name),
   )
 
-  return { ...scopeState, ...actions, ...promptState, lines, meta, emptyText, isEmpty, tokenClasses }
+  const rules = computed({
+    /** Читает правила из документа. */
+    get: () => layoutStore.document.rules,
+    /** Пишет правила в документ (шаг истории со склейкой набора). */
+    set: (value: string) => {
+      layoutStore.setDocumentRules(value)
+    },
+  })
+
+  return { ...scopeState, ...actions, ...promptState, lines, meta, emptyText, isEmpty, tokenClasses, rules }
 }

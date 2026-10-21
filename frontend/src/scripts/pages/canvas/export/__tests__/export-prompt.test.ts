@@ -1,6 +1,11 @@
-/** Тесты шаблона промпта: разбор сохранённого значения и вставка перед кодом. */
+/** Тесты шаблона промпта: разбор сохранённого значения, правила документа и вставка перед кодом. */
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_EXPORT_PROMPT, resolvePrompt, withPrompt } from '@/scripts/pages/canvas/export/export-prompt'
+import {
+  DEFAULT_EXPORT_PROMPT,
+  promptText,
+  resolvePrompt,
+  withPrompt,
+} from '@/scripts/pages/canvas/export/export-prompt'
 
 describe('resolvePrompt', () => {
   it('строка берётся как есть, в том числе пустая', () => {
@@ -37,5 +42,24 @@ describe('withPrompt', () => {
 
   it('умолчание из DESIGN выводится одной строкой', () => {
     expect(withPrompt(DEFAULT_EXPORT_PROMPT, code).startsWith('<!-- Сверстай по этому каркасу.')).toBe(true)
+  })
+})
+
+describe('правила документа', () => {
+  it('идут отдельным абзацем после шаблона; пустые — не выводятся', () => {
+    expect(promptText('Сверстай', '  без margin  ')).toBe('Сверстай\n\nПравила документа:\nбез margin')
+    expect(promptText('Сверстай', '  ')).toBe('Сверстай')
+    expect(promptText('', 'без margin')).toBe('Правила документа:\nбез margin')
+  })
+
+  it('попадают в комментарий промпта перед кодом', () => {
+    expect(withPrompt('Сверстай', '<div></div>\n', 'без margin')).toBe(
+      '<!--\n  Сверстай\n\n  Правила документа:\n  без margin\n-->\n\n<div></div>\n',
+    )
+  })
+
+  it('промпт по умолчанию объясняет data-repeat и список компонентов', () => {
+    expect(DEFAULT_EXPORT_PROMPT).toContain('data-repeat')
+    expect(DEFAULT_EXPORT_PROMPT).toContain('«Компоненты»')
   })
 })

@@ -1,6 +1,7 @@
 /** Охват экспорта: отбор корней в порядке слоёв документа, склейка нескольких корней с шапкой и нумерацией, диспетчер охвата. */
 import { buildLinkIndex, type LayoutDocument, type NodeId } from '@shared'
-import { documentHeaderComment } from './export-comment'
+import { componentsComment, documentHeaderComment } from './export-comment'
+import { usedComponents } from './export-components'
 import { exportRootHtml, exportRootLines } from './export-html'
 import { exportSelectedHtml } from './export-selected'
 import type { ExportOptions, ExportRootPlan, ExportScope } from './export-types'
@@ -26,7 +27,7 @@ export function planRoots(doc: LayoutDocument, rootIds: readonly NodeId[] | 'all
 
 /**
  * HTML нескольких корней: 0 → пустая строка, 1 → как `exportRootHtml` (без шапки и нумерации), ≥2 → шапка документа
- * и корни с заголовками `{i} из {n}.` через пустую строку. Текст заканчивается ровно одним переводом строки.
+ * со списком подставленных компонентов и корни с заголовками `{i} из {n}.` через пустую строку. Текст заканчивается ровно одним переводом строки.
  */
 export function exportRootsHtml(doc: LayoutDocument, plans: readonly ExportRootPlan[]): string {
   const [only] = plans
@@ -34,7 +35,15 @@ export function exportRootsHtml(doc: LayoutDocument, plans: readonly ExportRootP
   if (plans.length === 1) return exportRootHtml(doc, only.entry)
   const total = plans.length
   const blocks = plans.map((plan, i) => exportRootLines(doc, plan.entry, { index: i + 1, total }))
-  const lines = [...documentHeaderComment(doc.name, total), ...blocks.flatMap((lines) => ['', ...lines])]
+  const roots = plans.map((plan) => plan.entry.node)
+  const used = usedComponents(
+    doc,
+    roots,
+    roots.map((node) => node.id),
+  )
+  const components = componentsComment(used, '')
+  const header = [...documentHeaderComment(doc.name, total), ...(components.length > 0 ? ['', ...components] : [])]
+  const lines = [...header, ...blocks.flatMap((lines) => ['', ...lines])]
   return `${lines.join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
 }
 

@@ -52,6 +52,18 @@ export const EXPORT_PROMPT_ROWS = 6
 /** Кнопка сброса шаблона. */
 export const EXPORT_PROMPT_RESET = 'Сбросить'
 
+/** Подпись поля правил документа. */
+export const EXPORT_RULES_LABEL = 'Правила документа'
+
+/** Подсказка поля правил документа. */
+export const EXPORT_RULES_HINT = 'Только для этого документа: общие правила вёрстки, идут в промпт после шаблона'
+
+/** Пример в пустом поле правил документа. */
+export const EXPORT_RULES_PLACEHOLDER = 'Например: отступы только через gap, без margin у детей'
+
+/** Высота поля правил документа в строках. */
+export const EXPORT_RULES_ROWS = 3
+
 /** Кнопка копирования. */
 export const EXPORT_COPY_LABEL = 'Копировать'
 

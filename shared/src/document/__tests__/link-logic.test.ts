@@ -40,6 +40,7 @@ function doc(...roots: BlockNode[]): LayoutDocument {
     schemaVersion: SCHEMA_VERSION,
     id: 'd',
     name: 'Д',
+    rules: '',
     labelCounter: 0,
     roots: roots.map((node) => ({ canvas: { x: 0, y: 0, width: 100, height: null, exportMaxWidth: false }, node })),
     createdAt: '2026-01-01T00:00:00.000Z',

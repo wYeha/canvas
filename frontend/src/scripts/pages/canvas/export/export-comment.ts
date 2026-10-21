@@ -8,6 +8,7 @@ import {
   EXPORT_COMMENT_CLOSE,
   EXPORT_COMMENT_OPEN,
   EXPORT_COMPONENT_TITLE,
+  EXPORT_COMPONENTS_TITLE,
   EXPORT_DESCRIPTION_SEPARATOR,
   EXPORT_DOCUMENT_ROOTS_COUNT,
   EXPORT_DOCUMENT_TITLE,
@@ -50,17 +51,32 @@ export function nodeCommentParts(block: BlockNode): CommentParts {
   return commentWithName(toSingleLine(block.label), block)
 }
 
+/** Имя компонента в кавычках: подпись корня-источника или «Без подписи». */
+function componentName(source: BlockNode): string {
+  const label = toSingleLine(source.label)
+  return quoted(label === '' ? ROOT_UNTITLED_LABEL : label)
+}
+
 /**
- * Части комментария корня-источника, подставленного на место связи: `компонент «подпись»`, `×N` места и описание
- * источника — как у обычного блока. Так агент видит, что одинаковые фрагменты — один компонент.
+ * Части комментария корня-источника, подставленного на место связи: `компонент «подпись»` и `×N` места. Описание
+ * источника здесь не повторяется — оно один раз в списке компонентов (`componentsComment`).
  */
 export function componentCommentParts(source: BlockNode, repeatOf: BlockNode): CommentParts {
-  const label = toSingleLine(source.label)
-  const name = joinParts(
-    [EXPORT_COMPONENT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label)],
-    EXPORT_WORD_SEPARATOR,
-  )
-  return commentWithName(name, { ...source, repeat: repeatOf.repeat })
+  const name = joinParts([EXPORT_COMPONENT_TITLE, componentName(source)], EXPORT_WORD_SEPARATOR)
+  return { head: joinParts([name, repeatMark(repeatOf, EXPORT_REPEAT_MARK)], EXPORT_WORD_SEPARATOR), body: [] }
+}
+
+/** Строки списка компонентов: имя и описание (многострочное — продолжением с отступом). */
+function componentLines(source: BlockNode): string[] {
+  const [first, ...rest] = toCommentLines(source.description)
+  const head = joinParts([componentName(source), first ?? ''], EXPORT_DESCRIPTION_SEPARATOR)
+  return [head, ...rest.map((line) => (line === '' ? '' : `${EXPORT_INDENT}${line}`))]
+}
+
+/** Комментарий-список компонентов, подставленных в вывод (по порядку первого появления); нет компонентов — пусто. */
+export function componentsComment(sources: readonly BlockNode[], indent: string): string[] {
+  if (sources.length === 0) return []
+  return formatComment(EXPORT_COMPONENTS_TITLE, sources.flatMap(componentLines), indent)
 }
 
 /** Голова из имени, `×N` блока и однострочного описания; многострочное описание — в тело. */

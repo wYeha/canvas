@@ -12,15 +12,18 @@ import {
   type NodeId,
   type RootEntry,
 } from '@shared'
+import { repeatCount } from '@/scripts/pages/canvas/node-view'
 import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import type { StyleEntry } from '@/scripts/pages/canvas/node-style'
 import {
   componentCommentParts,
+  componentsComment,
   formatComment,
   nodeCommentParts,
   rootHeaderComment,
   warningComments,
 } from './export-comment'
+import { usedComponents } from './export-components'
 import { closeTag, exportStyleEntries, openTag, rootExportEntries, safeStyle, safeTag } from './export-style'
 import type { CommentParts, RootOrder } from './export-types'
 import { EXPORT_INDENT, EXPORT_NEWLINE } from './export-constants'
@@ -75,7 +78,8 @@ function renderBlock(doc: LayoutDocument, render: BlockRender): string[] {
   const indent = EXPORT_INDENT.repeat(depth)
   const { style, dropped } = safeStyle([...exportStyleEntries(block, parentKind), ...extraEntries])
   const { tag, replaced } = safeTag(block.tag)
-  const frame: ElementFrame = { indent, open: openTag(tag, style), close: closeTag(tag) }
+  // У корня повтора нет (в модели он всегда 1), у вложенного блока и места связи — повтор блока
+  const frame: ElementFrame = { indent, open: openTag(tag, style, repeatCount(block)), close: closeTag(tag) }
   const body = block.children.length > 0 ? blockLines(doc, render, frame) : leafLines(render.comment, frame)
   return [...warningComments(dropped, replaced, indent), ...body]
 }
@@ -135,7 +139,11 @@ export function exportRootLines(doc: LayoutDocument, entry: RootEntry, order?: R
   ]
 }
 
-/** HTML корневого блока (см. `exportRootLines`). Текст заканчивается ровно одним переводом строки. */
+/**
+ * HTML корневого блока (см. `exportRootLines`), перед ним — список подставленных компонентов с описаниями.
+ * Текст заканчивается ровно одним переводом строки.
+ */
 export function exportRootHtml(doc: LayoutDocument, entry: RootEntry): string {
-  return `${exportRootLines(doc, entry).join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
+  const components = componentsComment(usedComponents(doc, [entry.node], [entry.node.id]), '')
+  return `${[...components, ...exportRootLines(doc, entry)].join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
 }

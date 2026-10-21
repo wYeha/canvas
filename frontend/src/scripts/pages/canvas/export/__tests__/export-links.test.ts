@@ -33,8 +33,13 @@ describe('экспорт связей', () => {
     const [page] = doc.roots
     if (!page) throw new Error('нет корня')
     const html = exportRootHtml(doc, page)
-    expect(html).toContain('<!-- компонент «Карточка» ×3 — Карточка товара -->')
+    expect(html).toContain('<!-- компонент «Карточка» ×3 -->')
+    // Описание компонента — один раз, в списке перед деревом
+    expect(html.startsWith('<!-- Компоненты')).toBe(true)
+    expect(html.match(/Карточка товара/g)).toHaveLength(1)
     expect(html).toContain('grid-column:span 2')
+    // Повтор места — машиночитаемо на самом элементе
+    expect(html).toContain('<div data-repeat="3" style=')
     expect(html).toContain('<!-- цена -->')
     // Ширина превью источника в место не переносится
     expect(html).not.toContain('320px')
@@ -66,6 +71,22 @@ describe('экспорт связей', () => {
     const doc = catalog()
     const linkId = doc.roots[0]?.node.children[0]?.id ?? ''
     expect(exportScopeHtml(doc, { kind: 'selected', nodeId: linkId }, {})).toContain('компонент «Карточка» ×3')
+  })
+
+  it('список компонентов: по порядку появления, каждый один раз, многострочное описание с отступом', () => {
+    const c = block('flex', 'C', { id: 'C', description: 'первая\nвторая' })
+    const b = block('flex', 'B', { id: 'B' }, [link('C')])
+    const a = block('flex', 'A', { id: 'A' }, [link('B'), link('C')])
+    const doc = docOf(root(a, 800, null, false), root(b, 400, null, false), root(c, 200, null, false))
+    expect(exportScopeHtml(doc, { kind: 'all' }, {})).toContain(
+      [
+        '<!-- Компоненты (описание один раз, на местах — только имя):',
+        '  «B»',
+        '  «C» — первая',
+        '    вторая',
+        '-->',
+      ].join('\n'),
+    )
   })
 
   it('связь на себя (непроверенный документ) не зацикливается: выводится пустым блоком', () => {

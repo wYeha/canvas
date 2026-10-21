@@ -91,6 +91,7 @@ export function createDocument(name: string = DEFAULT_DOCUMENT_NAME): LayoutDocu
     schemaVersion: SCHEMA_VERSION,
     id: createId(),
     name,
+    rules: '',
     labelCounter: 0,
     roots: [],
     createdAt: now,

@@ -9,6 +9,12 @@ export const EXPORT_NEWLINE = '\n'
 /** Знак повтора в комментарии: `nav-item ×3`. */
 export const EXPORT_REPEAT_MARK = '×'
 
+/** Заголовок правил документа в промпте экспорта. */
+export const EXPORT_RULES_TITLE = 'Правила документа:'
+
+/** Атрибут повторяемого элемента: `data-repeat="4"` — элемент повторяется целиком 4 раза соседями. */
+export const EXPORT_REPEAT_ATTR = 'data-repeat'
+
 /** Разделитель подписи и однострочного описания в комментарии. */
 export const EXPORT_DESCRIPTION_SEPARATOR = ' — '
 
@@ -32,6 +38,9 @@ export const EXPORT_ROOT_TITLE = 'Корневой блок'
 
 /** Пометка подставленного на место связи корня-источника: `компонент «Карточка»`. */
 export const EXPORT_COMPONENT_TITLE = 'компонент'
+
+/** Заголовок списка компонентов в начале экспорта: их описания выводятся один раз, а не на каждом месте. */
+export const EXPORT_COMPONENTS_TITLE = 'Компоненты (описание один раз, на местах — только имя):'
 
 /** Подпись ширины превью в заголовке корня: `ширина превью 1440px`. */
 export const EXPORT_ROOT_PREVIEW_WIDTH = 'ширина превью'

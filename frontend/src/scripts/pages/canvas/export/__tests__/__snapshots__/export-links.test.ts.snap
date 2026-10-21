@@ -1,10 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`экспорт связей > на месте связи — источник со свойствами места и комментарием компонента 1`] = `
-"<!-- Корневой блок «Каталог», ширина превью 1440px -->
+"<!-- Компоненты (описание один раз, на местах — только имя):
+  «Карточка» — Карточка товара
+-->
+<!-- Корневой блок «Каталог», ширина превью 1440px -->
 <div style="display:grid; grid-template-columns:repeat(2, 1fr)">
-  <!-- компонент «Карточка» ×3 — Карточка товара -->
-  <div style="display:flex; grid-column:span 2">
+  <!-- компонент «Карточка» ×3 -->
+  <div data-repeat="3" style="display:flex; grid-column:span 2">
     <div><!-- фото --></div>
     <section><!-- цена --></section>
   </div>

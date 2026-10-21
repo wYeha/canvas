@@ -1,7 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`exportRootHtml > демо-документ: корень «Дашборд» 1`] = `
-"<!-- Корневой блок «Дашборд», ширина превью 1440px -->
+"<!-- Компоненты (описание один раз, на местах — только имя):
+  «KPI-карточка»
+  «Карточка графика»
+-->
+<!-- Корневой блок «Дашборд», ширина превью 1440px -->
 <div style="display:flex; flex-direction:column">
   <!-- header -->
   <div style="display:flex; align-items:center">
@@ -27,7 +31,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr)">
         <!-- компонент «KPI-карточка» ×4 -->
-        <div style="display:flex; flex-direction:column">
+        <div data-repeat="4" style="display:flex; flex-direction:column">
           <div><!-- kpi-title --></div>
           <div><!-- kpi-value --></div>
         </div>

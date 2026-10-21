@@ -19,7 +19,7 @@ describe('exportRootHtml', () => {
           по три в ряд
         -->
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); flex:1">
-          <div><!-- card ×3 — Карточка товара --></div>
+          <div data-repeat="3"><!-- card ×3 — Карточка товара --></div>
           <div></div>
           <div style="grid-column:span 2">
             <!-- promo
@@ -47,7 +47,7 @@ describe('exportRootHtml', () => {
     const entry = root(block('flex', 'Лендинг', { repeat: 2 }), 1200, null, true)
     expect(exportRootHtml(docOf(entry), entry)).toMatchInlineSnapshot(`
       "<!-- Корневой блок «Лендинг», max-width 1200px по центру -->
-      <div style="max-width:1200px; margin:0 auto"></div>
+      <div data-repeat="2" style="max-width:1200px; margin:0 auto"></div>
       "
     `)
   })

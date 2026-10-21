@@ -29,6 +29,7 @@ export function documentFixture(overrides: Partial<LayoutDocument> = {}, rootCou
     schemaVersion: SCHEMA_VERSION,
     id: 'doc-1',
     name: 'Дашборд',
+    rules: '',
     labelCounter: rootCount,
     roots: Array.from({ length: rootCount }, (_, index) => ({
       canvas: { x: index * 100, y: 0, width: 1440, height: null, exportMaxWidth: false },

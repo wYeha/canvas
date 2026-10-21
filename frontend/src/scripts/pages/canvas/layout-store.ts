@@ -6,7 +6,7 @@ import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { parseDocument, type ParseDocumentResult } from '@shared'
 import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
-import { HISTORY_LIMIT, HISTORY_MERGE_MS } from './constants'
+import { HISTORY_LIMIT, HISTORY_MERGE_MS, RULES_MERGE_KEY } from './constants'
 import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
 import {
   createBlock,
@@ -276,6 +276,15 @@ export const useLayoutStore = defineStore('layout', () => {
     return true
   }
 
+  /**
+   * Задаёт правила документа для ИИ (идут в промпт экспорта). Это правка документа: шаг истории, набор подряд
+   * склеивается в один шаг. `false`, если текст тот же.
+   */
+  function setDocumentRules(rules: string): boolean {
+    if (rules === document.value.rules) return false
+    return commit({ ...document.value, rules }, { key: RULES_MERGE_KEY, window: HISTORY_MERGE_MS })
+  }
+
   /** Выделяет узел; `null` снимает выделение. Несуществующий id снимает выделение. */
   function select(id: NodeId | null): void {
     selectedId.value = id === null || tree.findNode(document.value, id) ? id : null
@@ -335,6 +344,7 @@ export const useLayoutStore = defineStore('layout', () => {
     updateRootPlacement,
     loadDocument,
     renameDocument,
+    setDocumentRules,
     select,
     hover,
   }

@@ -27,6 +27,8 @@ export const layoutDocumentShapeSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
   id: nodeIdSchema,
   name: z.string(),
+  /** Правила документа для ИИ (общие правила вёрстки), подставляются в промпт экспорта; в старых документах — пусто. */
+  rules: z.string().default(''),
   labelCounter: z.int().min(0),
   roots: z.array(rootEntrySchema),
   createdAt: z.iso.datetime(),

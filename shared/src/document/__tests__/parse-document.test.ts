@@ -35,6 +35,7 @@ function documentOf(...nodes: BlockNode[]): LayoutDocument {
     schemaVersion: SCHEMA_VERSION,
     id: 'doc-1',
     name: 'Дашборд',
+    rules: '',
     labelCounter: 3,
     roots: nodes.map((node, index) => ({
       canvas: { x: index * 100, y: 0, width: 1440, height: null, exportMaxWidth: false },
@@ -69,6 +70,14 @@ describe('parseDocument', () => {
     const doc = documentOf(block('page', [grid]), block('card'))
     const result = parseDocument(doc)
     expect(result).toEqual({ ok: true, document: doc })
+  })
+
+  it('документ без правил (старый) получает пустые правила', () => {
+    const old: Record<string, unknown> = { ...documentOf() }
+    Reflect.deleteProperty(old, 'rules')
+    const result = parseDocument(old)
+    if (!result.ok) throw new Error(result.error)
+    expect(result.document.rules).toBe('')
   })
 
   it('принимает пустой документ', () => {

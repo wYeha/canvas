@@ -1,4 +1,4 @@
-<!-- Модалка экспорта: слева охват, список корней и шаблон промпта, справа предпросмотр кода; снизу «Скачать» и «Копировать» -->
+<!-- Модалка экспорта: слева охват, список корней и шаблон промпта и правила документа, справа предпросмотр кода; снизу «Скачать» и «Копировать» -->
 <template>
   <UiModal v-model:open="open" :title="EXPORT_MODAL_TITLE" size="export" :initial-focus="copyEl">
     <div class="export-modal">
@@ -49,6 +49,17 @@
             {{ EXPORT_PROMPT_RESET }}
           </UiButton>
         </div>
+        <div class="export-modal__rules">
+          <UiField v-slot="{ id, describedBy }" :label="EXPORT_RULES_LABEL" :hint="EXPORT_RULES_HINT">
+            <UiTextarea
+              v-model="rules"
+              :label="EXPORT_RULES_LABEL"
+              :placeholder="EXPORT_RULES_PLACEHOLDER"
+              :rows="EXPORT_RULES_ROWS"
+              :input-attrs="{ id, 'aria-describedby': describedBy }"
+            />
+          </UiField>
+        </div>
       </div>
       <div class="export-modal__preview">
         <p class="export-modal__meta">{{ meta }}</p>
@@ -98,6 +109,10 @@ import {
   EXPORT_ROOTS_EMPTY,
   EXPORT_ROOTS_LABEL,
   EXPORT_ROOTS_LABEL_ID,
+  EXPORT_RULES_HINT,
+  EXPORT_RULES_LABEL,
+  EXPORT_RULES_PLACEHOLDER,
+  EXPORT_RULES_ROWS,
   EXPORT_SCOPE_HINTS,
   EXPORT_SCOPE_LABEL,
 } from '@/scripts/modals/export-modal/export-modal.constants'
@@ -120,6 +135,7 @@ const {
   emptyText,
   isEmpty,
   tokenClasses,
+  rules,
   copied,
   actionError,
   copy,

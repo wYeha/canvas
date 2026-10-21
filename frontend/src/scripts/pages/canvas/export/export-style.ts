@@ -10,7 +10,12 @@ import {
 import { CSS_DEFAULT_GRID_ROWS, CSS_PX_UNIT, DEFAULT_FLEX, DEFAULT_GRID } from '@/scripts/pages/canvas/constants'
 import { containerEntries, styleEntries, toInlineStyle, type StyleEntry } from '@/scripts/pages/canvas/node-style'
 import { escapeHtmlAttr } from './export-escape'
-import { EXPORT_CSS_PROPERTY_PATTERN, EXPORT_FALLBACK_TAG, EXPORT_ROOT_MARGIN } from './export-constants'
+import {
+  EXPORT_CSS_PROPERTY_PATTERN,
+  EXPORT_FALLBACK_TAG,
+  EXPORT_REPEAT_ATTR,
+  EXPORT_ROOT_MARGIN,
+} from './export-constants'
 
 /** Готовое значение атрибута `style` и имена отброшенных свойств. */
 export interface SafeStyle {
@@ -84,9 +89,14 @@ export function safeTag(tag: string): SafeTag {
   return allowed.includes(tag) ? { tag, replaced: false } : { tag: EXPORT_FALLBACK_TAG, replaced: true }
 }
 
-/** Открывающий тег: с атрибутом `style`, только если строка стиля непуста (уже экранирована `safeStyle`). */
-export function openTag(tag: string, style: string): string {
-  return style === '' ? `<${tag}>` : `<${tag} style="${style}">`
+/**
+ * Открывающий тег: `data-repeat="N"` у повторяемого элемента (N > 1 — машиночитаемо, что элемент повторяется целиком
+ * N раз соседями) и `style`, только если строка стиля непуста (уже экранирована `safeStyle`).
+ */
+export function openTag(tag: string, style: string, repeat = 1): string {
+  const repeatAttr = repeat > 1 ? ` ${EXPORT_REPEAT_ATTR}="${String(repeat)}"` : ''
+  const styleAttr = style === '' ? '' : ` style="${style}"`
+  return `<${tag}${repeatAttr}${styleAttr}>`
 }
 
 /** Закрывающий тег. */
