@@ -12,6 +12,7 @@ import {
   asFlexDirection,
   convertContainer,
   iconOrientation,
+  withGap,
 } from '@/scripts/pages/canvas/props-container'
 import { useCanvasPropsContainer } from '@/scripts/pages/canvas/use-canvas-props-container'
 
@@ -132,5 +133,15 @@ describe('useCanvasPropsContainer', () => {
     expect(props.alignClasses.value).toContain('canvas-props-container__icons--cross')
     props.direction.value = 'row'
     expect(props.justifyClasses.value).toEqual(['canvas-props-container__icons'])
+  })
+})
+
+describe('withGap', () => {
+  it('токен ставится, «нет» и чужое значение стирают поле; переключение flex↔grid сохраняет зазор', () => {
+    const flex = { ...createFlexContainer(), gap: 'm' as const }
+    expect(withGap(flex, 'l')).toEqual({ ...createFlexContainer(), gap: 'l' })
+    expect(withGap(flex, 'none')).toEqual(createFlexContainer())
+    expect(withGap(flex, 'xl')).toEqual(createFlexContainer())
+    expect(convertContainer(flex, 'grid').gap).toBe('m')
   })
 })

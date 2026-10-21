@@ -2,6 +2,7 @@
 import type { BlockNode, RootEntry } from '@shared'
 import { CSS_PX_UNIT, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
 import { repeatMark } from '@/scripts/pages/canvas/node-view'
+import { sizeMode, sizeValue } from '@/scripts/pages/canvas/size-mode'
 import { escapeCommentText, toCommentLines, toSingleLine } from './export-escape'
 import type { CommentParts, RootOrder } from './export-types'
 import {
@@ -12,6 +13,7 @@ import {
   EXPORT_DESCRIPTION_SEPARATOR,
   EXPORT_DOCUMENT_ROOTS_COUNT,
   EXPORT_DOCUMENT_TITLE,
+  EXPORT_FIXED_INTENT,
   EXPORT_INDENT,
   EXPORT_LIST_SEPARATOR,
   EXPORT_ORDER_FORMAT,
@@ -19,6 +21,7 @@ import {
   EXPORT_QUOTE_OPEN,
   EXPORT_REPEAT_MARK,
   EXPORT_ROOT_CENTERED,
+  EXPORT_ROOT_FULL_SCREEN,
   EXPORT_ROOT_MAX_WIDTH,
   EXPORT_ROOT_PREVIEW_HEIGHT,
   EXPORT_ROOT_PREVIEW_WIDTH,
@@ -48,7 +51,16 @@ function pxText(value: number): string {
  * многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
  */
 export function nodeCommentParts(block: BlockNode): CommentParts {
-  return commentWithName(toSingleLine(block.label), block)
+  const name = joinParts([toSingleLine(block.label), ...fixedIntents(block)], EXPORT_LIST_SEPARATOR)
+  return commentWithName(name, block)
+}
+
+/** Намерения «фиксированная ширина/высота» у осей в фиксированном режиме без числа: размер не задан, но не тянется. */
+function fixedIntents(block: BlockNode): string[] {
+  const axes = ['width', 'height'] as const
+  return axes
+    .filter((axis) => sizeMode(block.self, axis) === 'fixed' && sizeValue(block.self, axis) === null)
+    .map((axis) => EXPORT_FIXED_INTENT[axis])
 }
 
 /** Имя компонента в кавычках: подпись корня-источника или «Без подписи». */
@@ -112,8 +124,14 @@ export function warningComments(dropped: readonly string[], tagReplaced: boolean
   return heads.flatMap((head) => formatComment(head, [], indent))
 }
 
-/** Описание размера корня: ширина (и фиксированная высота) превью или `max-width … по центру`. */
+/** Описание размера корня: ширина превью или `max-width … по центру`, у «экрана целиком» — пометка 100vh. */
 export function rootSizeText(entry: RootEntry): string {
+  const base = rootWidthText(entry)
+  return entry.canvas.fullScreen === true ? `${base}${EXPORT_LIST_SEPARATOR}${EXPORT_ROOT_FULL_SCREEN}` : base
+}
+
+/** Ширина корня в заголовке: ширина (и фиксированная высота) превью или `max-width … по центру`. */
+function rootWidthText(entry: RootEntry): string {
   const { width, height, exportMaxWidth } = entry.canvas
   if (exportMaxWidth) return `${EXPORT_ROOT_MAX_WIDTH} ${pxText(width)} ${EXPORT_ROOT_CENTERED}`
   const widthText = `${EXPORT_ROOT_PREVIEW_WIDTH} ${pxText(width)}`

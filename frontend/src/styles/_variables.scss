@@ -237,7 +237,11 @@ $status-dot-size: 8px;
 $toolbar-divider-height: 20px;
 $zoom-value-width: 44px;
 $block-padding: 20px; // фиксированный внутренний отступ каждого блока, только редактор; продублировано в BLOCK_PADDING_PX
-$block-gap: 16px; // фиксированный зазор между детьми каждого блока (flex и grid), только редактор, в экспорт не идёт
+$block-gap: 4px; // редакторский зазор между детьми блока без токена gap (только превью, в экспорт не идёт): соседи различимы
+// Токены зазора (TOKENS.md): значения CSS-переменных --gap-s|m|l на слое поля, инлайн `gap: var(--gap-m)` из node-style.ts
+$gap-s: 8px;
+$gap-m: 16px;
+$gap-l: 32px;
 $empty-leaf-min-height: 48px; // редакторский min-height пустого листа (вместе с $block-padding), в экспорт не идёт
 $drag-ghost-tilt: 2deg; // наклон призрака перетаскивания
 $drag-ghost-opacity: 0.9; // призрак перетаскивания

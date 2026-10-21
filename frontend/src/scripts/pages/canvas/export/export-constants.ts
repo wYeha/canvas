@@ -54,6 +54,16 @@ export const EXPORT_ROOT_MAX_WIDTH = 'max-width'
 /** Хвост подписи ограничения ширины в заголовке корня. */
 export const EXPORT_ROOT_CENTERED = 'по центру'
 
+/** Высота корня «экран целиком». */
+export const EXPORT_FULL_SCREEN_HEIGHT = '100vh'
+
+/** Пометка корня «экран целиком» в заголовке. */
+export const EXPORT_ROOT_FULL_SCREEN =
+  'экран целиком (100vh), страница целиком не прокручивается — прокручиваются области внутри'
+
+/** Намерения фиксированного размера без числа (в комментарии узла). */
+export const EXPORT_FIXED_INTENT = { width: 'фиксированная ширина', height: 'фиксированная высота' } as const
+
 /** Формат нумерации корня при экспорте нескольких: `1 из 3. `; `{i}` и `{n}` подставляются. */
 export const EXPORT_ORDER_FORMAT = '{i} из {n}. '
 
@@ -72,8 +82,8 @@ export const EXPORT_WARNING_UNSAFE_VALUE = 'внимание: отброшено
 /** Текст предупреждения о замене недопустимого тега. */
 export const EXPORT_WARNING_TAG_REPLACED = 'внимание: недопустимый тег заменён на div'
 
-/** Допустимое имя CSS-свойства в выводе: слова из строчной латиницы через одиночный дефис (`grid-template-columns`). */
-export const EXPORT_CSS_PROPERTY_PATTERN = /^[a-z]+(-[a-z]+)*$/
+/** Допустимое имя CSS-свойства в выводе: слова из строчной латиницы через дефис (`grid-template-columns`) или переменная (`--gap-m`). */
+export const EXPORT_CSS_PROPERTY_PATTERN = /^(--)?[a-z]+(-[a-z]+)*$/
 
 /** Тег, которым заменяется недопустимый тег блока. */
 export const EXPORT_FALLBACK_TAG = 'div'

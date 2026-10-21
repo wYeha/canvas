@@ -1,4 +1,7 @@
-/** Единственный источник раскладочных стилей узла: чистые функции для превью и экспорта, только отличия от CSS по умолчанию. */
+/**
+ * Единственный источник раскладочных стилей узла: чистые функции для превью и экспорта, только отличия от CSS по
+ * умолчанию. Режимы размера (по содержимому / заполнить / фиксированный) превращаются в flex, растяжение и минимумы.
+ */
 import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, SelfProps } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
@@ -10,9 +13,19 @@ import {
   CSS_DISPLAY_GRID,
   CSS_FLEX_WRAP,
   CSS_GRID_SPAN,
+  CSS_FLEX_FILL,
+  CSS_FLEX_NONE,
   CSS_MIN_SPAN,
+  CSS_MIN_ZERO,
+  CSS_STRETCH,
+  GAP_VAR_PREFIX,
+  MIN_CHILDREN_FOR_GAP,
   INLINE_STYLE_SEPARATOR,
 } from './constants'
+import { mainAxis, otherAxis, sizeMode, sizeValue, type SizeAxis } from './size-mode'
+
+/** Оси размера в порядке вывода. */
+const SIZE_AXES: readonly SizeAxis[] = ['width', 'height']
 
 /** Одно CSS-свойство: имя в kebab-case и значение. */
 export type StyleEntry = readonly [property: string, value: string]
@@ -37,59 +50,119 @@ function push(entries: StyleEntry[], property: string, value: string | null): vo
   if (value !== null) entries.push([property, value])
 }
 
-/** Стили flex-контейнера: display, direction, wrap, justify, align (gap в модели нет — он только редакторский, BEM-классом). */
-function flexEntries(container: FlexContainer): StyleEntry[] {
+/**
+ * Зазор токеном через CSS-переменную (`var(--gap-m)`): определения — в редакторе на слое поля, в экспорте у верхнего
+ * элемента вывода. Только при двух детях и больше: у листа и единственного ребёнка зазор ничего не делает (шум).
+ */
+function gapEntries(container: Container, childCount: number): StyleEntry[] {
+  if (container.gap === undefined || childCount < MIN_CHILDREN_FOR_GAP) return []
+  return [['gap', `var(${GAP_VAR_PREFIX}${container.gap})`]]
+}
+
+/** Стили flex-контейнера: display, direction, wrap, justify, align, gap. */
+function flexEntries(container: FlexContainer, childCount: number): StyleEntry[] {
   const entries: StyleEntry[] = [['display', CSS_DISPLAY_FLEX]]
   if (container.direction !== CSS_DEFAULT_FLEX_DIRECTION) entries.push(['flex-direction', container.direction])
   if (container.wrap) entries.push(['flex-wrap', CSS_FLEX_WRAP])
   if (container.justify !== CSS_DEFAULT_JUSTIFY_CONTENT) entries.push(['justify-content', container.justify])
   if (container.align !== CSS_DEFAULT_ALIGN) entries.push(['align-items', container.align])
-  return entries
+  return [...entries, ...gapEntries(container, childCount)]
 }
 
 /** Стили grid-контейнера: display, шаблоны, выравнивание. */
-function gridEntries(container: GridContainer): StyleEntry[] {
+function gridEntries(container: GridContainer, childCount: number): StyleEntry[] {
   const entries: StyleEntry[] = [['display', CSS_DISPLAY_GRID]]
   push(entries, 'grid-template-columns', clean(container.columns))
   const rows = clean(container.rows)
   if (rows !== CSS_DEFAULT_GRID_ROWS) push(entries, 'grid-template-rows', rows)
   if (container.justifyItems !== CSS_DEFAULT_ALIGN) entries.push(['justify-items', container.justifyItems])
   if (container.alignItems !== CSS_DEFAULT_ALIGN) entries.push(['align-items', container.alignItems])
-  return entries
+  return [...entries, ...gapEntries(container, childCount)]
 }
 
-/** Стили «как ребёнок»; для корня (`parentKind === null`) ничего, свойства чужого типа родителя игнорируются. */
-function selfEntries(self: SelfProps, parentKind: ContainerKind | null): StyleEntry[] {
-  if (parentKind === null) return []
+/** `flex` ребёнка flex-родителя: свободное значение (не по умолчанию) важнее режима главной оси. */
+function childFlex(self: SelfProps, main: SizeAxis): string | null {
+  if (!isDefaultFlex(self.flex)) return clean(self.flex)?.replace(WHITESPACE_RUN, ' ') ?? null
+  const mode = sizeMode(self, main)
+  if (mode === 'fill') return CSS_FLEX_FILL
+  return mode === 'fixed' ? CSS_FLEX_NONE : null
+}
+
+/** Числа фиксированных осей: `width`, `height`. */
+function fixedSizeEntries(self: SelfProps): StyleEntry[] {
   const entries: StyleEntry[] = []
-  if (parentKind === 'flex') {
-    if (!isDefaultFlex(self.flex)) push(entries, 'flex', clean(self.flex)?.replace(WHITESPACE_RUN, ' ') ?? null)
-    push(entries, 'width', clean(self.width))
-  } else {
-    if (self.colSpan !== undefined && self.colSpan > CSS_MIN_SPAN) {
-      entries.push(['grid-column', `${CSS_GRID_SPAN} ${String(self.colSpan)}`])
-    }
-    if (self.rowSpan !== undefined && self.rowSpan > CSS_MIN_SPAN) {
-      entries.push(['grid-row', `${CSS_GRID_SPAN} ${String(self.rowSpan)}`])
-    }
-  }
-  push(entries, 'height', clean(self.height))
-  push(entries, 'min-height', clean(self.minHeight))
+  for (const axis of SIZE_AXES) if (sizeMode(self, axis) === 'fixed') push(entries, axis, sizeValue(self, axis))
   return entries
-}
-
-/** Контейнерная часть стилей блока (display, flex/grid-свойства); в `styleEntries` она всегда идёт первой. */
-export function containerEntries(container: Container): StyleEntry[] {
-  return container.kind === 'flex' ? flexEntries(container) : gridEntries(container)
 }
 
 /**
- * Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня).
+ * Минимумы и максимумы: заданные явно; у «Заполнить» по главной оси flex-родителя минимум по ней — 0
+ * (иначе длинное содержимое распирает блок и ломает раскладку), если он не задан.
+ */
+function limitEntries(self: SelfProps, fillMain: SizeAxis | null): StyleEntry[] {
+  const entries: StyleEntry[] = []
+  push(entries, 'min-width', clean(self.minWidth) ?? (fillMain === 'width' ? CSS_MIN_ZERO : null))
+  push(entries, 'max-width', clean(self.maxWidth))
+  push(entries, 'min-height', clean(self.minHeight) ?? (fillMain === 'height' ? CSS_MIN_ZERO : null))
+  return entries
+}
+
+/** «Как ребёнок» во flex-родителе с направлением `direction`: flex по главной оси, растяжение по поперечной. */
+function flexChildEntries(self: SelfProps, direction: FlexContainer['direction']): StyleEntry[] {
+  const main = mainAxis(direction)
+  const entries: StyleEntry[] = []
+  push(entries, 'flex', childFlex(self, main))
+  entries.push(...fixedSizeEntries(self))
+  if (sizeMode(self, otherAxis(main)) === 'fill') entries.push(['align-self', CSS_STRETCH])
+  const fillMain = isDefaultFlex(self.flex) && sizeMode(self, main) === 'fill' ? main : null
+  return [...entries, ...limitEntries(self, fillMain)]
+}
+
+/** «Как ребёнок» в grid-родителе: span, числа, растяжение в ячейке по осям «Заполнить». */
+function gridChildEntries(self: SelfProps): StyleEntry[] {
+  const entries: StyleEntry[] = []
+  if (self.colSpan !== undefined && self.colSpan > CSS_MIN_SPAN) {
+    entries.push(['grid-column', `${CSS_GRID_SPAN} ${String(self.colSpan)}`])
+  }
+  if (self.rowSpan !== undefined && self.rowSpan > CSS_MIN_SPAN) {
+    entries.push(['grid-row', `${CSS_GRID_SPAN} ${String(self.rowSpan)}`])
+  }
+  entries.push(...fixedSizeEntries(self))
+  if (sizeMode(self, 'width') === 'fill') entries.push(['justify-self', CSS_STRETCH])
+  if (sizeMode(self, 'height') === 'fill') entries.push(['align-self', CSS_STRETCH])
+  return [...entries, ...limitEntries(self, null)]
+}
+
+/**
+ * Стили «как ребёнок»; для корня (`parentKind === null`) ничего. Порядок стабильный: flex или span, числа размеров,
+ * растяжение, минимумы и максимумы (у старых документов без режимов вывод прежний: flex, width, height, min-height).
+ */
+function selfEntries(
+  self: SelfProps,
+  parentKind: ContainerKind | null,
+  direction: FlexContainer['direction'],
+): StyleEntry[] {
+  if (parentKind === null) return []
+  return parentKind === 'flex' ? flexChildEntries(self, direction) : gridChildEntries(self)
+}
+
+/** Контейнерная часть стилей блока (display, flex/grid-свойства, gap при `childCount` ≥ 2); в `styleEntries` она всегда первая. */
+export function containerEntries(container: Container, childCount = 0): StyleEntry[] {
+  return container.kind === 'flex' ? flexEntries(container, childCount) : gridEntries(container, childCount)
+}
+
+/**
+ * Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня), `parentDirection` —
+ * направление flex-родителя (главная ось для режимов размера; по умолчанию row).
  * Внутреннего отступа здесь нет: в редакторе он фиксированный и задаётся классом, в экспорт не идёт.
  */
-export function styleEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
-  const entries = containerEntries(node.container)
-  entries.push(...selfEntries(node.self, parentKind))
+export function styleEntries(
+  node: LayoutNode,
+  parentKind: ContainerKind | null,
+  parentDirection: FlexContainer['direction'] = CSS_DEFAULT_FLEX_DIRECTION,
+): StyleEntry[] {
+  const entries = containerEntries(node.container, node.children.length)
+  entries.push(...selfEntries(node.self, parentKind, parentDirection))
   return entries
 }
 

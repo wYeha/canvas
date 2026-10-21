@@ -2,7 +2,7 @@
 import type { LayoutDocument, NodeId } from '@shared'
 import { findParent, findNode, findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { componentsComment } from './export-comment'
-import { usedComponents } from './export-components'
+import { gapVarEntries, usedComponents, usedGaps } from './export-components'
 import { contextLines } from './export-context'
 import { exportNodeLines, exportRootHtml } from './export-html'
 import type { ExportOptions } from './export-types'
@@ -22,7 +22,10 @@ export function exportSelectedHtml(doc: LayoutDocument, nodeId: NodeId, options:
   const lines = [
     ...contextLines(doc, nodeId, options),
     ...components,
-    ...exportNodeLines(doc, node, parent.container.kind, 0),
+    ...exportNodeLines(doc, node, parent.container.kind, 0, {
+      parentDirection: parent.container.kind === 'flex' ? parent.container.direction : undefined,
+      extraEntries: gapVarEntries(usedGaps(doc, [node])),
+    }),
   ]
   return `${lines.join(EXPORT_NEWLINE)}${EXPORT_NEWLINE}`
 }

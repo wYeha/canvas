@@ -50,18 +50,21 @@ describe('панель свойств: документ остаётся вал�
     child.flexPreset.value = '1'
     child.flexCustom.value = '0 0 280px'
     child.applyFlex()
-    child.width.value = '240'
-    child.applyWidth()
-    child.height.value = 'calc(100vh - 8px)'
-    child.applyHeight()
+    child.widthMode.value = 'fixed'
+    child.widthValue.value = '240'
+    child.applyWidthValue()
+    child.heightMode.value = 'fill'
+    child.heightMode.value = 'fixed'
+    child.heightValue.value = 'calc(100vh - 8px)'
+    child.applyHeightValue()
     child.minHeight.value = '50%'
     child.applyMinHeight()
     expectValidStore(layoutStore)
     child.flexPreset.value = ''
-    child.width.value = ''
-    child.applyWidth()
-    child.height.value = ''
-    child.applyHeight()
+    child.widthValue.value = ''
+    child.applyWidthValue()
+    child.widthMode.value = 'content'
+    child.heightMode.value = 'fill'
     child.minHeight.value = ''
     child.applyMinHeight()
     expectValidStore(layoutStore)

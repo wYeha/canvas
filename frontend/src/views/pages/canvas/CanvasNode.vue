@@ -19,7 +19,8 @@
       :key="child.key"
       :node="child.node"
       :depth="depth + 1"
-      :parent-kind="kind"
+      :parent-kind="view.childKind"
+      :parent-direction="view.childDirection"
       :copy-of="child.copyOf"
       :copy-root="child.copyRoot"
       :copy-budget="child.budget"
@@ -29,12 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { CanvasNodeProps } from '@/scripts/pages/canvas/canvas-node.types'
 import { useCanvasNode } from '@/scripts/pages/canvas/use-canvas-node'
 
 const props = withDefaults(defineProps<CanvasNodeProps>(), { inMirror: false })
 const { view, classes, nodeAttr, repeatAttr, labelAttr } = useCanvasNode(props)
-/** Вид контейнера этого узла: родитель для детей. */
-const kind = computed(() => props.node.container.kind)
 </script>

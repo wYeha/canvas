@@ -97,3 +97,33 @@ describe('экспорт связей', () => {
     expect(exportRootHtml(doc, entry)).not.toContain('компонент')
   })
 })
+
+describe('зазор, режимы и экран целиком в экспорте', () => {
+  it('переменные зазора определяются у корня вывода — только использованные, в том числе внутри компонентов', () => {
+    const card = block('flex', 'Карточка', { id: 'card', container: { ...block('flex', 'x').container, gap: 's' } }, [
+      block('flex', 'a'),
+      block('flex', 'b'),
+    ])
+    const page = block('flex', 'Страница', { id: 'page' }, [link('card')])
+    const doc = docOf(root(page, 800, null, false), root(card, 300, null, false))
+    const html = exportScopeHtml(doc, { kind: 'all' }, {})
+    expect(html).toContain('--gap-s:8px')
+    expect(html).not.toContain('--gap-m')
+    expect(html).toContain('gap:var(--gap-s)')
+  })
+
+  it('фиксированный размер без числа — намерение в комментарии; экран целиком — 100vh и пометка', () => {
+    const fixed = block('flex', 'sidebar', { self: { widthMode: 'fixed' } })
+    const page = block('flex', 'App', { id: 'app' }, [fixed, block('flex', 'main', { self: { widthMode: 'fill' } })])
+    const entry = {
+      ...root(page, 1440, 900, false),
+      canvas: { ...root(page, 1440, 900, false).canvas, fullScreen: true },
+    }
+    const html = exportScopeHtml(docOf(entry), { kind: 'all' }, {})
+    expect(html).toContain('<!-- sidebar, фиксированная ширина -->')
+    expect(html).toContain('flex:none')
+    expect(html).toContain('flex:1 1 0; min-width:0')
+    expect(html).toContain('height:100vh')
+    expect(html).toContain('экран целиком (100vh)')
+  })
+})

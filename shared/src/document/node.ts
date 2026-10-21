@@ -1,6 +1,6 @@
 /** Zod-схемы и типы узлов дерева: блок с детьми и его части, связь — блок с `sourceId`; старые плашки становятся связями. */
 import { z } from 'zod'
-import { LAYOUT_TAGS, LEGACY_LINK_BLOCK_DEFAULTS, LEGACY_LINK_NODE_TYPE } from './constants'
+import { LAYOUT_TAGS, LEGACY_LINK_BLOCK_DEFAULTS, LEGACY_LINK_NODE_TYPE, SIZE_MODES } from './constants'
 import { containerSchema, safeCssStringSchema } from './container'
 
 /** Идентификатор узла или документа: непустая строка. */
@@ -12,8 +12,14 @@ export const layoutTagSchema = z.enum(LAYOUT_TAGS)
 /** Свойства «как ребёнок»: место и размер узла в родителе. Заданы только те, что выбрал пользователь. */
 export const selfPropsSchema = z.object({
   flex: safeCssStringSchema.optional(),
+  /** Режим ширины: заполнить или фиксированная; нет поля — по содержимому, а заданное `width` — фиксированная с числом. */
+  widthMode: z.enum(SIZE_MODES).optional(),
+  /** Режим высоты — как `widthMode`, с полем `height`. */
+  heightMode: z.enum(SIZE_MODES).optional(),
   width: safeCssStringSchema.optional(),
   height: safeCssStringSchema.optional(),
+  minWidth: safeCssStringSchema.optional(),
+  maxWidth: safeCssStringSchema.optional(),
   minHeight: safeCssStringSchema.optional(),
   colSpan: z.int().min(1).optional(),
   rowSpan: z.int().min(1).optional(),

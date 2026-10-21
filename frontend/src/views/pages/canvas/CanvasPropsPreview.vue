@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: секция «Ширина превью» корня — ширина, высота и экспорт как max-width -->
+<!-- Фрагмент страницы canvas: секция «Ширина превью» корня — ширина, высота, экспорт как max-width и «экран целиком» -->
 <template>
   <div v-if="root" class="canvas-props-preview">
     <UiField v-slot="{ id, describedBy }" :label="PREVIEW_WIDTH_LABEL">
@@ -38,6 +38,14 @@
         :input-attrs="{ id, 'aria-labelledby': labelId, 'aria-describedby': describedBy }"
       />
     </UiField>
+    <UiField v-slot="{ id, labelId, describedBy }" :label="PREVIEW_FULL_SCREEN_LABEL" :hint="PREVIEW_FULL_SCREEN_HINT">
+      <UiSwitch
+        v-model="fullScreen"
+        class="canvas-props-preview__switch"
+        :label="PREVIEW_FULL_SCREEN_LABEL"
+        :input-attrs="{ id, 'aria-labelledby': labelId, 'aria-describedby': describedBy }"
+      />
+    </UiField>
   </div>
 </template>
 
@@ -50,6 +58,8 @@ import UiSwitch from '@/views/components/ui-switch/UiSwitch.vue'
 import {
   PREVIEW_HEIGHT_LABEL,
   PREVIEW_HEIGHT_VALUE_LABEL,
+  PREVIEW_FULL_SCREEN_HINT,
+  PREVIEW_FULL_SCREEN_LABEL,
   PREVIEW_MAX_WIDTH_LABEL,
   PREVIEW_MIN_SIZE,
   PREVIEW_PRESETS_LABEL,
@@ -59,5 +69,5 @@ import {
 import { HEIGHT_MODE_OPTIONS, WIDTH_PRESET_OPTIONS } from '@/scripts/pages/canvas/props-preview'
 import { useCanvasPropsPreview } from '@/scripts/pages/canvas/use-canvas-props-preview'
 
-const { root, width, widthPreset, heightMode, height, exportMaxWidth, hint } = useCanvasPropsPreview()
+const { root, width, widthPreset, heightMode, height, exportMaxWidth, fullScreen, hint } = useCanvasPropsPreview()
 </script>

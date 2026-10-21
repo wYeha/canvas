@@ -1,6 +1,10 @@
-/** Composable секции «Как ребёнок»: flex/width/height/min-height через черновики, span, быстрые значения flex и повтор; запись `self` заменяет его целиком. */
-import { computed, type WritableComputedRef } from 'vue'
+/**
+ * Composable секции «Как ребёнок»: режимы ширины и высоты (авто / заполнить / фиксированный с необязательным числом),
+ * span, повтор и «Дополнительно» (свободный flex, min/max-width, min-height); запись `self` заменяет его целиком.
+ */
+import { computed, ref, watch, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { ContainerKind, LayoutNode, NodeId, SelfProps } from '@shared'
+import { CHILD_SIZE_MODE_HINTS } from './constants'
 import { useLayoutStore } from './layout-store'
 import {
   displayChildFlex,
@@ -12,8 +16,15 @@ import {
   type SelfSpanKey,
   type SelfTextKey,
 } from './props-child'
+import { mainAxis, sizeMode, withSizeMode, withSizeValue, type SizeAxis, type SizeMode } from './size-mode'
 import { findNode, findParent } from './tree-query'
 import { useBlockTextDraft } from './use-block-text-draft'
+
+/** Задано ли что-то из «Дополнительно»: min/max-width, min-height или свободный flex (не по умолчанию). */
+function hasAdvanced(self: SelfProps): boolean {
+  const limits = [self.minWidth, self.maxWidth, self.minHeight].some((value) => value !== undefined)
+  return limits || displayChildFlex(self.flex) !== displayChildFlex(undefined)
+}
 
 /** Возвращает поля секции для шаблона; блока без родителя (корня) здесь нет — секцию не показывают. */
 export function useCanvasPropsChild() {
@@ -56,9 +67,64 @@ export function useCanvasPropsChild() {
   }
 
   const flexCustom = textField('flex', normalizeChildFlex, displayChildFlex)
-  const width = textField('width', normalizeChildSize)
-  const height = textField('height', normalizeChildSize)
+  const minWidth = textField('minWidth', normalizeChildSize)
+  const maxWidth = textField('maxWidth', normalizeChildSize)
   const minHeight = textField('minHeight', normalizeChildSize)
+
+  /** Ось — главная ось flex-родителя (там «Заполнить» — это flex, а не растяжение). */
+  function isMain(axis: SizeAxis): boolean {
+    const container = parent.value?.container
+    return container?.kind === 'flex' && mainAxis(container.direction) === axis
+  }
+
+  /** Режим размера по оси (сегменты); запись меняет режим, у «Авто» и «Заполнить» число стирается. */
+  function modeField(axis: SizeAxis): WritableComputedRef<SizeMode | null> {
+    return computed({
+      /** Читает режим из документа. */
+      get: () => (node.value ? sizeMode(node.value.self, axis) : null),
+      /** Пишет режим. */
+      set: (mode) => {
+        if (node.value && mode !== null)
+          writeSelf(node.value.id, (self) => withSizeMode(self, axis, mode, isMain(axis)))
+      },
+    })
+  }
+
+  /** Число фиксированного размера (черновик, Enter/blur); пустое — фиксированный без числа. */
+  function valueField(axis: SizeAxis) {
+    return useBlockTextDraft(
+      () => (node.value ? { id: node.value.id, value: node.value.self[axis] ?? '' } : null),
+      { multiline: false, normalize: normalizeChildSize },
+      (id, value) => {
+        writeSelf(id, (self) => withSizeValue(self, axis, value))
+      },
+    )
+  }
+
+  /** Подсказка под режимом: что он даст в экспорте (у «Заполнить» — по оси родителя). */
+  function modeHint(axis: SizeAxis, mode: ComputedRef<SizeMode | null>): ComputedRef<string> {
+    return computed(() => {
+      if (mode.value === 'content' || mode.value === null) return CHILD_SIZE_MODE_HINTS.content
+      if (mode.value === 'fixed') return CHILD_SIZE_MODE_HINTS.fixed
+      if (gridParent.value) return CHILD_SIZE_MODE_HINTS.fillGrid
+      return isMain(axis) ? CHILD_SIZE_MODE_HINTS.fillMain : CHILD_SIZE_MODE_HINTS.fillCross
+    })
+  }
+
+  const widthMode = modeField('width')
+  const heightMode = modeField('height')
+  const widthValue = valueField('width')
+  const heightValue = valueField('height')
+
+  /** Раскрывашка «Дополнительно»: открыта, если у блока задано что-то из неё (при смене выделения). */
+  const advancedOpen = ref(false)
+  watch(
+    () => node.value?.id,
+    () => {
+      advancedOpen.value = node.value !== null && hasAdvanced(node.value.self)
+    },
+    { immediate: true },
+  )
 
   /** Быстрое значение `flex`: у пустого значения показывается `0 1 auto`; применяется сразу. */
   const flexPreset: WritableComputedRef<string | null> = computed({
@@ -101,14 +167,27 @@ export function useCanvasPropsChild() {
     flexError: flexCustom.error,
     applyFlex: flexCustom.apply,
     onFlexKeydown: flexCustom.onKeydown,
-    width: width.draft,
-    widthError: width.error,
-    applyWidth: width.apply,
-    onWidthKeydown: width.onKeydown,
-    height: height.draft,
-    heightError: height.error,
-    applyHeight: height.apply,
-    onHeightKeydown: height.onKeydown,
+    widthMode,
+    heightMode,
+    widthHint: modeHint('width', widthMode),
+    heightHint: modeHint('height', heightMode),
+    widthValue: widthValue.draft,
+    widthValueError: widthValue.error,
+    applyWidthValue: widthValue.apply,
+    onWidthValueKeydown: widthValue.onKeydown,
+    heightValue: heightValue.draft,
+    heightValueError: heightValue.error,
+    applyHeightValue: heightValue.apply,
+    onHeightValueKeydown: heightValue.onKeydown,
+    minWidth: minWidth.draft,
+    minWidthError: minWidth.error,
+    applyMinWidth: minWidth.apply,
+    onMinWidthKeydown: minWidth.onKeydown,
+    maxWidth: maxWidth.draft,
+    maxWidthError: maxWidth.error,
+    applyMaxWidth: maxWidth.apply,
+    onMaxWidthKeydown: maxWidth.onKeydown,
+    advancedOpen,
     minHeight: minHeight.draft,
     minHeightError: minHeight.error,
     applyMinHeight: minHeight.apply,

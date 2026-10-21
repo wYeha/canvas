@@ -1,5 +1,6 @@
 /** Чистая логика секции «Контейнер»: варианты переключателей, смена типа flex↔grid с переносом значений, повороты иконок. Без Vue. */
 import {
+  GAP_TOKENS,
   FLEX_ALIGN_VALUES,
   FLEX_DIRECTIONS,
   FLEX_JUSTIFY_VALUES,
@@ -116,20 +117,16 @@ export function asContainerKind(value: string | null): ContainerKind | null {
   return asOneOf(CONTAINER_KINDS, value)
 }
 
-/** Переводит flex в grid: align → alignItems, остальное — по умолчанию. */
+/** Переводит flex в grid: align → alignItems, зазор сохраняется, остальное — по умолчанию. */
 function flexToGrid(container: FlexContainer): GridContainer {
-  return {
-    ...createGridContainer(),
-    alignItems: FLEX_TO_GRID_ALIGN[container.align],
-  }
+  const grid: GridContainer = { ...createGridContainer(), alignItems: FLEX_TO_GRID_ALIGN[container.align] }
+  return container.gap === undefined ? grid : { ...grid, gap: container.gap }
 }
 
-/** Переводит grid во flex: alignItems → align, остальное — по умолчанию. */
+/** Переводит grid во flex: alignItems → align, зазор сохраняется, остальное — по умолчанию. */
 function gridToFlex(container: GridContainer): FlexContainer {
-  return {
-    ...createFlexContainer(),
-    align: GRID_TO_FLEX_ALIGN[container.alignItems],
-  }
+  const flex: FlexContainer = { ...createFlexContainer(), align: GRID_TO_FLEX_ALIGN[container.alignItems] }
+  return container.gap === undefined ? flex : { ...flex, gap: container.gap }
 }
 
 /** Меняет тип контейнера, перенося совместимые значения; тот же тип возвращается как есть. */
@@ -148,4 +145,12 @@ export function iconOrientation(direction: FlexDirection, axis: AlignAxis): stri
   if (direction === 'row-reverse') return 'mirror'
   if (direction === 'column') return 'column'
   return direction === 'column-reverse' ? 'column-reverse' : null
+}
+
+/** Контейнер с токеном зазора; `GAP_NONE` и чужое значение стирают поле (вход не меняется). */
+export function withGap(container: Container, value: string | null): Container {
+  const token = GAP_TOKENS.find((item) => item === value)
+  const base: Container = { ...container }
+  Reflect.deleteProperty(base, 'gap')
+  return token === undefined ? base : { ...base, gap: token }
 }

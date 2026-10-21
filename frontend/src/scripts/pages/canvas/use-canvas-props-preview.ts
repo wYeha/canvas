@@ -2,6 +2,7 @@
 import { computed, type WritableComputedRef } from 'vue'
 import type { CanvasPlacement } from '@shared'
 import { useCameraStore } from './camera-store'
+import { FULL_SCREEN_PREVIEW_HEIGHT } from './constants'
 import { useLayoutStore } from './layout-store'
 import { activeWidthPreset, heightForMode, heightModeOf, previewHint } from './props-preview'
 
@@ -70,8 +71,24 @@ export function useCanvasPropsPreview() {
     },
   })
 
+  /**
+   * Корень — экран целиком (`height:100vh` в экспорте). При включении без заданной высоты превью она становится
+   * `FULL_SCREEN_PREVIEW_HEIGHT`, чтобы на поле было видно «экран».
+   */
+  const fullScreen: WritableComputedRef<boolean> = computed({
+    /** Читает флаг из стора. */
+    get: () => root.value?.canvas.fullScreen ?? false,
+    /** Пишет флаг (и высоту превью, если её не было). */
+    set: (value) => {
+      const current = root.value?.canvas.height ?? null
+      patch(
+        value && current === null ? { fullScreen: value, height: FULL_SCREEN_PREVIEW_HEIGHT } : { fullScreen: value },
+      )
+    },
+  })
+
   /** Подсказка под переключателем. */
   const hint = computed(() => previewHint(exportMaxWidth.value))
 
-  return { root, width, widthPreset, heightMode, height, exportMaxWidth, hint }
+  return { root, width, widthPreset, heightMode, height, exportMaxWidth, fullScreen, hint }
 }

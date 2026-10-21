@@ -1,8 +1,14 @@
-// Стили фрагмента canvas-props-child: поля секции «Как ребёнок» друг под другом
+// Стили фрагмента canvas-props-child: поля секции «Как ребёнок» друг под другом, раскрывашка «Дополнительно»
 @use 'variables' as v;
 
 .canvas-props-child {
   display: flex;
   flex-direction: column;
   gap: v.$space-12;
+
+  &__advanced-body {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-12;
+  }
 }

@@ -18,6 +18,11 @@
   background-size: v.$canvas-grid-step v.$canvas-grid-step; // стартовое значение, перебивается :style камеры
 
   &__world {
+    // Значения токенов зазора для превью; в экспорте те же переменные определяет корень вывода
+    --gap-s: #{v.$gap-s};
+    --gap-m: #{v.$gap-m};
+    --gap-l: #{v.$gap-l};
+
     position: absolute;
     top: 0;
     left: 0;

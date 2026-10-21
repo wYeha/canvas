@@ -15,6 +15,7 @@ import {
   CSS_DEFAULT_FLEX,
   DEFAULT_DOCUMENT_NAME,
   DEFAULT_FLEX,
+  DEFAULT_GAP,
   DEFAULT_GRID,
   DEFAULT_REPEAT,
   DEFAULT_ROOT_FLEX_DIRECTION,
@@ -44,7 +45,7 @@ export function createGridContainer(): GridContainer {
   return { kind: 'grid', ...DEFAULT_GRID }
 }
 
-/** Создаёт пустой блок с flex- или grid-контейнером; «как ребёнок» `flex` сразу равен `0 1 auto`. */
+/** Создаёт пустой блок с flex- или grid-контейнером и средним зазором; «как ребёнок» `flex` сразу равен `0 1 auto`. */
 export function createBlock(kind: ContainerKind, label: string): BlockNode {
   return {
     id: createId(),
@@ -52,7 +53,7 @@ export function createBlock(kind: ContainerKind, label: string): BlockNode {
     label,
     description: '',
     tag: DEFAULT_TAG,
-    container: kind === 'flex' ? createFlexContainer() : createGridContainer(),
+    container: { ...(kind === 'flex' ? createFlexContainer() : createGridContainer()), gap: DEFAULT_GAP },
     self: { flex: CSS_DEFAULT_FLEX },
     repeat: DEFAULT_REPEAT,
     children: [],

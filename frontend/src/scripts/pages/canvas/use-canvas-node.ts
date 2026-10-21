@@ -3,7 +3,7 @@
  * связь — плашка с именем источника, а в живом зеркале — содержимое источника (копиями, клик выделяет связь).
  */
 import { computed, type ComputedRef } from 'vue'
-import { isLinkBlock, type BlockNode, type NodeId } from '@shared'
+import { isLinkBlock, type BlockNode, type ContainerKind, type FlexContainer, type NodeId } from '@shared'
 import type { CanvasNodeProps } from './canvas-node.types'
 import { REPEAT_RENDER_BUDGET } from './constants'
 import { useDragStore } from './dnd/drag-store'
@@ -34,6 +34,9 @@ export interface NodeView {
   children: RenderChild[]
   /** Связь показана живым зеркалом: дети — содержимое источника, вложенные связи внутри — плашками. */
   mirror: boolean
+  /** Контейнер, в котором лежат дети (у зеркала — контейнер источника): вид и направление для их стилей. */
+  childKind: ContainerKind
+  childDirection: FlexContainer['direction'] | undefined
 }
 
 /** Результат `useCanvasNode`: вид узла, его итоговые классы (с состоянием перетаскивания) и атрибуты пометки. */
@@ -88,7 +91,7 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
     const childrenCopyOf = source === null ? copyOf.value : (copyOf.value ?? node.id)
     return {
       classes,
-      style: toStyleObject(styleEntries(shown, parentKind)),
+      style: toStyleObject(styleEntries(shown, parentKind, props.parentDirection)),
       icon: directionIcon(shown),
       label: nodeLabel(),
       // У корня ×N не показываем: повтор корня не рисуется и не экспортируется
@@ -96,6 +99,8 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
       leaf: isLeafBlock(shown),
       children: renderChildren(shown.children, childrenCopyOf, props.copyBudget ?? REPEAT_RENDER_BUDGET),
       mirror: source !== null,
+      childKind: shown.container.kind,
+      childDirection: shown.container.kind === 'flex' ? shown.container.direction : undefined,
     }
   })
 

@@ -7,6 +7,7 @@ import {
   isLinkBlock,
   type BlockNode,
   type ContainerKind,
+  type FlexContainer,
   type LayoutDocument,
   type LayoutNode,
   type NodeId,
@@ -23,7 +24,7 @@ import {
   rootHeaderComment,
   warningComments,
 } from './export-comment'
-import { usedComponents } from './export-components'
+import { gapVarEntries, usedComponents, usedGaps } from './export-components'
 import { closeTag, exportStyleEntries, openTag, rootExportEntries, safeStyle, safeTag } from './export-style'
 import type { CommentParts, RootOrder } from './export-types'
 import { EXPORT_INDENT, EXPORT_NEWLINE } from './export-constants'
@@ -32,6 +33,8 @@ import { EXPORT_INDENT, EXPORT_NEWLINE } from './export-constants'
 interface BlockRender {
   block: BlockNode
   parentKind: ContainerKind | null
+  /** Направление flex-родителя: главная ось для режимов размера. */
+  parentDirection: FlexContainer['direction'] | undefined
   depth: number
   comment: CommentParts
   /** Export-only свойства после `exportStyleEntries` (только у корня с `exportMaxWidth`). */
@@ -51,10 +54,11 @@ interface ElementFrame {
 function blockLines(doc: LayoutDocument, render: BlockRender, frame: ElementFrame): string[] {
   const { block, depth, comment, sources } = render
   const kind = block.container.kind
+  const parentDirection = block.container.kind === 'flex' ? block.container.direction : undefined
   return [
     ...formatComment(comment.head, comment.body, frame.indent),
     `${frame.indent}${frame.open}`,
-    ...block.children.flatMap((child) => exportNodeLines(doc, child, kind, depth + 1, sources)),
+    ...block.children.flatMap((child) => exportNodeLines(doc, child, kind, depth + 1, { sources, parentDirection })),
     `${frame.indent}${frame.close}`,
   ]
 }
@@ -74,9 +78,9 @@ function leafLines(comment: CommentParts, frame: ElementFrame): string[] {
 
 /** Блок целиком: проверенные стиль и тег, предупреждения перед элементом, затем контейнер или лист. */
 function renderBlock(doc: LayoutDocument, render: BlockRender): string[] {
-  const { block, parentKind, depth, extraEntries } = render
+  const { block, parentKind, parentDirection, depth, extraEntries } = render
   const indent = EXPORT_INDENT.repeat(depth)
-  const { style, dropped } = safeStyle([...exportStyleEntries(block, parentKind), ...extraEntries])
+  const { style, dropped } = safeStyle([...exportStyleEntries(block, parentKind, parentDirection), ...extraEntries])
   const { tag, replaced } = safeTag(block.tag)
   // У корня повтора нет (в модели он всегда 1), у вложенного блока и места связи — повтор блока
   const frame: ElementFrame = { indent, open: openTag(tag, style, repeatCount(block)), close: closeTag(tag) }
@@ -105,17 +109,30 @@ function linkRender(
 }
 
 /**
- * Строки узла с поддеревом на глубине `depth`; `parentKind` — вид контейнера реального родителя (`null` у корня).
- * `sources` — корни, внутри которых уже идёт вывод (для связей: источник не подставляется сам в себя).
+ * Окружение узла в выводе: корни, внутри которых уже идёт вывод (для связей: источник не подставляется сам в себя),
+ * направление flex-родителя и export-only свойства элемента (определения переменных зазора у верхнего элемента).
  */
+export interface NodeLinesContext {
+  sources?: readonly NodeId[]
+  parentDirection?: FlexContainer['direction']
+  extraEntries?: readonly StyleEntry[]
+}
+
+/** Строки узла с поддеревом на глубине `depth`; `parentKind` — вид контейнера реального родителя (`null` у корня). */
 export function exportNodeLines(
   doc: LayoutDocument,
   node: LayoutNode,
   parentKind: ContainerKind | null,
   depth: number,
-  sources: readonly NodeId[] = [],
+  context: NodeLinesContext = {},
 ): string[] {
-  const base = { parentKind, depth, extraEntries: [], sources }
+  const base = {
+    parentKind,
+    parentDirection: context.parentDirection,
+    depth,
+    extraEntries: context.extraEntries ?? [],
+    sources: context.sources ?? [],
+  }
   const render = linkRender(doc, node, base) ?? { ...base, block: node, comment: nodeCommentParts(node) }
   return renderBlock(doc, render)
 }
@@ -131,9 +148,10 @@ export function exportRootLines(doc: LayoutDocument, entry: RootEntry, order?: R
     ...renderBlock(doc, {
       block: entry.node,
       parentKind: null,
+      parentDirection: undefined,
       depth: 0,
       comment: { head: '', body: [] },
-      extraEntries: rootExportEntries(entry.canvas),
+      extraEntries: [...rootExportEntries(entry.canvas), ...gapVarEntries(usedGaps(doc, [entry.node]))],
       sources: [entry.node.id],
     }),
   ]

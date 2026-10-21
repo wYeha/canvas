@@ -6,6 +6,7 @@ import {
   type CanvasPlacement,
   type Container,
   type ContainerKind,
+  type FlexContainer,
 } from '@shared'
 import { CSS_DEFAULT_GRID_ROWS, CSS_PX_UNIT, DEFAULT_FLEX, DEFAULT_GRID } from '@/scripts/pages/canvas/constants'
 import { containerEntries, styleEntries, toInlineStyle, type StyleEntry } from '@/scripts/pages/canvas/node-style'
@@ -13,6 +14,7 @@ import { escapeHtmlAttr } from './export-escape'
 import {
   EXPORT_CSS_PROPERTY_PATTERN,
   EXPORT_FALLBACK_TAG,
+  EXPORT_FULL_SCREEN_HEIGHT,
   EXPORT_REPEAT_ATTR,
   EXPORT_ROOT_MARGIN,
 } from './export-constants'
@@ -53,10 +55,14 @@ function isDefaultContainer(container: Container): boolean {
  * с контейнером по умолчанию — это шум, раскладывать нечего. Иначе — `styleEntries` целиком.
  * Контейнерная часть в `styleEntries` всегда идёт первой, поэтому отрезается по длине `containerEntries`.
  */
-export function exportStyleEntries(block: BlockNode, parentKind: ContainerKind | null): StyleEntry[] {
-  const entries = styleEntries(block, parentKind)
+export function exportStyleEntries(
+  block: BlockNode,
+  parentKind: ContainerKind | null,
+  parentDirection?: FlexContainer['direction'],
+): StyleEntry[] {
+  const entries = styleEntries(block, parentKind, parentDirection)
   if (block.children.length > 0 || !isDefaultContainer(block.container)) return entries
-  return entries.slice(containerEntries(block.container).length)
+  return entries.slice(containerEntries(block.container, block.children.length).length)
 }
 
 /**
@@ -74,13 +80,14 @@ export function safeStyle(entries: readonly StyleEntry[]): SafeStyle {
   return { style: escapeHtmlAttr(toInlineStyle(kept)), dropped }
 }
 
-/** Export-only свойства корня: `max-width` по ширине превью и `margin:0 auto`, только при `exportMaxWidth`. */
+/**
+ * Export-only свойства корня: `height:100vh` у корня «экран целиком»; `max-width` по ширине превью и `margin:0 auto`
+ * при `exportMaxWidth`.
+ */
 export function rootExportEntries(placement: CanvasPlacement): StyleEntry[] {
-  if (!placement.exportMaxWidth) return []
-  return [
-    ['max-width', `${String(placement.width)}${CSS_PX_UNIT}`],
-    ['margin', EXPORT_ROOT_MARGIN],
-  ]
+  const entries: StyleEntry[] = placement.fullScreen === true ? [['height', EXPORT_FULL_SCREEN_HEIGHT]] : []
+  if (!placement.exportMaxWidth) return entries
+  return [...entries, ['max-width', `${String(placement.width)}${CSS_PX_UNIT}`], ['margin', EXPORT_ROOT_MARGIN]]
 }
 
 /** Тег из списка `LAYOUT_TAGS` остаётся, любой другой заменяется на `div`. */

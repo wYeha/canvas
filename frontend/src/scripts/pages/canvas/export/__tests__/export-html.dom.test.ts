@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   isLinkBlock,
   type BlockNode,
-  type ContainerKind,
+  type Container,
   type LayoutDocument,
   type LayoutNode,
   type LayoutTag,
@@ -16,6 +16,7 @@ import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import { createBlock, createDocument, createGridContainer } from '@/scripts/pages/canvas/factories'
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
 import { toInlineStyle } from '@/scripts/pages/canvas/node-style'
+import { gapVarEntries, usedGaps } from '@/scripts/pages/canvas/export/export-components'
 import { exportRootHtml } from '@/scripts/pages/canvas/export/export-html'
 import { exportStyleEntries, rootExportEntries } from '@/scripts/pages/canvas/export/export-style'
 import { docOf, root, smallTree } from './export-fixture'
@@ -42,19 +43,21 @@ function exported(doc: LayoutDocument | null, node: LayoutNode): LayoutNode {
 function expectMatches(
   element: Element,
   modelNode: LayoutNode,
-  parentKind: ContainerKind | null,
+  parent: Container | null,
   extra = '',
   doc: LayoutDocument | null = null,
 ): void {
   const node = exported(doc, modelNode)
-  const style = [toInlineStyle(exportStyleEntries(node, parentKind)), extra].filter((part) => part !== '').join('; ')
+  const direction = parent?.kind === 'flex' ? parent.direction : undefined
+  const own = toInlineStyle(exportStyleEntries(node, parent?.kind ?? null, direction))
+  const style = [own, extra].filter((part) => part !== '').join('; ')
   expect(element.getAttribute('style') ?? '').toBe(style)
   expect(element.tagName.toLowerCase()).toBe(node.tag)
   expect(element.children.length).toBe(node.children.length)
   node.children.forEach((child, index) => {
     const childElement = element.children.item(index)
     if (!childElement) throw new Error('Нет элемента для ребёнка')
-    expectMatches(childElement, child, node.container.kind, '', doc)
+    expectMatches(childElement, child, node.container, '', doc)
   })
 }
 
@@ -87,7 +90,8 @@ describe('round-trip', () => {
     for (const entry of doc.roots) {
       const dom = parse(exportRootHtml(doc, entry))
       expect(dom.body.children.length).toBe(1)
-      expectMatches(rootElement(dom), entry.node, null, '', doc)
+      const gapVars = toInlineStyle([...rootExportEntries(entry.canvas), ...gapVarEntries(usedGaps(doc, [entry.node]))])
+      expectMatches(rootElement(dom), entry.node, null, gapVars, doc)
     }
   })
 

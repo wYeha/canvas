@@ -7,7 +7,10 @@ import { styleEntries, toInlineStyle, toStyleObject } from '@/scripts/pages/canv
 /** Блок нужного вида с подмешанными полями контейнера и self. */
 function make(kind: ContainerKind, container: object = {}, extra: Partial<BlockNode> = {}): BlockNode {
   const node = createBlock(kind, 'x')
-  return { ...node, ...extra, container: { ...node.container, ...container } }
+  // Без зазора по умолчанию (у нового блока M): тесты проверяют остальные свойства; gap — отдельно
+  const base: Record<string, unknown> = { ...node.container }
+  Reflect.deleteProperty(base, 'gap')
+  return { ...node, ...extra, container: { ...base, ...container } as BlockNode['container'] }
 }
 
 /** Стили узла как объект: удобно сравнивать. */
@@ -31,7 +34,7 @@ describe('flex', () => {
     })
   })
 
-  it('gap не выводится никогда: он только редакторский', () => {
+  it('без токена gap не выводится (редакторский минимум — только классом)', () => {
     expect(styleEntries(make('flex'), null).map(([property]) => property)).not.toContain('gap')
     expect(styleEntries(make('grid'), null).map(([property]) => property)).not.toContain('gap')
   })
@@ -81,11 +84,12 @@ describe('self', () => {
     })
   })
 
-  it('grid-родитель: span, height, min-height; flex и width игнорируются', () => {
+  it('grid-родитель: span, фиксированные width и height, min-height; flex игнорируется', () => {
     expect(styles(make('flex', {}, { self: full }), 'grid')).toEqual({
       display: 'flex',
       'grid-column': 'span 2',
       'grid-row': 'span 3',
+      width: '200px',
       height: '50%',
       'min-height': '10px',
     })
@@ -175,5 +179,64 @@ describe('порядок и сериализация', () => {
 
   it('toInlineStyle пустого списка — пустая строка', () => {
     expect(toInlineStyle([])).toBe('')
+  })
+})
+
+describe('режимы размера (этап 14)', () => {
+  /** Стили ребёнка с `self` во flex-родителе с направлением `direction`. */
+  function child(self: SelfProps, direction: 'row' | 'column' | 'row-reverse' = 'row') {
+    return toStyleObject(styleEntries(make('flex', {}, { self }), 'flex', direction))
+  }
+
+  it('заполнить по главной оси: flex 1 1 0 и минимум 0 по ней', () => {
+    expect(child({ widthMode: 'fill' })).toEqual({ display: 'flex', flex: '1 1 0', 'min-width': '0' })
+    expect(child({ heightMode: 'fill' }, 'column')).toEqual({ display: 'flex', flex: '1 1 0', 'min-height': '0' })
+    expect(child({ widthMode: 'fill' }, 'row-reverse')).toEqual({ display: 'flex', flex: '1 1 0', 'min-width': '0' })
+  })
+
+  it('заполнить по поперечной оси: align-self stretch', () => {
+    expect(child({ widthMode: 'fill' }, 'column')).toEqual({ display: 'flex', 'align-self': 'stretch' })
+  })
+
+  it('фиксированный по главной оси: flex none и число; без числа — только flex none', () => {
+    expect(child({ widthMode: 'fixed', width: '360px' })).toEqual({ display: 'flex', flex: 'none', width: '360px' })
+    expect(child({ widthMode: 'fixed' })).toEqual({ display: 'flex', flex: 'none' })
+    expect(child({ heightMode: 'fixed', height: '48px' })).toEqual({ display: 'flex', height: '48px' })
+  })
+
+  it('свободный flex важнее режима, явный минимум важнее автоматического 0', () => {
+    expect(child({ widthMode: 'fill', flex: '2 1 0' })).toEqual({ display: 'flex', flex: '2 1 0' })
+    expect(child({ widthMode: 'fill', minWidth: '120px' })).toEqual({
+      display: 'flex',
+      flex: '1 1 0',
+      'min-width': '120px',
+    })
+  })
+
+  it('min-width и max-width', () => {
+    expect(child({ minWidth: '0', maxWidth: '640px' })).toEqual({
+      display: 'flex',
+      'min-width': '0',
+      'max-width': '640px',
+    })
+  })
+
+  it('grid-родитель: заполнить — растяжение в ячейке', () => {
+    expect(styles(make('flex', {}, { self: { widthMode: 'fill', heightMode: 'fill' } }), 'grid')).toEqual({
+      display: 'flex',
+      'justify-self': 'stretch',
+      'align-self': 'stretch',
+    })
+  })
+
+  it('gap токеном — через переменную', () => {
+    const pair = { children: [createBlock('flex', 'a'), createBlock('flex', 'b')] }
+    expect(styles(make('grid', { gap: 'l' }, pair))).toEqual({
+      display: 'grid',
+      'grid-template-columns': 'repeat(2, 1fr)',
+      gap: 'var(--gap-l)',
+    })
+    // У листа и единственного ребёнка зазор ничего не делает и не выводится
+    expect(styles(make('grid', { gap: 'l' }, { children: [createBlock('flex', 'a')] }))).not.toHaveProperty('gap')
   })
 })

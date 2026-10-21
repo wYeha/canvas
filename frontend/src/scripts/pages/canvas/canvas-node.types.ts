@@ -1,5 +1,5 @@
 /** Типы фрагментов CanvasNode и CanvasRoot: пропсы рекурсивного узла и корня на поле. */
-import type { ContainerKind, LayoutNode, NodeId, RootEntry } from '@shared'
+import type { ContainerKind, FlexContainer, LayoutNode, NodeId, RootEntry } from '@shared'
 
 /**
  * Пропсы рекурсивного узла: сам узел, глубина (корень — 0) и вид контейнера родителя (`null` у корня).
@@ -9,6 +9,8 @@ export interface CanvasNodeProps {
   node: LayoutNode
   depth: number
   parentKind: ContainerKind | null
+  /** Направление flex-родителя (главная ось для режимов размера); у grid-родителя и корня не задано. */
+  parentDirection?: FlexContainer['direction']
   copyOf?: NodeId | null
   copyRoot?: boolean
   /** Остаток бюджета копий повтора для поддерева настоящего блока; по умолчанию — весь бюджет (`REPEAT_RENDER_BUDGET`). */

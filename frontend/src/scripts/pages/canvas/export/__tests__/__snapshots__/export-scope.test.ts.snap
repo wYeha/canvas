@@ -5,46 +5,46 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
   «KPI-карточка»
   «Карточка графика»
 -->
-<!-- Корневой блок «Дашборд», ширина превью 1440px -->
-<div style="display:flex; flex-direction:column">
+<!-- Корневой блок «Дашборд», ширина превью 1440px, высота превью 900px, экран целиком (100vh), страница целиком не прокручивается — прокручиваются области внутри -->
+<div style="display:flex; flex-direction:column; gap:var(--gap-m); height:100vh; --gap-m:16px">
   <!-- header -->
-  <div style="display:flex; align-items:center">
-    <div style="width:120px"><!-- logo --></div>
+  <div style="display:flex; align-items:center; gap:var(--gap-m)">
+    <div style="flex:none; width:120px"><!-- logo --></div>
     <!-- nav -->
-    <div style="display:flex; flex:1">
+    <div style="display:flex; gap:var(--gap-m); flex:1 1 0; min-width:0">
       <div><!-- nav-item --></div>
       <div><!-- nav-item --></div>
       <div><!-- nav-item --></div>
     </div>
-    <div style="width:160px"><!-- user --></div>
+    <div style="flex:none; width:160px"><!-- user --></div>
   </div>
   <!-- body -->
-  <div style="display:grid; grid-template-columns:240px 1fr">
+  <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1 1 0; min-height:0">
     <!-- sidebar -->
-    <div style="display:flex; flex-direction:column">
+    <div style="display:flex; flex-direction:column; gap:var(--gap-m)">
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
       <div><!-- menu-item --></div>
     </div>
     <!-- main -->
-    <div style="display:flex; flex-direction:column">
+    <div style="display:flex; flex-direction:column; gap:var(--gap-m); justify-self:stretch; align-self:stretch">
       <!-- kpi-row -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr)">
         <!-- компонент «KPI-карточка» ×4 -->
-        <div data-repeat="4" style="display:flex; flex-direction:column">
+        <div data-repeat="4" style="display:flex; flex-direction:column; gap:var(--gap-m)">
           <div><!-- kpi-title --></div>
           <div><!-- kpi-value --></div>
         </div>
       </div>
       <!-- charts -->
-      <div style="display:grid; grid-template-columns:repeat(2, 1fr)">
+      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:var(--gap-m)">
         <!-- компонент «Карточка графика» -->
-        <div style="display:flex; flex-direction:column">
+        <div style="display:flex; flex-direction:column; gap:var(--gap-m)">
           <div><!-- chart-title --></div>
           <div style="min-height:180px"><!-- chart-area --></div>
         </div>
         <!-- компонент «Карточка графика» -->
-        <div style="display:flex; flex-direction:column">
+        <div style="display:flex; flex-direction:column; gap:var(--gap-m)">
           <div><!-- chart-title --></div>
           <div style="min-height:180px"><!-- chart-area --></div>
         </div>

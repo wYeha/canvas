@@ -12,8 +12,8 @@
   // (frontend.md §4.4), поэтому превью сознательно больше экспорта на этот отступ
   padding: v.$block-padding;
 
-  // Фиксированный редакторский зазор между детьми (flex и grid): в модели и экспорте gap нет (frontend.md §4.4).
-  // Раскладочные стили идут инлайном из node-style.ts без gap, поэтому класс не перебивается
+  // Редакторский минимум зазора у блока без токена gap (только превью, frontend.md §4.4): токен S/M/L приходит
+  // инлайном из node-style.ts (`gap: var(--gap-m)`) и перебивает класс
   gap: v.$block-gap;
   border-radius: v.$radius-block;
   outline: 1px solid color-mix(in srgb, var(--node-color) calc(var(--alpha-stroke) * 100%), transparent);

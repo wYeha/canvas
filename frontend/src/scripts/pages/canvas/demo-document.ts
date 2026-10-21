@@ -10,6 +10,7 @@ import {
   type NodeId,
   type RootEntry,
 } from '@shared'
+import { DEFAULT_GAP } from './constants'
 import { createBlock, createDocument, createLinkBlock } from './factories'
 
 /** Поля блока, которые демо переопределяет поверх значений по умолчанию. */
@@ -18,7 +19,9 @@ type BlockSpec = Partial<Omit<BlockNode, 'id' | 'type' | 'label' | 'children'>>
 /** Блок с подписью, настройками и детьми. */
 function block(label: string, spec: BlockSpec, children: LayoutNode[] = []): BlockNode {
   const base = createBlock('flex', label)
-  return { ...base, ...spec, self: { ...base.self, ...spec.self }, children }
+  // Контейнер демо — с зазором по умолчанию, как у нового блока
+  const container = { ...(spec.container ?? base.container), gap: DEFAULT_GAP }
+  return { ...base, ...spec, container, self: { ...base.self, ...spec.self }, children }
 }
 
 /** Flex-контейнер демо. */
@@ -54,13 +57,13 @@ function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
 /** Шапка дашборда: логотип, меню, пользователь. */
 function buildHeader(): BlockNode {
   return block('header', { container: flex('row', { align: 'center' }) }, [
-    block('logo', { self: { width: '120px' } }),
-    block('nav', { container: flex('row'), self: { flex: '1' } }, [
+    block('logo', { self: { widthMode: 'fixed', width: '120px' } }),
+    block('nav', { container: flex('row'), self: { widthMode: 'fill' } }, [
       block('nav-item', {}),
       block('nav-item', {}),
       block('nav-item', {}),
     ]),
-    block('user', { self: { width: '160px' } }),
+    block('user', { self: { widthMode: 'fixed', width: '160px' } }),
   ])
 }
 
@@ -75,7 +78,7 @@ function buildSidebar(): BlockNode {
 
 /** Основная область: ряд KPI (связь на KPI-карточку ×4), два графика (связи на карточку графика) и таблица. */
 function buildMain(kpiId: NodeId, chartId: NodeId): BlockNode {
-  return block('main', { container: flex('column'), self: { flex: '1' } }, [
+  return block('main', { container: flex('column'), self: { widthMode: 'fill', heightMode: 'fill' } }, [
     block('kpi-row', { container: grid('repeat(4, 1fr)') }, [{ ...createLinkBlock(kpiId), repeat: KPI_COUNT }]),
     block('charts', { container: grid('repeat(2, 1fr)') }, [createLinkBlock(chartId), createLinkBlock(chartId)]),
     block('table', { self: { minHeight: '240px' } }),
@@ -91,12 +94,22 @@ export function createDemoDocument(): LayoutDocument {
   ])
   const dashboard = block('Дашборд', { container: flex('column') }, [
     buildHeader(),
-    block('body', { container: grid('240px 1fr') }, [buildSidebar(), buildMain(kpi.id, chartCard.id)]),
+    block('body', { container: grid('240px 1fr'), self: { heightMode: 'fill' } }, [
+      buildSidebar(),
+      buildMain(kpi.id, chartCard.id),
+    ]),
   ])
   return {
     ...createDocument('Дашборд аналитики'),
     schemaVersion: SCHEMA_VERSION,
     labelCounter: 0,
-    roots: [root(dashboard, 80, 80, 1440), root(kpi, 1600, 80, 240), root(chartCard, 1600, 360, 480)],
+    roots: [
+      {
+        ...root(dashboard, 80, 80, 1440),
+        canvas: { ...root(dashboard, 80, 80, 1440).canvas, height: 900, fullScreen: true },
+      },
+      root(kpi, 1600, 80, 240),
+      root(chartCard, 1600, 360, 480),
+    ],
   }
 }

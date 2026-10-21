@@ -25,6 +25,12 @@ export const FLEX_ALIGN_VALUES = ['flex-start', 'center', 'flex-end', 'stretch',
 /** Значения `justify-items` и `align-items` в grid-контейнере. */
 export const GRID_ALIGN_VALUES = ['start', 'center', 'end', 'stretch'] as const
 
+/** Режимы размера по оси «как ребёнок», кроме «по содержимому» (это отсутствие поля): заполнить или фиксированный. */
+export const SIZE_MODES = ['fill', 'fixed'] as const
+
+/** Токены зазора между детьми контейнера (без поля — без зазора): маленький, средний, большой. */
+export const GAP_TOKENS = ['s', 'm', 'l'] as const
+
 /**
  * Тип узла-плашки из старых документов (до упрощения 8.1). Теперь связь — блок с `sourceId`, поэтому при разборе
  * такие узлы превращаются в блоки-связи; версия схемы не меняется.

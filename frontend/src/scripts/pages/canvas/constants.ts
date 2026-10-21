@@ -164,6 +164,30 @@ export const CSS_GRID_SPAN = 'span'
 /** Минимальный span, ниже которого `grid-column` / `grid-row` не выводятся. */
 export const CSS_MIN_SPAN = 1
 
+/** `flex` ребёнка в режиме «Заполнить» по главной оси родителя: растягивается, базис 0 (делит место поровну). */
+export const CSS_FLEX_FILL = '1 1 0'
+
+/** `flex` ребёнка в режиме «Фиксированный» по главной оси: не растягивается и не сжимается. */
+export const CSS_FLEX_NONE = 'none'
+
+/** Значение `align-self` / `justify-self` для «Заполнить» по поперечной оси и в grid. */
+export const CSS_STRETCH = 'stretch'
+
+/** `min-width` / `min-height` для «Заполнить» по главной оси: иначе длинное содержимое распирает блок. */
+export const CSS_MIN_ZERO = '0'
+
+/** Значения токенов зазора в px (TOKENS.md): превью и определения переменных в экспорте. */
+export const GAP_TOKEN_PX = { s: 8, m: 16, l: 32 } as const
+
+/** Префикс CSS-переменной зазора: `--gap-m`. */
+export const GAP_VAR_PREFIX = '--gap-'
+
+/** С какого числа детей зазор имеет смысл и выводится. */
+export const MIN_CHILDREN_FOR_GAP = 2
+
+/** Зазор новых блоков: средний (раньше у всех блоков был фиксированный редакторский 16px). */
+export const DEFAULT_GAP = 'm' as const
+
 /** Разделитель деклараций в инлайн-стиле для экспорта. */
 export const INLINE_STYLE_SEPARATOR = '; '
 
@@ -461,6 +485,16 @@ export const PREVIEW_HEIGHT_VALUE_LABEL = 'Высота, px'
 /** Подпись переключателя экспорта как max-width. */
 export const PREVIEW_MAX_WIDTH_LABEL = 'Экспортировать как max-width'
 
+/** Подпись переключателя «экран целиком» у корня. */
+export const PREVIEW_FULL_SCREEN_LABEL = 'Экран целиком (100vh)'
+
+/** Подсказка переключателя «экран целиком». */
+export const PREVIEW_FULL_SCREEN_HINT =
+  'В экспорте height: 100vh — страница целиком не прокручивается, прокрутка внутри областей'
+
+/** Высота превью корня при включении «экран целиком», если высота не задана: типичный экран ноутбука. */
+export const FULL_SCREEN_PREVIEW_HEIGHT = 900
+
 /** Подсказка под переключателем, когда max-width выключен. */
 export const PREVIEW_HINT_OFF = 'Ширина превью в код не попадает — только комментарием'
 
@@ -553,6 +587,57 @@ export const CHILD_ROW_SPAN_LABEL = 'row span'
 
 /** Подпись поля `repeat` (сколько раз блок повторяется на канвасе и `×N` в экспорте). */
 export const CHILD_REPEAT_LABEL = 'Повтор'
+
+/** Подписи полей режима размера. */
+export const CHILD_SIZE_LABELS = { width: 'Ширина', height: 'Высота' } as const
+
+/** Сегменты режима размера: по содержимому, заполнить, фиксированный. */
+export const CHILD_SIZE_MODE_OPTIONS = [
+  { value: 'content', label: 'Авто' },
+  { value: 'fill', label: 'Заполнить' },
+  { value: 'fixed', label: 'Фикс.' },
+] as const
+
+/** Подсказки режимов размера под полем: что попадёт в экспорт. */
+export const CHILD_SIZE_MODE_HINTS = {
+  content: 'по содержимому — размер не задаётся',
+  fillMain: 'делит свободное место с соседями (flex: 1, min-…: 0)',
+  fillCross: 'растягивается на всю ширину/высоту родителя',
+  fillGrid: 'растягивается на всю ячейку',
+  fixed: 'не тянется и не сжимается; число необязательно',
+} as const
+
+/** Подпись поля числа фиксированного размера. */
+export const CHILD_SIZE_VALUE_LABELS = { width: 'Ширина, число', height: 'Высота, число' } as const
+
+/** Пример в пустом поле числа фиксированного размера. */
+export const CHILD_SIZE_VALUE_PLACEHOLDER = 'необязательно, напр. 360px'
+
+/** Заголовок раскрывашки редких свойств «как ребёнок». */
+export const CHILD_ADVANCED_TITLE = 'Дополнительно'
+
+/** Подпись поля зазора между детьми контейнера. */
+export const CONTAINER_GAP_LABEL = 'Зазор (gap)'
+
+/** Значение сегмента «без зазора». */
+export const GAP_NONE = 'none'
+
+/** Сегменты зазора: нет, S, M, L (значения — в TOKENS.md, в экспорте — переменными). */
+export const CONTAINER_GAP_OPTIONS = [
+  { value: GAP_NONE, label: 'Нет' },
+  { value: 's', label: 'S' },
+  { value: 'm', label: 'M' },
+  { value: 'l', label: 'L' },
+] as const
+
+/** Подсказка поля зазора. */
+export const CONTAINER_GAP_HINT = 'S 8 · M 16 · L 32 px; в экспорте — var(--gap-…), без пикселей в описаниях'
+
+/** Подпись поля min-width. */
+export const CHILD_MIN_WIDTH_LABEL = 'min-width'
+
+/** Подпись поля max-width. */
+export const CHILD_MAX_WIDTH_LABEL = 'max-width'
 
 /** Минимальный span (1 = не задан). */
 export const CHILD_SPAN_MIN = 1

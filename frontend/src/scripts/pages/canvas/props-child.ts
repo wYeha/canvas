@@ -16,7 +16,7 @@ import {
 } from './constants'
 
 /** Ключи `self`, которые правятся текстом. */
-export type SelfTextKey = 'flex' | 'width' | 'height' | 'minHeight'
+export type SelfTextKey = 'flex' | 'width' | 'height' | 'minWidth' | 'maxWidth' | 'minHeight'
 
 /** Ключи `self`, которые правятся числом (span в grid). */
 export type SelfSpanKey = 'colSpan' | 'rowSpan'

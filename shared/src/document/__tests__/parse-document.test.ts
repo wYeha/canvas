@@ -217,9 +217,37 @@ describe('отбрасывание gap', () => {
     const result = parseDocument(documentOf({ ...flexWithGap, children: [gridWithGap] } as unknown as BlockNode))
     if (!result.ok) throw new Error(result.error)
     const root = result.document.roots[0]?.node
-    expect(root?.container).not.toHaveProperty('gap')
+    // Числовой gap до 8.4 — «без зазора»: значение undefined, при сохранении ключ исчезает
+    expect(root?.container.gap).toBeUndefined()
+    expect(JSON.parse(JSON.stringify(root?.container))).not.toHaveProperty('gap')
     expect(root?.children[0]?.container).not.toHaveProperty('columnGap')
     expect(root?.children[0]?.container).not.toHaveProperty('rowGap')
+  })
+
+  it('принимает gap токеном s/m/l', () => {
+    const doc = documentOf({ ...block('a'), container: { ...block('a').container, gap: 'm' } })
+    const result = parseDocument(doc)
+    if (!result.ok) throw new Error(result.error)
+    expect(result.document.roots[0]?.node.container.gap).toBe('m')
+  })
+})
+
+describe('режимы размера и экран целиком', () => {
+  it('принимает режимы ширины/высоты, min/max-width и fullScreen корня', () => {
+    const child = { ...block('c'), self: { widthMode: 'fill', heightMode: 'fixed', minWidth: '0', maxWidth: '640px' } }
+    const doc = documentOf(block('a', [child as BlockNode]))
+    const [root] = doc.roots
+    if (!root) throw new Error('нет корня')
+    const result = parseDocument({ ...doc, roots: [{ ...root, canvas: { ...root.canvas, fullScreen: true } }] })
+    if (!result.ok) throw new Error(result.error)
+    expect(result.document.roots[0]?.node.children[0]?.self).toEqual(child.self)
+    expect(result.document.roots[0]?.canvas.fullScreen).toBe(true)
+  })
+
+  it('отклоняет неизвестный режим размера', () => {
+    expect(
+      errorOf(documentOf(block('a', [{ ...block('c'), self: { widthMode: 'stretch' } } as unknown as BlockNode]))),
+    ).toContain('widthMode')
   })
 })
 

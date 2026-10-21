@@ -35,7 +35,10 @@ function isSubsequence(part: readonly StyleEntry[], whole: readonly StyleEntry[]
 describe('exportStyleEntries', () => {
   it('пустой лист с контейнером по умолчанию: без контейнерной части, self остаётся', () => {
     expect(exportStyleEntries(make('flex'), 'flex')).toEqual([])
-    expect(exportStyleEntries(make('grid', { self: { width: '120px' } }), 'flex')).toEqual([['width', '120px']])
+    expect(exportStyleEntries(make('grid', { self: { width: '120px' } }), 'flex')).toEqual([
+      ['flex', 'none'],
+      ['width', '120px'],
+    ])
   })
 
   it('пустые и auto rows у grid по умолчанию считаются умолчанием', () => {

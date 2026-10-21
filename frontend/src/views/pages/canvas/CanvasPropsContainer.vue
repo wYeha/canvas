@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: секция «Контейнер» — тип flex/grid и flex- и grid-поля -->
+<!-- Фрагмент страницы canvas: секция «Контейнер» — тип flex/grid, зазор (gap) и flex- и grid-поля -->
 <template>
   <div v-if="block" class="canvas-props-container">
     <UiField v-slot="{ id, describedBy }" :label="CONTAINER_KIND_LABEL">
@@ -6,6 +6,14 @@
         v-model="kind"
         :label="CONTAINER_KIND_LABEL"
         :options="KIND_OPTIONS"
+        :input-attrs="{ id, 'aria-describedby': describedBy }"
+      />
+    </UiField>
+    <UiField v-slot="{ id, describedBy }" :label="CONTAINER_GAP_LABEL" :hint="CONTAINER_GAP_HINT">
+      <UiSegmented
+        v-model="gap"
+        :label="CONTAINER_GAP_LABEL"
+        :options="CONTAINER_GAP_OPTIONS"
         :input-attrs="{ id, 'aria-describedby': describedBy }"
       />
     </UiField>
@@ -108,6 +116,9 @@ import UiSwitch from '@/views/components/ui-switch/UiSwitch.vue'
 import {
   CONTAINER_ALIGN_LABEL,
   CONTAINER_DIRECTION_LABEL,
+  CONTAINER_GAP_HINT,
+  CONTAINER_GAP_LABEL,
+  CONTAINER_GAP_OPTIONS,
   CONTAINER_JUSTIFY_LABEL,
   CONTAINER_KIND_LABEL,
   CONTAINER_WRAP_LABEL,
@@ -128,6 +139,7 @@ const {
   block,
   flex,
   kind,
+  gap,
   direction,
   wrap,
   justify,

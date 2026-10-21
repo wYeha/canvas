@@ -184,29 +184,62 @@ describe('useCanvasPropsChild', () => {
     expect(props.flexPreset.value).toBe('0 0 280px')
   })
 
-  it('width: auto/пусто удаляют, число → px, небезопасное — ошибка и откат', () => {
+  it('число фиксированной ширины: число → px, auto/пусто — фиксированная без числа, небезопасное — ошибка и откат', () => {
     const { layoutStore, props } = setup('a2')
-    props.width.value = '240'
-    props.applyWidth()
-    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', width: '240px' })
-    expect(props.width.value).toBe('240px')
-    props.width.value = '1px; x'
-    props.applyWidth()
-    expect(props.widthError.value).toBe(true)
-    expect(props.width.value).toBe('240px')
-    props.width.value = 'auto'
-    props.applyWidth()
-    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto' })
+    props.widthMode.value = 'fixed'
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', widthMode: 'fixed' })
+    props.widthValue.value = '240'
+    props.applyWidthValue()
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', widthMode: 'fixed', width: '240px' })
+    expect(props.widthValue.value).toBe('240px')
+    props.widthValue.value = '1px; x'
+    props.applyWidthValue()
+    expect(props.widthValueError.value).toBe(true)
+    expect(props.widthValue.value).toBe('240px')
+    props.widthValue.value = 'auto'
+    props.applyWidthValue()
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', widthMode: 'fixed' })
   })
 
-  it('height и min-height работают и в grid-родителе', () => {
+  it('режимы ширины: заполнить по главной оси сбрасывает свободный flex и число, авто стирает режим', () => {
+    const { layoutStore, props } = setup('a2')
+    props.flexPreset.value = '2'
+    props.widthMode.value = 'fixed'
+    props.widthValue.value = '300'
+    props.applyWidthValue()
+    props.widthMode.value = 'fill'
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto', widthMode: 'fill' })
+    props.widthMode.value = 'content'
+    expect(selfOf(layoutStore, 'a2')).toEqual({ flex: '0 1 auto' })
+    expect(props.widthMode.value).toBe('content')
+  })
+
+  it('старое число без режима читается как фиксированное', () => {
+    const { layoutStore, props } = setup('a2')
+    layoutStore.updateNode('a2', { self: { width: '120px' } })
+    expect(props.widthMode.value).toBe('fixed')
+  })
+
+  it('высота, min-height, min/max-width работают и в grid-родителе', () => {
     const { layoutStore, props } = setup('a1x')
     expect(props.gridParent.value).toBe(true)
-    props.height.value = '100'
-    props.applyHeight()
+    props.heightMode.value = 'fixed'
+    props.heightValue.value = '100'
+    props.applyHeightValue()
     props.minHeight.value = '40vh'
     props.onMinHeightKeydown(key('Enter'))
-    expect(selfOf(layoutStore, 'a1x')).toEqual({ flex: '0 1 auto', height: '100px', minHeight: '40vh' })
+    props.minWidth.value = '0'
+    props.applyMinWidth()
+    props.maxWidth.value = '640'
+    props.applyMaxWidth()
+    expect(selfOf(layoutStore, 'a1x')).toEqual({
+      flex: '0 1 auto',
+      heightMode: 'fixed',
+      height: '100px',
+      minHeight: '40vh',
+      minWidth: '0px',
+      maxWidth: '640px',
+    })
   })
 
   it('span в grid-родителе: 1 и пусто удаляют ключ', () => {

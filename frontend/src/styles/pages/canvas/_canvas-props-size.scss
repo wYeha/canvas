@@ -1,0 +1,8 @@
+// Стили фрагмента canvas-props-size: режим размера и поле числа друг под другом
+@use 'variables' as v;
+
+.canvas-props-size {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-8;
+}

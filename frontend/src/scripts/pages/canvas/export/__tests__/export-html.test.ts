@@ -30,7 +30,7 @@ describe('exportRootHtml', () => {
           </div>
           <div style="display:grid; grid-template-columns:repeat(2, 1fr); grid-template-rows:40px 1fr; grid-row:span 2"><!-- gallery --></div>
         </div>
-        <footer style="height:80px"><!-- footer --></footer>
+        <footer style="flex:none; height:80px"><!-- footer --></footer>
       </main>
       "
     `)

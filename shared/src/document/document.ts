@@ -11,6 +11,8 @@ export const canvasPlacementSchema = z.object({
   width: z.number().positive(),
   height: z.number().positive().nullable(),
   exportMaxWidth: z.boolean(),
+  /** Корень — экран целиком: в экспорте `height:100vh`, страница целиком не прокручивается. */
+  fullScreen: z.boolean().optional(),
 })
 
 /** Корневой блок: лежит прямо на поле, без родителя. */

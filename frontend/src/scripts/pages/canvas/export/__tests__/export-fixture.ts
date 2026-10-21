@@ -9,7 +9,11 @@ export function block(
   extra: Partial<BlockNode> = {},
   children: LayoutNode[] = [],
 ): BlockNode {
-  return { ...createBlock(kind, label), ...extra, children }
+  const base = createBlock(kind, label)
+  // Без зазора (у нового блока M): тесты экспорта проверяют остальное, зазор — отдельно в export-gap.test.ts
+  const container: Record<string, unknown> = { ...base.container }
+  Reflect.deleteProperty(container, 'gap')
+  return { ...base, container: container as BlockNode['container'], ...extra, children }
 }
 
 /** Корень на поле с заданными шириной, высотой и флагом max-width. */

@@ -1,6 +1,7 @@
-/** Composable секции «Контейнер»: тип, flex-поля и (через use-canvas-props-container-grid) grid-поля выделенного блока; запись через экшен стора. */
+/** Composable секции «Контейнер»: тип, зазор, flex-поля и (через use-canvas-props-container-grid) grid-поля выделенного блока; запись через экшен стора. */
 import { computed, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { BlockNode, FlexContainer } from '@shared'
+import { GAP_NONE } from './constants'
 import { useLayoutStore } from './layout-store'
 import {
   asContainerKind,
@@ -8,6 +9,7 @@ import {
   asFlexDirection,
   asFlexJustify,
   convertContainer,
+  withGap,
   iconOrientation,
   type AlignAxis,
 } from './props-container'
@@ -65,6 +67,16 @@ export function useCanvasPropsContainer() {
     },
   })
 
+  /** Зазор между детьми: токен s/m/l или `GAP_NONE` (поле стирается). Общий для flex и grid. */
+  const gap: WritableComputedRef<string | null> = computed({
+    /** Читает токен зазора; без поля — «нет». */
+    get: () => (block.value ? (block.value.container.gap ?? GAP_NONE) : null),
+    /** Пишет токен или стирает поле. */
+    set: (value) => {
+      if (block.value) layoutStore.updateNode(block.value.id, { container: withGap(block.value.container, value) })
+    },
+  })
+
   /** Перенос строк. */
   const wrap: WritableComputedRef<boolean> = computed({
     /** Читает флаг переноса. */
@@ -88,6 +100,7 @@ export function useCanvasPropsContainer() {
     block,
     flex,
     kind,
+    gap,
     direction: flexField('direction', asFlexDirection),
     wrap,
     justify: flexField('justify', asFlexJustify),
