@@ -12,6 +12,7 @@ import { previewEntries, styleEntries, toStyleObject } from './node-style'
 import { clipAxes, type ClipAxes } from './overflow'
 import { sizeMarks } from './size-mode'
 import { useCanvasNodeOverflow, type CanvasNodeOverflow } from './use-canvas-node-overflow'
+import { useIsLabelFocus } from './use-label-focus'
 import { useViewSettingsStore } from './view-settings-store'
 import {
   blockClasses,
@@ -148,6 +149,9 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
     computed(() => view.value.clip),
   )
 
+  /** Подпись в фокусе (16.2): на мелком масштабе чип виден только у таких блоков. */
+  const labelFocus = useIsLabelFocus(computed(() => (copyOf.value === null ? props.node.id : null)))
+
   /** Классы узла: вид, след перетаскиваемого, подсветка приёмника и отказа связи. */
   const classes = computed<string[]>(() => {
     const extra: string[] = []
@@ -155,6 +159,7 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
     if (isDropReceiver.value) extra.push('canvas-node--drop-target')
     if (isLinkDenied.value) extra.push('canvas-node--link-denied')
     extra.push(...overflow.classes.value)
+    if (labelFocus.value) extra.push('canvas-node--label-focus')
     return extra.length === 0 ? view.value.classes : [...view.value.classes, ...extra]
   })
 

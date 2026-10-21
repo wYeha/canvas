@@ -6,12 +6,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCameraStore } from './camera-store'
-import { VIEWPORT_LABELS_HIDDEN_CLASS } from './constants'
+import { VIEWPORT_LABELS_HIDDEN_CLASS, VIEWPORT_SMALL_ZOOM_CLASS } from './constants'
+import { isSmallZoom } from './label-focus'
 import { createCameraSettle } from './camera-settle'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { wheelScrollsArea } from './node-dom'
 import { provideCanvasOverflow } from './use-canvas-overflow'
+import { provideLabelFocus } from './use-label-focus'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
 import { useViewSettingsStore } from './view-settings-store'
@@ -56,6 +58,8 @@ export function useCanvasViewport() {
   useCanvasDnd(viewportEl, isSurface, isPanning)
   // Честное переполнение (16.4): замер блоков с обрезкой, бейджи «+N скрыто» и временное раскрытие
   provideCanvasOverflow(worldEl)
+  // Фокус подписей (16.2): на мелком масштабе чипы только у выделенного, наведённого и их предков
+  provideLabelFocus()
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);
@@ -112,7 +116,7 @@ export function useCanvasViewport() {
     resizeObserver = null
   })
 
-  /** BEM-классы поля: скрытые подписи, курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока, «нельзя» без приёмника. */
+  /** BEM-классы поля: скрытые подписи, мелкий масштаб (чипы только в фокусе), курсор «рука» при зажатом пробеле, во время тяги и перетаскивания блока, «нельзя» без приёмника. */
   const classes = computed(() => ({
     'canvas-viewport': true,
     'canvas-viewport--pan-ready': spaceHeld.value && !panning.value,
@@ -121,6 +125,7 @@ export function useCanvasViewport() {
     'canvas-viewport--linking': dragStore.linkSourceId !== null,
     'canvas-viewport--drop-denied': dragStore.dropDenied,
     [VIEWPORT_LABELS_HIDDEN_CLASS]: !viewSettings.labelsVisible,
+    [VIEWPORT_SMALL_ZOOM_CLASS]: isSmallZoom(camera.value.zoom),
   }))
 
   /** BEM-классы слоя мира: `--moving` на время жеста камеры. */
