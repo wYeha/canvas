@@ -9,12 +9,12 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
 <div style="display:flex; flex-direction:column; gap:var(--gap-m); height:100vh; --gap-m:16px">
   <!-- header -->
   <div style="display:flex; align-items:center; gap:var(--gap-m)">
-    <div style="flex:none; width:120px"><!-- logo --></div>
+    <div style="flex:none; width:120px"><!-- img: logo --></div>
     <!-- nav -->
     <div style="display:flex; gap:var(--gap-m); flex:1; min-width:0">
-      <div><!-- nav-item --></div>
-      <div><!-- nav-item --></div>
-      <div><!-- nav-item --></div>
+      <a><!-- nav-item --></a>
+      <a><!-- nav-item --></a>
+      <a><!-- nav-item --></a>
     </div>
     <!-- user -->
     <div style="display:flex; position:relative; flex:none; width:160px">
@@ -25,7 +25,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
   <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1; min-height:0">
     <!-- sidebar -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m); align-self:stretch; min-height:0; overflow-y:auto">
-      <div style="position:sticky; top:0"><!-- menu-title --></div>
+      <h2 style="position:sticky; top:0"><!-- menu-title --></h2>
       <div data-repeat="16"><!-- menu-item ×16 --></div>
     </div>
     <!-- main -->

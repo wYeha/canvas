@@ -231,6 +231,15 @@ describe('отбрасывание gap', () => {
     expect(result.document.roots[0]?.node.container.gap).toBe('m')
   })
 
+  it('смысловой элемент: имя принимается, недопустимое отбрасывается', () => {
+    const ok = parseDocument(documentOf({ ...block('a'), element: 'h1' }))
+    if (!ok.ok) throw new Error(ok.error)
+    expect(ok.document.roots[0]?.node.element).toBe('h1')
+    const bad = parseDocument(documentOf({ ...block('a'), element: '<script>' }))
+    if (!bad.ok) throw new Error(bad.error)
+    expect(bad.document.roots[0]?.node.element).toBeUndefined()
+  })
+
   it('положение: значение из списка принимается, мусор отбрасывается', () => {
     const ok = parseDocument(documentOf({ ...block('a'), self: { position: 'sticky-top' } }))
     if (!ok.ok) throw new Error(ok.error)

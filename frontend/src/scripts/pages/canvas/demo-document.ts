@@ -57,11 +57,11 @@ function root(node: BlockNode, x: number, y: number, width: number): RootEntry {
 /** Шапка дашборда: логотип, меню, пользователь. */
 function buildHeader(): BlockNode {
   return block('header', { container: flex('row', { align: 'center' }) }, [
-    block('logo', { self: { widthMode: 'fixed', width: '120px' } }),
+    block('logo', { element: 'img', self: { widthMode: 'fixed', width: '120px' } }),
     block('nav', { container: flex('row'), self: { widthMode: 'fill' } }, [
-      block('nav-item', {}),
-      block('nav-item', {}),
-      block('nav-item', {}),
+      block('nav-item', { element: 'a' }),
+      block('nav-item', { element: 'a' }),
+      block('nav-item', { element: 'a' }),
     ]),
     // Точка статуса лежит поверх блока пользователя в правом верхнем углу
     block('user', { self: { widthMode: 'fixed', width: '160px' } }, [
@@ -76,7 +76,7 @@ const MENU_ITEM_COUNT = 16
 /** Левая колонка: заголовок, прилипающий к верху, и длинное меню (пункт ×N) с прокруткой на всю высоту тела. */
 function buildSidebar(): BlockNode {
   return block('sidebar', { container: { ...flex('column'), scroll: 'y' }, self: { heightMode: 'fill' } }, [
-    block('menu-title', { self: { position: 'sticky-top' } }),
+    block('menu-title', { element: 'h2', self: { position: 'sticky-top' } }),
     block('menu-item', { repeat: MENU_ITEM_COUNT }),
   ])
 }

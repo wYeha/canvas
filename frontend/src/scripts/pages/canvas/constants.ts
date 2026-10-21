@@ -711,6 +711,92 @@ export const CONTAINER_SCROLL_OPTIONS = [
 export const CONTAINER_SCROLL_HINT =
   'Содержимое прокручивается внутри блока: overflow-y / overflow-x: auto. Блоку нужен ограниченный размер — «Заполнить» или «Фикс.»'
 
+/** Подпись поля смыслового элемента. */
+export const BLOCK_ELEMENT_LABEL = 'Элемент'
+
+/** Пример в пустом поле смыслового элемента. */
+export const BLOCK_ELEMENT_PLACEHOLDER = 'необязательно: h1, button, img, li…'
+
+/** Подсказка поля смыслового элемента. */
+export const BLOCK_ELEMENT_HINT =
+  'Что это на самом деле: у пустого блока станет тегом в коде (img, input — пометкой в комментарии), у контейнера — пометкой'
+
+/** Текст ошибки поля смыслового элемента. */
+export const BLOCK_ELEMENT_ERROR = 'Имя элемента — латиница, цифры и дефис, начиная с буквы'
+
+/** Подсказки списка смыслового элемента: частые элементы, которых нет среди раскладочных тегов. */
+export const ELEMENT_SUGGESTIONS = [
+  'h1',
+  'h2',
+  'h3',
+  'p',
+  'a',
+  'button',
+  'img',
+  'input',
+  'textarea',
+  'select',
+  'label',
+  'ul',
+  'ol',
+  'li',
+  'dl',
+  'article',
+  'figure',
+  'form',
+  'table',
+  'time',
+  'small',
+  'address',
+  'svg',
+  'video',
+  'hr',
+] as const
+
+/**
+ * Элементы, которые экспорт может поставить тегом листа: в них помещается комментарий с подписью. Пустые (`img`,
+ * `input`, `hr`) и с текстовым содержимым (`textarea`) — только пометкой в комментарии.
+ */
+export const LEAF_ELEMENT_TAGS: ReadonlySet<string> = new Set([
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'p',
+  'span',
+  'a',
+  'button',
+  'label',
+  'ul',
+  'ol',
+  'li',
+  'dl',
+  'dt',
+  'dd',
+  'article',
+  'figure',
+  'figcaption',
+  'form',
+  'table',
+  'select',
+  'time',
+  'small',
+  'strong',
+  'em',
+  'address',
+  'blockquote',
+  'pre',
+  'code',
+  'svg',
+  'video',
+  'picture',
+])
+
+/** Разделитель пометки элемента и подписи в комментарии экспорта: `img: avatar`. */
+export const ELEMENT_COMMENT_SEPARATOR = ': '
+
 /** Подпись переключателя положения блока в родителе. */
 export const CHILD_POSITION_LABEL = 'Положение'
 

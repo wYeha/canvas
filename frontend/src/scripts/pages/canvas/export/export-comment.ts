@@ -1,6 +1,7 @@
 /** Комментарии экспорта: подпись и описание узла, пометка компонента, предупреждения защиты, заголовок корневого блока. */
 import type { BlockNode, RootEntry } from '@shared'
-import { CSS_PX_UNIT, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
+import { CSS_PX_UNIT, ELEMENT_COMMENT_SEPARATOR, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
+import { elementCommentMark } from '@/scripts/pages/canvas/element'
 import { repeatMark } from '@/scripts/pages/canvas/node-view'
 import { sizeMode, sizeValue } from '@/scripts/pages/canvas/size-mode'
 import { escapeCommentText, toCommentLines, toSingleLine } from './export-escape'
@@ -47,12 +48,19 @@ function pxText(value: number): string {
 }
 
 /**
- * Части комментария узла: голова — подпись, `×N` и однострочное описание через « — »;
- * многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
+ * Части комментария узла: голова — пометка смыслового элемента (`img: `, если он не стал тегом), подпись, `×N` и
+ * однострочное описание через « — »; многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
  */
 export function nodeCommentParts(block: BlockNode): CommentParts {
   const name = joinParts([toSingleLine(block.label), ...fixedIntents(block)], EXPORT_LIST_SEPARATOR)
-  return commentWithName(name, block)
+  return commentWithName(withElementMark(name, block), block)
+}
+
+/** Имя с пометкой элемента впереди: `img: avatar`; без подписи — просто `img`. */
+function withElementMark(name: string, block: BlockNode): string {
+  const mark = elementCommentMark(block)
+  if (mark === null) return name
+  return name === '' ? mark : `${mark}${ELEMENT_COMMENT_SEPARATOR}${name}`
 }
 
 /** Намерения «фиксированная ширина/высота» у осей в фиксированном режиме без числа: размер не задан, но не тянется. */

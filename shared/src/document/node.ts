@@ -2,6 +2,8 @@
 import { z } from 'zod'
 import {
   CHILD_POSITIONS,
+  ELEMENT_NAME_MAX_LENGTH,
+  ELEMENT_NAME_PATTERN,
   LAYOUT_TAGS,
   LEGACY_LINK_BLOCK_DEFAULTS,
   LEGACY_LINK_NODE_TYPE,
@@ -73,6 +75,11 @@ export const blockNodeSchema = z.object({
   label: z.string(),
   description: z.string(),
   tag: layoutTagSchema,
+  /**
+   * Смысловой элемент (15.4): `h1`, `button`, `img`, `li`… — у листа экспорт ставит его тегом (если можно), иначе
+   * пишет в начало комментария. Раскладочный `tag` не меняет. Нет поля — не задан; битое значение отбрасывается.
+   */
+  element: z.string().max(ELEMENT_NAME_MAX_LENGTH).regex(ELEMENT_NAME_PATTERN).optional().catch(undefined),
   container: containerSchema,
   self: selfPropsSchema,
   repeat: z.int().min(1),

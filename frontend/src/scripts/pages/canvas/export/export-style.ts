@@ -8,7 +8,13 @@ import {
   type ContainerKind,
   type FlexContainer,
 } from '@shared'
-import { CSS_DEFAULT_GRID_ROWS, CSS_PX_UNIT, DEFAULT_FLEX, DEFAULT_GRID } from '@/scripts/pages/canvas/constants'
+import {
+  CSS_DEFAULT_GRID_ROWS,
+  CSS_PX_UNIT,
+  DEFAULT_FLEX,
+  DEFAULT_GRID,
+  LEAF_ELEMENT_TAGS,
+} from '@/scripts/pages/canvas/constants'
 import { containerEntries, styleEntries, toInlineStyle, type StyleEntry } from '@/scripts/pages/canvas/node-style'
 import { escapeHtmlAttr } from './export-escape'
 import {
@@ -90,10 +96,11 @@ export function rootExportEntries(placement: CanvasPlacement): StyleEntry[] {
   return [...entries, ['max-width', `${String(placement.width)}${CSS_PX_UNIT}`], ['margin', EXPORT_ROOT_MARGIN]]
 }
 
-/** Тег из списка `LAYOUT_TAGS` остаётся, любой другой заменяется на `div`. */
+/** Тег из `LAYOUT_TAGS` или смысловой элемент листа из `LEAF_ELEMENT_TAGS` остаётся, любой другой заменяется на `div`. */
 export function safeTag(tag: string): SafeTag {
   const allowed: readonly string[] = LAYOUT_TAGS
-  return allowed.includes(tag) ? { tag, replaced: false } : { tag: EXPORT_FALLBACK_TAG, replaced: true }
+  const ok = allowed.includes(tag) || LEAF_ELEMENT_TAGS.has(tag)
+  return ok ? { tag, replaced: false } : { tag: EXPORT_FALLBACK_TAG, replaced: true }
 }
 
 /**

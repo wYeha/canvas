@@ -17,6 +17,7 @@ import { createBlock, createDocument, createGridContainer } from '@/scripts/page
 import { createDemoDocument } from '@/scripts/pages/canvas/demo-document'
 import { toInlineStyle } from '@/scripts/pages/canvas/node-style'
 import { gapVarEntries, usedGaps } from '@/scripts/pages/canvas/export/export-components'
+import { elementTag } from '@/scripts/pages/canvas/element'
 import { exportRootHtml } from '@/scripts/pages/canvas/export/export-html'
 import { exportStyleEntries, rootExportEntries } from '@/scripts/pages/canvas/export/export-style'
 import { docOf, root, smallTree } from './export-fixture'
@@ -52,7 +53,8 @@ function expectMatches(
   const own = toInlineStyle(exportStyleEntries(node, parent?.kind ?? null, direction))
   const style = [own, extra].filter((part) => part !== '').join('; ')
   expect(element.getAttribute('style') ?? '').toBe(style)
-  expect(element.tagName.toLowerCase()).toBe(node.tag)
+  // Смысловой элемент листа (15.4) заменяет раскладочный тег
+  expect(element.tagName.toLowerCase()).toBe(elementTag(node) ?? node.tag)
   expect(element.children.length).toBe(node.children.length)
   node.children.forEach((child, index) => {
     const childElement = element.children.item(index)

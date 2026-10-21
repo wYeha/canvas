@@ -13,6 +13,7 @@ import {
   type NodeId,
   type RootEntry,
 } from '@shared'
+import { elementTag } from '@/scripts/pages/canvas/element'
 import { repeatCount } from '@/scripts/pages/canvas/node-view'
 import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 import type { StyleEntry } from '@/scripts/pages/canvas/node-style'
@@ -81,7 +82,8 @@ function renderBlock(doc: LayoutDocument, render: BlockRender): string[] {
   const { block, parentKind, parentDirection, depth, extraEntries } = render
   const indent = EXPORT_INDENT.repeat(depth)
   const { style, dropped } = safeStyle([...exportStyleEntries(block, parentKind, parentDirection), ...extraEntries])
-  const { tag, replaced } = safeTag(block.tag)
+  // Смысловой элемент листа (`h1`, `button`) заменяет раскладочный тег; иначе он — пометкой в комментарии
+  const { tag, replaced } = safeTag(elementTag(block) ?? block.tag)
   // У корня повтора нет (в модели он всегда 1), у вложенного блока и места связи — повтор блока
   const frame: ElementFrame = { indent, open: openTag(tag, style, repeatCount(block)), close: closeTag(tag) }
   const body = block.children.length > 0 ? blockLines(doc, render, frame) : leafLines(render.comment, frame)

@@ -1,6 +1,7 @@
-/** Composable секции «Блок»: подпись, описание и тег выделенного блока; запись через экшен стора. */
+/** Composable секции «Блок»: подпись, описание, тег и смысловой элемент выделенного блока; запись через экшен стора. */
 import { computed, type WritableComputedRef } from 'vue'
 import type { BlockNode, NodeId } from '@shared'
+import { normalizeElement } from './element'
 import { useLayoutStore } from './layout-store'
 import { asLayoutTag } from './props-block'
 import type { NodePatch } from './tree'
@@ -36,6 +37,15 @@ export function useCanvasPropsBlock() {
     },
   )
 
+  /** Смысловой элемент (15.4): черновик, запись по Enter/blur; пустое значение стирает поле, недопустимое — ошибка. */
+  const element = useBlockTextDraft(
+    () => (block.value ? { id: block.value.id, value: block.value.element ?? '' } : null),
+    { multiline: false, normalize: normalizeElement },
+    (id, value) => {
+      patch(id, { element: value === '' ? undefined : value })
+    },
+  )
+
   /** Семантический тег. */
   const tag: WritableComputedRef<string | null> = computed({
     /** Читает тег из документа. */
@@ -56,5 +66,9 @@ export function useCanvasPropsBlock() {
     applyDescription: description.apply,
     onDescriptionKeydown: description.onKeydown,
     tag,
+    element: element.draft,
+    elementError: element.error,
+    applyElement: element.apply,
+    onElementKeydown: element.onKeydown,
   }
 }
