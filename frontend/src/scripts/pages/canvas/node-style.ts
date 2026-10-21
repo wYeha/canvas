@@ -31,6 +31,9 @@ import { repeatCount } from './node-view'
 import { isOverlayChild } from './position'
 import { mainAxis, otherAxis, sizeMode, sizeValue, type SizeAxis } from './size-mode'
 
+/** Свойства-числа размеров, которые «Структура» не рисует. */
+const SIZE_PROPERTIES: ReadonlySet<string> = new Set(['width', 'height', 'min-width', 'max-width', 'min-height'])
+
 /** Оси размера в порядке вывода. */
 const SIZE_AXES: readonly SizeAxis[] = ['width', 'height']
 
@@ -221,6 +224,16 @@ export function styleEntries(
  */
 export function renderedChildCount(node: LayoutNode): number {
   return node.children.reduce((sum, child) => sum + repeatCount(child), 0)
+}
+
+/**
+ * Стили для превью: в «Пропорциях» (`sizesShown`) — как в экспорте; в «Структуре» (16.4) без чисел размеров (`width`,
+ * `height`, `min-*`, `max-*`, кроме нулевых минимумов) — блоки становятся одинаковыми кирпичиками, а режим размера
+ * показывается значком на подписи. Экспорт этот фильтр не использует.
+ */
+export function previewEntries(entries: readonly StyleEntry[], sizesShown: boolean): StyleEntry[] {
+  if (sizesShown) return [...entries]
+  return entries.filter(([property, value]) => !SIZE_PROPERTIES.has(property) || value === CSS_MIN_ZERO)
 }
 
 /** Объект для Vue `:style` (ключи в kebab-case). */

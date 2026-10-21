@@ -7,11 +7,13 @@ import type { CanvasRootProps } from './canvas-node.types'
 import { useCameraStore } from './camera-store'
 import { useDragStore } from './dnd/drag-store'
 import { rootPlacementStyle, rootTitle, rootWidthText } from './node-view'
+import { useViewSettingsStore } from './view-settings-store'
 
 /** Подключает корень к полю: возвращает ref элемента, стиль положения и подписи над блоком. */
 export function useCanvasRoot(props: CanvasRootProps) {
   const cameraStore = useCameraStore()
   const dragStore = useDragStore()
+  const viewSettings = useViewSettingsStore()
   /** Корневой элемент корня на поле. */
   const rootEl = ref<HTMLElement | null>(null)
   let observer: ResizeObserver | null = null
@@ -22,7 +24,8 @@ export function useCanvasRoot(props: CanvasRootProps) {
   /** Динамический стиль: позиция и ширина превью на поле; во время перемещения — новая точка (документ ещё не менялся). */
   const style = computed(() => {
     const at = isMoving.value ? dragStore.rootPosition : null
-    return rootPlacementStyle(at === null ? props.root.canvas : { ...props.root.canvas, x: at.x, y: at.y })
+    const canvas = at === null ? props.root.canvas : { ...props.root.canvas, x: at.x, y: at.y }
+    return rootPlacementStyle(canvas, viewSettings.sizesShown)
   })
   /** BEM-классы корня: `--moving`, пока его двигают (поверх соседей, курсор «сжатая рука»). */
   const classes = computed(() => ({ 'canvas-root': true, 'canvas-root--moving': isMoving.value }))
@@ -49,5 +52,8 @@ export function useCanvasRoot(props: CanvasRootProps) {
     cameraStore.removeRootHeight(props.root.node.id)
   })
 
-  return { rootEl, classes, style, title, widthText }
+  /** Фиксированная высота превью рисуется (в «Пропорциях»): корень обрезается по ней. */
+  const fixedHeight = computed(() => viewSettings.sizesShown && props.root.canvas.height !== null)
+
+  return { rootEl, classes, style, title, widthText, fixedHeight }
 }

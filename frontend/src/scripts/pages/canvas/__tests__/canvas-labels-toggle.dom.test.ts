@@ -57,12 +57,12 @@ describe('кнопка «Показывать подписи» в плашке �
     expect(first.attributes('title')).toBe('Показать подписи')
   })
 
-  it('кнопки зума без aria-pressed (переключатели — первые три: подписи, зеркало и стрелки связей)', () => {
+  it('кнопки зума без aria-pressed (переключатели — первые четыре: подписи, зеркало, стрелки связей и «Пропорции»)', () => {
     const wrapper = setup(CanvasZoom)
     expect(
       wrapper
         .findAll('button')
-        .slice(3)
+        .slice(4)
         .every((b) => b.attributes('aria-pressed') === undefined),
     ).toBe(true)
   })

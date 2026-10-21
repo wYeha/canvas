@@ -1,6 +1,14 @@
 /** Тесты режимов размера: чтение (в том числе старое число без режима), главная ось, запись режима и числа. */
 import { describe, expect, it } from 'vitest'
-import { mainAxis, otherAxis, sizeMode, sizeValue, withSizeMode, withSizeValue } from '@/scripts/pages/canvas/size-mode'
+import {
+  mainAxis,
+  otherAxis,
+  sizeMode,
+  sizeValue,
+  withSizeMode,
+  withSizeValue,
+  sizeMarks,
+} from '@/scripts/pages/canvas/size-mode'
 
 describe('sizeMode', () => {
   it('нет режима и числа — по содержимому; число без режима — фиксированный; явный режим важнее', () => {
@@ -34,5 +42,14 @@ describe('запись режима и числа', () => {
     const self = Object.freeze({ widthMode: 'fill' as const })
     expect(withSizeValue(self, 'width', ' 360px ')).toEqual({ widthMode: 'fixed', width: '360px' })
     expect(withSizeValue({ height: '1px' }, 'height', '')).toEqual({ heightMode: 'fixed' })
+  })
+})
+
+describe('sizeMarks (16.4)', () => {
+  it('стрелки у «Заполнить», скобки с числом у «Фикс.», у «Авто» пусто', () => {
+    expect(sizeMarks({ widthMode: 'fill', heightMode: 'fill' })).toBe('↔ ↕')
+    expect(sizeMarks({ width: '360px' })).toBe('⊢360px⊣')
+    expect(sizeMarks({ heightMode: 'fixed' })).toBe('⊤⊥')
+    expect(sizeMarks({})).toBe('')
   })
 })

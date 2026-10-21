@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: плашка зума — переключатели подписей, зеркала и стрелок связей, уменьшить, процент, увеличить, вписать всё -->
+<!-- Фрагмент страницы canvas: плашка зума — переключатели подписей, зеркала, стрелок связей и «Пропорции / Структура», уменьшить, процент, увеличить, вписать всё -->
 <template>
   <UiPill class="canvas-zoom">
     <UiIconButton
@@ -22,6 +22,13 @@
       :pressed="linkArrowsAll"
       @click="toggleArrows"
     />
+    <UiIconButton
+      icon="ruler"
+      :label="SIZES_TOGGLE_LABEL"
+      :tooltip="sizesToggleTitle"
+      :pressed="sizesShown"
+      @click="toggleSizes"
+    />
     <UiIconButton icon="minus" label="Уменьшить (Ctrl −)" @click="zoomOut" />
     <span class="canvas-zoom__value">{{ zoomLabel }}</span>
     <UiIconButton icon="plus" label="Увеличить (Ctrl +)" @click="zoomIn" />
@@ -32,7 +39,12 @@
 <script setup lang="ts">
 import UiIconButton from '@/views/components/ui-icon-button/UiIconButton.vue'
 import UiPill from '@/views/components/ui-pill/UiPill.vue'
-import { ARROWS_TOGGLE_LABEL, LABELS_TOGGLE_LABEL, MIRROR_TOGGLE_LABEL } from '@/scripts/pages/canvas/constants'
+import {
+  ARROWS_TOGGLE_LABEL,
+  LABELS_TOGGLE_LABEL,
+  MIRROR_TOGGLE_LABEL,
+  SIZES_TOGGLE_LABEL,
+} from '@/scripts/pages/canvas/constants'
 import { useCanvasZoom } from '@/scripts/pages/canvas/use-canvas-zoom'
 
 const {
@@ -46,6 +58,9 @@ const {
   linkArrowsAll,
   arrowsToggleTitle,
   toggleArrows,
+  sizesShown,
+  sizesToggleTitle,
+  toggleSizes,
   zoomIn,
   zoomOut,
   fitAll,

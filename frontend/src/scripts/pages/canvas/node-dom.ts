@@ -2,7 +2,7 @@
  * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок и порт связи корня, строка «Слоёв» под курсором,
  * элемент и цепочка узлов под точкой (поиск приёмника при перетаскивании),
  * измерение прямоугольников узлов (в том числе прямых детей приёмника для позиции вставки)
- * прокрутка строки в видимую часть панели и поиск области прокрутки под колесом.
+ * прокрутка строки в видимую часть панели, поиск области прокрутки под колесом и замер переполнения блоков с обрезкой.
  * DOM трогаем только здесь (правила: прямая работа с DOM — в scripts/).
  * Оверлеи поверх поля (призрак, выделение, линия вставки `CanvasDropInsert`, оверлей выделения) обязаны иметь
  * `pointer-events: none`: иначе `elementAtPoint` попадёт в них, а не в блок под курсором.
@@ -15,6 +15,7 @@ import type { Rect } from './camera'
 import type { CanvasPoint } from './factories'
 import {
   LABEL_NODE_ATTR,
+  CLIP_ATTR,
   LABEL_NODE_SELECTOR,
   OWN_LABEL_SELECTOR,
   LAYER_ID_ATTR,
@@ -33,6 +34,7 @@ import {
   WORLD_SELECTOR,
   SCROLL_NODE_CLASS_PREFIX,
 } from './constants'
+import type { ChildBox, ClipAxes } from './overflow'
 import { canScrollBy, type ScrollDelta } from './scroll-area'
 import { rectContains, toWorldRect } from './selection'
 
@@ -191,4 +193,37 @@ export function wheelScrollsArea(target: EventTarget | null, stop: Element, delt
     el = el.parentElement
   }
   return false
+}
+
+/** Замер блока с обрезкой: id, оси из `data-clip`, рамка (client*) и прямоугольники прямых детей (offset*, без зума). */
+export interface ClipMeasure {
+  id: string
+  axes: ClipAxes
+  box: { width: number; height: number }
+  children: ChildBox[]
+}
+
+/**
+ * Замеряет блоки с обрезкой внутри слоя мира (16.4). Координаты раскладки (`offset*`, `client*`) от зума не зависят;
+ * копии повтора — тоже дети. Только настоящие блоки (`data-node-id`): у копий бейджа нет.
+ */
+export function measureClipBlocks(world: Element): ClipMeasure[] {
+  const blocks = Array.from(world.querySelectorAll<HTMLElement>(`${NODE_SELECTOR}[${CLIP_ATTR}]`))
+  return blocks.map((el) => {
+    const clip = el.getAttribute(CLIP_ATTR) ?? ''
+    const children = Array.from(el.children)
+      .filter((child): child is HTMLElement => child instanceof HTMLElement && child.matches(NODE_OR_REPEAT_SELECTOR))
+      .map((child) => ({
+        left: child.offsetLeft,
+        top: child.offsetTop,
+        width: child.offsetWidth,
+        height: child.offsetHeight,
+      }))
+    return {
+      id: el.getAttribute(NODE_ID_ATTR) ?? '',
+      axes: { x: clip.includes('x'), y: clip.includes('y') },
+      box: { width: el.clientWidth, height: el.clientHeight },
+      children,
+    }
+  })
 }

@@ -6,7 +6,13 @@
       <span class="canvas-root__width">{{ widthText }}</span>
       <span class="canvas-root__port" :data-link-port-id="root.node.id" :title="LINK_PORT_TITLE"></span>
     </div>
-    <CanvasNode class="canvas-root__node" :node="root.node" :depth="0" :parent-kind="null" />
+    <CanvasNode
+      class="canvas-root__node"
+      :node="root.node"
+      :depth="0"
+      :parent-kind="null"
+      :root-fixed-height="fixedHeight"
+    />
   </div>
 </template>
 
@@ -17,5 +23,5 @@ import { useCanvasRoot } from '@/scripts/pages/canvas/use-canvas-root'
 import CanvasNode from '@/views/pages/canvas/CanvasNode.vue'
 
 const props = defineProps<CanvasRootProps>()
-const { rootEl, classes, style, title, widthText } = useCanvasRoot(props)
+const { rootEl, classes, style, title, widthText, fixedHeight } = useCanvasRoot(props)
 </script>

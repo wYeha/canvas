@@ -1,6 +1,6 @@
 /**
  * Pinia-хранилище настроек редактора (не документа): «показывать подписи блоков», «живое зеркало связей» и
- * «все стрелки связей».
+ * «все стрелки связей», «Пропорции / Структура».
  * Нужно нескольким фрагментам — плашке зума (кнопки), полю и блокам. Значения запоминаются в localStorage.
  */
 import { ref } from 'vue'
@@ -9,6 +9,7 @@ import {
   LABELS_VISIBLE_STORAGE_KEY,
   LINK_ARROWS_ALL_STORAGE_KEY,
   LINKS_MIRRORED_STORAGE_KEY,
+  SIZES_SHOWN_STORAGE_KEY,
 } from '@/scripts/globals/constants'
 import { getStorageItem, setStorageItem } from '@/scripts/globals/storage'
 import { parseLabelsVisible, parseOptInFlag, serializeFlag } from './view-settings'
@@ -41,5 +42,26 @@ export const useViewSettingsStore = defineStore('view-settings', () => {
     setStorageItem(LINK_ARROWS_ALL_STORAGE_KEY, serializeFlag(linkArrowsAll.value))
   }
 
-  return { labelsVisible, toggleLabels, linksMirrored, toggleLinksMirrored, linkArrowsAll, toggleLinkArrowsAll }
+  /**
+   * Превью «Пропорции» (по умолчанию): числа размеров рисуются, переполнение обрезается с меткой. Выключено —
+   * «Структура»: числа игнорируются, режим размера показан значком на подписи (16.4).
+   */
+  const sizesShown = ref(parseLabelsVisible(getStorageItem(SIZES_SHOWN_STORAGE_KEY)))
+
+  /** Переключает «Пропорции / Структура» и запоминает выбор. */
+  function toggleSizesShown(): void {
+    sizesShown.value = !sizesShown.value
+    setStorageItem(SIZES_SHOWN_STORAGE_KEY, serializeFlag(sizesShown.value))
+  }
+
+  return {
+    labelsVisible,
+    toggleLabels,
+    linksMirrored,
+    toggleLinksMirrored,
+    linkArrowsAll,
+    toggleLinkArrowsAll,
+    sizesShown,
+    toggleSizesShown,
+  }
 })

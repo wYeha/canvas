@@ -11,6 +11,7 @@ import { createCameraSettle } from './camera-settle'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { wheelScrollsArea } from './node-dom'
+import { provideCanvasOverflow } from './use-canvas-overflow'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
 import { useViewSettingsStore } from './view-settings-store'
@@ -53,6 +54,8 @@ export function useCanvasViewport() {
 
   useCanvasSelect(viewportEl, isSurface, isPanning)
   useCanvasDnd(viewportEl, isSurface, isPanning)
+  // Честное переполнение (16.4): замер блоков с обрезкой, бейджи «+N скрыто» и временное раскрытие
+  provideCanvasOverflow(worldEl)
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);

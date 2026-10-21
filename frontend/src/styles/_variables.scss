@@ -245,6 +245,7 @@ $block-gap: 4px; // редакторский зазор между детьми 
 $gap-s: 8px;
 $gap-m: 16px;
 $gap-l: 32px;
+$overflow-mark-width: 3px; // метка переполнения у края блока (16.4), только редактор
 $scroll-mark-width: 3px; // полоса области прокрутки у края блока, только редактор
 $empty-leaf-min-height: 48px; // редакторский min-height пустого листа (вместе с $block-padding), в экспорт не идёт
 $drag-ghost-tilt: 2deg; // наклон призрака перетаскивания

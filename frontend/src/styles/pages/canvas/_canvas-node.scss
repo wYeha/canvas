@@ -2,6 +2,7 @@
 @use 'sass:list';
 @use 'sass:map';
 @use 'variables' as v;
+@use 'mixins' as mx;
 
 /// Вертикальная подпись узкого и высокого блока (16.1): текст снова виден и идёт вдоль высоты, обрезка — по высоте.
 @mixin vertical-label {
@@ -79,11 +80,6 @@
     container-type: size;
     transform: scale(calc(1 / var(--camera-zoom)));
     transform-origin: left top;
-
-    // Переключатель «Показывать подписи» выключен (модификатор поля)
-    .canvas-viewport--labels-hidden & {
-      display: none;
-    }
   }
 
   &__chip {
@@ -105,6 +101,11 @@
     background: color-mix(in srgb, var(--node-color) calc(var(--alpha-chip) * 100%), transparent);
     border-radius: v.$radius-block;
     overflow: hidden;
+
+    // Переключатель «Показывать подписи» выключен (модификатор поля); бейдж переполнения в том же слое остаётся
+    .canvas-viewport--labels-hidden & {
+      display: none;
+    }
 
     // Узкий блок на экране: без текста, только значок направления (полное имя — в бейдже наведения)
     @container (max-width: #{v.$label-min-screen-width}) {
@@ -192,6 +193,57 @@
 
     &--chip {
       color: var(--color-text);
+    }
+  }
+
+  // Значки режима размера в «Структуре» (16.4): ↔ ↕ ⊢360⊣
+  &__size {
+    flex: none;
+    font-family: v.$font-mono;
+    color: var(--color-muted);
+
+    &--chip {
+      color: var(--color-text);
+    }
+  }
+
+  // Честное переполнение (16.4): обрезка по осям фиксированного размера (только превью, в экспорт не идёт)
+  &--clip-x {
+    overflow-x: clip;
+  }
+
+  &--clip-y {
+    overflow-y: clip;
+  }
+
+  // Метка у края, за которым содержимое не поместилось: полоса цветом ошибки
+  &--overflow-y {
+    box-shadow: inset 0 calc(-1 * #{v.$overflow-mark-width}) 0 var(--color-danger);
+  }
+
+  &--overflow-x {
+    box-shadow: inset calc(-1 * #{v.$overflow-mark-width}) 0 0 var(--color-danger);
+  }
+
+  // Бейдж «+N скрыто ↓» в правом нижнем углу (экранный размер — в слое подписи); клик раскрывает блок временно
+  &__overflow {
+    position: absolute;
+    right: v.$label-chip-offset;
+    bottom: v.$label-chip-offset;
+    height: v.$label-chip-height;
+    padding: 0 v.$space-6;
+    font-size: v.$font-size-2xs;
+    line-height: 1;
+    color: var(--color-on-danger);
+    white-space: nowrap;
+    pointer-events: auto;
+    cursor: pointer;
+    background: var(--color-danger);
+    border: 0;
+    border-radius: v.$radius-block;
+
+    &:focus-visible {
+      @include mx.focus-ring;
     }
   }
 

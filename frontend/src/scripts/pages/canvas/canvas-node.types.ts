@@ -11,6 +11,8 @@ export interface CanvasNodeProps {
   parentKind: ContainerKind | null
   /** Направление flex-родителя (главная ось для режимов размера); у grid-родителя и корня не задано. */
   parentDirection?: FlexContainer['direction']
+  /** Корень с фиксированной высотой превью: в «Пропорциях» обрезается по высоте (16.4). */
+  rootFixedHeight?: boolean
   copyOf?: NodeId | null
   copyRoot?: boolean
   /** Остаток бюджета копий повтора для поддерева настоящего блока; по умолчанию — весь бюджет (`REPEAT_RENDER_BUDGET`). */

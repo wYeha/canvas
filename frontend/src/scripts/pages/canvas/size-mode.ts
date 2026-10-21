@@ -3,7 +3,7 @@
  * Заданное число без режима — фиксированный (так значения старых документов читаются без миграции). Без Vue и Pinia.
  */
 import type { FlexContainer, SelfProps } from '@shared'
-import { CSS_DEFAULT_FLEX } from './constants'
+import { CSS_DEFAULT_FLEX, SIZE_MARK_GLYPHS } from './constants'
 
 /** Ось размера. */
 export type SizeAxis = 'width' | 'height'
@@ -66,4 +66,19 @@ export function withSizeValue(self: SelfProps, axis: SizeAxis, value: string): S
   const trimmed = value.trim()
   const base = { ...self, [fields.mode]: 'fixed' as const }
   return trimmed === '' ? without(base, [fields.value]) : { ...base, [fields.value]: trimmed }
+}
+
+/**
+ * Значки режимов размера для превью «Структура» (16.4): `↔` / `↕` у «Заполнить», `⊢360⊣` / `⊤48⊥` у «Фикс.»
+ * (без числа — пустые скобки). У «Авто» значка нет.
+ */
+export function sizeMarks(self: SelfProps): string {
+  const marks: string[] = []
+  for (const axis of ['width', 'height'] as const) {
+    const mode = sizeMode(self, axis)
+    const glyphs = SIZE_MARK_GLYPHS[axis]
+    if (mode === 'fill') marks.push(glyphs.fill)
+    if (mode === 'fixed') marks.push(`${glyphs.fixedOpen}${sizeValue(self, axis) ?? ''}${glyphs.fixedClose}`)
+  }
+  return marks.join(' ')
 }

@@ -1,4 +1,4 @@
-/** Composable фрагмента CanvasZoom: подпись зума, кнопки −, +, «вписать всё», переключатели подписей, зеркала и стрелок связей. */
+/** Composable фрагмента CanvasZoom: подпись зума, кнопки −, +, «вписать всё», переключатели подписей, зеркала, стрелок связей и «Пропорции / Структура». */
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCameraStore } from './camera-store'
@@ -9,6 +9,8 @@ import {
   LABELS_SHOW_TITLE,
   MIRROR_HIDE_TITLE,
   MIRROR_SHOW_TITLE,
+  SIZES_PROPORTIONS_TITLE,
+  SIZES_STRUCTURE_TITLE,
 } from './constants'
 import { useViewSettingsStore } from './view-settings-store'
 
@@ -17,7 +19,7 @@ export function useCanvasZoom() {
   const cameraStore = useCameraStore()
   const viewSettings = useViewSettingsStore()
   const { zoomLabel } = storeToRefs(cameraStore)
-  const { labelsVisible, linksMirrored, linkArrowsAll } = storeToRefs(viewSettings)
+  const { labelsVisible, linksMirrored, linkArrowsAll, sizesShown } = storeToRefs(viewSettings)
   /** Подсказка переключателя: что случится по нажатию. */
   const labelsToggleTitle = computed(() => (labelsVisible.value ? LABELS_HIDE_TITLE : LABELS_SHOW_TITLE))
 
@@ -26,6 +28,14 @@ export function useCanvasZoom() {
 
   /** Подсказка переключателя стрелок: что случится по нажатию. */
   const arrowsToggleTitle = computed(() => (linkArrowsAll.value ? ARROWS_SELECTED_TITLE : ARROWS_ALL_TITLE))
+
+  /** Подсказка переключателя «Пропорции / Структура»: что случится по нажатию. */
+  const sizesToggleTitle = computed(() => (sizesShown.value ? SIZES_STRUCTURE_TITLE : SIZES_PROPORTIONS_TITLE))
+
+  /** Переключает превью «Пропорции / Структура». */
+  function toggleSizes(): void {
+    viewSettings.toggleSizesShown()
+  }
 
   /** Переключает «все стрелки связей / у выделенных». */
   function toggleArrows(): void {
@@ -53,6 +63,9 @@ export function useCanvasZoom() {
     linkArrowsAll,
     arrowsToggleTitle,
     toggleArrows,
+    sizesShown,
+    sizesToggleTitle,
+    toggleSizes,
     zoomIn: cameraStore.zoomIn,
     zoomOut: cameraStore.zoomOut,
     fitAll: cameraStore.fitAll,

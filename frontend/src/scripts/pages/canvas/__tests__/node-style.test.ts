@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import type { BlockNode, ContainerKind, LayoutNode, SelfProps } from '@shared'
 import { createBlock } from '@/scripts/pages/canvas/factories'
-import { styleEntries, toInlineStyle, toStyleObject } from '@/scripts/pages/canvas/node-style'
+import { previewEntries, styleEntries, toInlineStyle, toStyleObject } from '@/scripts/pages/canvas/node-style'
 
 /** Блок нужного вида с подмешанными полями контейнера и self. */
 function make(kind: ContainerKind, container: object = {}, extra: Partial<BlockNode> = {}): BlockNode {
@@ -309,5 +309,20 @@ describe('положение (15.3)', () => {
     // Прилипающий ребёнок опоры не требует
     const stickyChild = { ...createBlock('flex', 's'), self: { position: 'sticky-top' as const } }
     expect(styles(make('flex', {}, { children: [stickyChild] }))).toEqual({ display: 'flex' })
+  })
+})
+
+describe('previewEntries (16.4)', () => {
+  const entries = styleEntries(
+    make('flex', {}, { self: { widthMode: 'fill', height: '48px', maxWidth: '200px' } }),
+    'flex',
+  )
+
+  it('в «Пропорциях» — как в экспорте', () => {
+    expect(previewEntries(entries, true)).toEqual(entries)
+  })
+
+  it('в «Структуре» — без чисел размеров, нулевой минимум остаётся', () => {
+    expect(toStyleObject(previewEntries(entries, false))).toEqual({ display: 'flex', flex: '1', 'min-width': '0' })
   })
 })

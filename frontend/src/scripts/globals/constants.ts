@@ -48,6 +48,9 @@ export const LABELS_VISIBLE_STORAGE_KEY = 'layout-canvas:labels-visible'
 /** Ключ localStorage для флага «живое зеркало связей». */
 export const LINKS_MIRRORED_STORAGE_KEY = 'layout-canvas:links-mirrored'
 
+/** Ключ localStorage для режима превью «Пропорции» (числа размеров рисуются; по умолчанию да) / «Структура». */
+export const SIZES_SHOWN_STORAGE_KEY = 'layout-canvas:sizes-shown'
+
 /** Ключ localStorage для флага «все стрелки связей» (по умолчанию — только у выделенных). */
 export const LINK_ARROWS_ALL_STORAGE_KEY = 'layout-canvas:link-arrows-all'
 

@@ -133,14 +133,17 @@ export function rootCaption(block: BlockNode, canvas: CanvasPlacement): string {
   return `${rootTitle(block)}${ROOT_TITLE_SEPARATOR}${rootWidthText(canvas)}`
 }
 
-/** Динамический стиль корня: позиция и ширина превью на поле; высота — только если задана. */
-export function rootPlacementStyle(canvas: CanvasPlacement): Record<string, string> {
+/**
+ * Динамический стиль корня: позиция и ширина превью на поле; высота — только если задана и рисуются числа размеров
+ * (`withHeight`, в «Структуре» — нет).
+ */
+export function rootPlacementStyle(canvas: CanvasPlacement, withHeight = true): Record<string, string> {
   const style: Record<string, string> = {
     left: `${String(canvas.x)}${CSS_PX_UNIT}`,
     top: `${String(canvas.y)}${CSS_PX_UNIT}`,
     width: `${String(canvas.width)}${CSS_PX_UNIT}`,
   }
-  if (canvas.height !== null) style['height'] = `${String(canvas.height)}${CSS_PX_UNIT}`
+  if (withHeight && canvas.height !== null) style['height'] = `${String(canvas.height)}${CSS_PX_UNIT}`
   return style
 }
 
