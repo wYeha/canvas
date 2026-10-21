@@ -2,6 +2,7 @@
 import type { BlockNode, RootEntry } from '@shared'
 import { CSS_PX_UNIT, ELEMENT_COMMENT_SEPARATOR, ROOT_UNTITLED_LABEL } from '@/scripts/pages/canvas/constants'
 import { elementCommentMark } from '@/scripts/pages/canvas/element'
+import { narrowColumnsIntent } from '@/scripts/pages/canvas/narrow-columns'
 import { repeatMark } from '@/scripts/pages/canvas/node-view'
 import { sizeMode, sizeValue } from '@/scripts/pages/canvas/size-mode'
 import { escapeCommentText, toCommentLines, toSingleLine } from './export-escape'
@@ -52,8 +53,17 @@ function pxText(value: number): string {
  * однострочное описание через « — »; многострочное описание целиком уходит в тело. Экранирование — в `formatComment`.
  */
 export function nodeCommentParts(block: BlockNode): CommentParts {
-  const name = joinParts([toSingleLine(block.label), ...fixedIntents(block)], EXPORT_LIST_SEPARATOR)
+  const name = joinParts(
+    [toSingleLine(block.label), ...fixedIntents(block), ...adaptiveIntents(block)],
+    EXPORT_LIST_SEPARATOR,
+  )
   return commentWithName(withElementMark(name, block), block)
+}
+
+/** Намерения адаптива: «колонки на узких экранах: 3 → 2 → 1» у grid-контейнера, где они заданы. */
+function adaptiveIntents(block: BlockNode): string[] {
+  const intent = block.container.kind === 'grid' ? narrowColumnsIntent(block.container) : null
+  return intent === null ? [] : [intent]
 }
 
 /** Имя с пометкой элемента впереди: `img: avatar`; без подписи — просто `img`. */
@@ -157,7 +167,7 @@ export function rootHeaderComment(entry: RootEntry, indent: string, order?: Root
     [EXPORT_ROOT_TITLE, quoted(label === '' ? ROOT_UNTITLED_LABEL : label)],
     EXPORT_WORD_SEPARATOR,
   )
-  const head = `${title}${EXPORT_LIST_SEPARATOR}${rootSizeText(entry)}`
+  const head = joinParts([title, rootSizeText(entry), ...adaptiveIntents(entry.node)], EXPORT_LIST_SEPARATOR)
   return formatComment(`${orderPrefix(order)}${head}`, toCommentLines(entry.node.description), indent)
 }
 

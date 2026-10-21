@@ -11,6 +11,8 @@ import {
   FLEX_JUSTIFY_VALUES,
   GAP_TOKENS,
   GRID_ALIGN_VALUES,
+  NARROW_COLUMNS_MAX,
+  NARROW_STEPS_MAX,
   SCROLL_AXES,
 } from './constants'
 
@@ -37,6 +39,16 @@ export const gridContainerSchema = z.object({
   rows: safeCssStringSchema,
   justifyItems: z.enum(GRID_ALIGN_VALUES),
   alignItems: z.enum(GRID_ALIGN_VALUES),
+  /**
+   * Колонки на узких экранах (15.5): по шагам сужения, например `[2, 1]` к `repeat(3, 1fr)` — «3 → 2 → 1». В экспорт
+   * идёт комментарием-намерением (инлайн-стили не умеют media-запросы). Битое значение отбрасывается.
+   */
+  narrowColumns: z
+    .array(z.int().min(1).max(NARROW_COLUMNS_MAX))
+    .min(1)
+    .max(NARROW_STEPS_MAX)
+    .optional()
+    .catch(undefined),
   // Числовой gap документов до 8.4 и любой мусор — без зазора (поле молча отбрасывается)
   gap: z.enum(GAP_TOKENS).optional().catch(undefined),
   /** Прокрутка содержимого (15.2): `y` — по вертикали, `x` — по горизонтали; нет поля — не прокручивается. */

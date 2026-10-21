@@ -93,6 +93,23 @@
           @blur="applyRows"
         />
       </UiField>
+      <UiField
+        v-slot="{ id, describedBy }"
+        :label="GRID_NARROW_LABEL"
+        :hint="GRID_NARROW_HINT"
+        :error="narrowError ? GRID_NARROW_ERROR : undefined"
+      >
+        <UiTextInput
+          v-model="narrow"
+          mono
+          :label="GRID_NARROW_LABEL"
+          :placeholder="GRID_NARROW_PLACEHOLDER"
+          :error="narrowError"
+          :input-attrs="{ id, 'aria-describedby': describedBy }"
+          @keydown="onNarrowKeydown"
+          @blur="applyNarrow"
+        />
+      </UiField>
       <UiField v-slot="{ id, describedBy }" :label="GRID_JUSTIFY_ITEMS_LABEL">
         <UiSegmented
           v-model="justifyItems"
@@ -138,6 +155,10 @@ import {
   GRID_COLUMNS_LABEL,
   GRID_COLUMNS_PRESETS_LABEL,
   GRID_JUSTIFY_ITEMS_LABEL,
+  GRID_NARROW_ERROR,
+  GRID_NARROW_HINT,
+  GRID_NARROW_LABEL,
+  GRID_NARROW_PLACEHOLDER,
   GRID_ROWS_LABEL,
   GRID_ROWS_PLACEHOLDER,
   GRID_TEMPLATE_ERROR,
@@ -168,6 +189,10 @@ const {
   rowsError,
   applyRows,
   onRowsKeydown,
+  narrow,
+  narrowError,
+  applyNarrow,
+  onNarrowKeydown,
   justifyItems,
   alignItems,
 } = useCanvasPropsContainer()

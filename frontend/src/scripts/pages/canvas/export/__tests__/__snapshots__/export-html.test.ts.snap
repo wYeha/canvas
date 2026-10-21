@@ -30,7 +30,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
     </div>
     <!-- main -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m); justify-self:stretch; align-self:stretch">
-      <!-- kpi-row -->
+      <!-- kpi-row, колонки на узких экранах: 4 → 2 → 1 -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--gap-m)">
         <!-- компонент «KPI-карточка» ×4 -->
         <div data-repeat="4" style="display:flex; flex-direction:column; gap:var(--gap-m)">
@@ -38,7 +38,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
           <div><!-- kpi-value --></div>
         </div>
       </div>
-      <!-- charts -->
+      <!-- charts, колонки на узких экранах: 2 → 1 -->
       <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:var(--gap-m)">
         <!-- компонент «Карточка графика» -->
         <div style="display:flex; flex-direction:column; gap:var(--gap-m)">

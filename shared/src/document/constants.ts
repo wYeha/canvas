@@ -50,6 +50,12 @@ export const CHILD_POSITIONS = [
   'bottom-right',
 ] as const
 
+/** Наибольшее число колонок в списке «колонки на узких экранах» (15.5). */
+export const NARROW_COLUMNS_MAX = 12
+
+/** Сколько шагов сужения можно задать: `3 → 2 → 1` — два. */
+export const NARROW_STEPS_MAX = 4
+
 /** Оси прокрутки содержимого блока (без поля — не прокручивается): по вертикали или по горизонтали. */
 export const SCROLL_AXES = ['y', 'x'] as const
 

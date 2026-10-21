@@ -35,11 +35,12 @@ function flex(direction: 'row' | 'column', extra: Partial<{ align: 'center'; wra
   }
 }
 
-/** Grid-контейнер демо. */
-function grid(columns: string) {
+/** Grid-контейнер демо; `narrowColumns` — колонки на узких экранах. */
+function grid(columns: string, narrowColumns?: number[]) {
   return {
     kind: 'grid' as const,
     columns,
+    ...(narrowColumns === undefined ? {} : { narrowColumns }),
     rows: 'auto',
     justifyItems: 'stretch' as const,
     alignItems: 'stretch' as const,
@@ -84,8 +85,8 @@ function buildSidebar(): BlockNode {
 /** Основная область: ряд KPI (связь на KPI-карточку ×4), два графика (связи на карточку графика) и таблица. */
 function buildMain(kpiId: NodeId, chartId: NodeId): BlockNode {
   return block('main', { container: flex('column'), self: { widthMode: 'fill', heightMode: 'fill' } }, [
-    block('kpi-row', { container: grid('repeat(4, 1fr)') }, [{ ...createLinkBlock(kpiId), repeat: KPI_COUNT }]),
-    block('charts', { container: grid('repeat(2, 1fr)') }, [createLinkBlock(chartId), createLinkBlock(chartId)]),
+    block('kpi-row', { container: grid('repeat(4, 1fr)', [2, 1]) }, [{ ...createLinkBlock(kpiId), repeat: KPI_COUNT }]),
+    block('charts', { container: grid('repeat(2, 1fr)', [1]) }, [createLinkBlock(chartId), createLinkBlock(chartId)]),
     block('table', { self: { minHeight: '240px' } }),
   ])
 }

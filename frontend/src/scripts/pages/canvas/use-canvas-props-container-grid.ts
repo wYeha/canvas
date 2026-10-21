@@ -1,4 +1,4 @@
-/** Composable grid-части секции «Контейнер»: шаблоны колонок и строк через черновик, выравнивание. */
+/** Composable grid-части секции «Контейнер»: шаблоны колонок и строк через черновик, колонки на узких экранах, выравнивание. */
 import { computed, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { BlockNode, GridContainer, NodeId } from '@shared'
 import { useLayoutStore } from './layout-store'
@@ -10,6 +10,7 @@ import {
   rowsFromField,
   rowsToField,
 } from './props-container-grid'
+import { formatNarrowColumns, normalizeNarrowColumns, parseNarrowColumns } from './narrow-columns'
 import { findNode } from './tree-query'
 import { useBlockTextDraft } from './use-block-text-draft'
 
@@ -42,6 +43,17 @@ export function useCanvasPropsContainerGrid(block: ComputedRef<BlockNode | null>
     { multiline: false, normalize: normalizeRows },
     (id, field) => {
       patchGrid(id, { rows: rowsFromField(field) })
+    },
+  )
+
+  /** Колонки на узких экранах (15.5): черновик в виде `2 → 1`, пустое поле стирает шаги. */
+  const narrow = useBlockTextDraft(
+    () =>
+      block.value && grid.value ? { id: block.value.id, value: formatNarrowColumns(grid.value.narrowColumns) } : null,
+    { multiline: false, normalize: normalizeNarrowColumns },
+    (id, field) => {
+      const steps = parseNarrowColumns(field) ?? []
+      patchGrid(id, { narrowColumns: steps.length === 0 ? undefined : steps })
     },
   )
 
@@ -79,6 +91,10 @@ export function useCanvasPropsContainerGrid(block: ComputedRef<BlockNode | null>
     rowsError: rows.error,
     applyRows: rows.apply,
     onRowsKeydown: rows.onKeydown,
+    narrow: narrow.draft,
+    narrowError: narrow.error,
+    applyNarrow: narrow.apply,
+    onNarrowKeydown: narrow.onKeydown,
     justifyItems: alignField('justifyItems'),
     alignItems: alignField('alignItems'),
   }
