@@ -11,7 +11,7 @@ export function serializeFlag(visible: boolean): string {
   return visible ? FLAG_TRUE : FLAG_FALSE
 }
 
-/** Разбирает сохранённый флаг зеркала связей: включено только при явном `'true'`, по умолчанию — плашки. */
-export function parseLinksMirrored(raw: string | null): boolean {
+/** Разбирает сохранённый флаг, выключенный по умолчанию (зеркало связей, все стрелки): включён только при явном `'true'`. */
+export function parseOptInFlag(raw: string | null): boolean {
   return raw === FLAG_TRUE
 }

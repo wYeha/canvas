@@ -94,12 +94,16 @@ export function useCanvasLinks(): CanvasLinksView {
     void nextTick(measure)
   })
 
-  /** Стрелки с классами: выделение не пересчитывает замеры; перепривязываемая связь без стрелки. */
+  /**
+   * Стрелки с классами: выделение не пересчитывает замеры; перепривязываемая связь без стрелки. Без «все стрелки»
+   * видны только стрелки выделенной связи или выделенного источника — на большом документе иначе паутина.
+   */
   const arrows = computed<LinkArrowView[]>(() => {
     const selected = layoutStore.selectedId
     const hidden = dragStore.relinkingId
+    const all = viewSettings.linkArrowsAll
     return measured.value.flatMap(({ linkId, sourceId, segment }) => {
-      if (linkId === hidden) return []
+      if (linkId === hidden || (!all && selected !== linkId && selected !== sourceId)) return []
       const active = selected === linkId || selected === sourceId
       return {
         key: linkId,

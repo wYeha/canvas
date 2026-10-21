@@ -1,12 +1,17 @@
 /**
- * Pinia-хранилище настроек редактора (не документа): «показывать подписи блоков» и «живое зеркало связей».
+ * Pinia-хранилище настроек редактора (не документа): «показывать подписи блоков», «живое зеркало связей» и
+ * «все стрелки связей».
  * Нужно нескольким фрагментам — плашке зума (кнопки), полю и блокам. Значения запоминаются в localStorage.
  */
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { LABELS_VISIBLE_STORAGE_KEY, LINKS_MIRRORED_STORAGE_KEY } from '@/scripts/globals/constants'
+import {
+  LABELS_VISIBLE_STORAGE_KEY,
+  LINK_ARROWS_ALL_STORAGE_KEY,
+  LINKS_MIRRORED_STORAGE_KEY,
+} from '@/scripts/globals/constants'
 import { getStorageItem, setStorageItem } from '@/scripts/globals/storage'
-import { parseLabelsVisible, parseLinksMirrored, serializeFlag } from './view-settings'
+import { parseLabelsVisible, parseOptInFlag, serializeFlag } from './view-settings'
 
 export const useViewSettingsStore = defineStore('view-settings', () => {
   /** Показаны ли чипы подписей и подписи пустых листов (по умолчанию да). */
@@ -19,7 +24,7 @@ export const useViewSettingsStore = defineStore('view-settings', () => {
   }
 
   /** Живое зеркало: на месте связи рисуется содержимое источника, а не плашка (по умолчанию нет). */
-  const linksMirrored = ref(parseLinksMirrored(getStorageItem(LINKS_MIRRORED_STORAGE_KEY)))
+  const linksMirrored = ref(parseOptInFlag(getStorageItem(LINKS_MIRRORED_STORAGE_KEY)))
 
   /** Переключает живое зеркало связей и запоминает выбор. */
   function toggleLinksMirrored(): void {
@@ -27,5 +32,14 @@ export const useViewSettingsStore = defineStore('view-settings', () => {
     setStorageItem(LINKS_MIRRORED_STORAGE_KEY, serializeFlag(linksMirrored.value))
   }
 
-  return { labelsVisible, toggleLabels, linksMirrored, toggleLinksMirrored }
+  /** Стрелки всех связей; по умолчанию — только у выделенной связи и её источника (иначе на поле паутина). */
+  const linkArrowsAll = ref(parseOptInFlag(getStorageItem(LINK_ARROWS_ALL_STORAGE_KEY)))
+
+  /** Переключает «все стрелки / у выделенных» и запоминает выбор. */
+  function toggleLinkArrowsAll(): void {
+    linkArrowsAll.value = !linkArrowsAll.value
+    setStorageItem(LINK_ARROWS_ALL_STORAGE_KEY, serializeFlag(linkArrowsAll.value))
+  }
+
+  return { labelsVisible, toggleLabels, linksMirrored, toggleLinksMirrored, linkArrowsAll, toggleLinkArrowsAll }
 })
