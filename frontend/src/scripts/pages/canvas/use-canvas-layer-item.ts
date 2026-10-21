@@ -96,7 +96,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
       current: selected.value || undefined,
       expandable: children.value.length > 0,
       expanded: expanded.value,
-      toggleLabel: layerToggleLabel(expanded.value),
+      toggleLabel: layerToggleLabel(expanded.value, caption.value),
       renaming: renaming.value,
       children: children.value,
     }

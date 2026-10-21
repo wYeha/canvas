@@ -103,7 +103,8 @@ describe('классы и подсказки строки', () => {
   it('шеврон и подсказка зависят от раскрытия', () => {
     expect(layerChevronClasses(true)).toEqual(['canvas-layer-item__chevron'])
     expect(layerChevronClasses(false)).toContain('canvas-layer-item__chevron--collapsed')
-    expect(layerToggleLabel(true)).toBe('Свернуть')
-    expect(layerToggleLabel(false)).toBe('Развернуть')
+    // Имя с подписью блока: у каждой стрелки своё (скринридер и агенты различают их)
+    expect(layerToggleLabel(true, 'nav')).toBe('Свернуть «nav»')
+    expect(layerToggleLabel(false, 'nav')).toBe('Развернуть «nav»')
   })
 })

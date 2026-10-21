@@ -69,7 +69,7 @@ export function layerChevronClasses(expanded: boolean): string[] {
     : ['canvas-layer-item__chevron', 'canvas-layer-item__chevron--collapsed']
 }
 
-/** Подсказка кнопки сворачивания. */
-export function layerToggleLabel(expanded: boolean): string {
-  return expanded ? LAYER_COLLAPSE_LABEL : LAYER_EXPAND_LABEL
+/** Имя и подсказка кнопки сворачивания: действие и подпись блока («Свернуть «nav»») — у каждой строки своё. */
+export function layerToggleLabel(expanded: boolean, caption: string): string {
+  return `${expanded ? LAYER_COLLAPSE_LABEL : LAYER_EXPAND_LABEL} «${caption}»`
 }
