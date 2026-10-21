@@ -9,7 +9,7 @@
         :aria-expanded="view.expanded"
         :aria-label="view.toggleLabel"
         :title="view.toggleLabel"
-        @mousedown="keepFocusOnMouseDown"
+        @mousedown="releaseFieldOnMouseDown"
         @click="toggle"
       >
         <UiIcon name="chevron-down" :class="view.chevronClasses" />
@@ -30,7 +30,7 @@
         class="canvas-layer-item__select"
         type="button"
         :aria-current="view.current"
-        @mousedown="keepFocusOnMouseDown"
+        @mousedown="releaseFieldOnMouseDown"
         @click="activate"
         @dblclick="startRename"
       >
@@ -52,7 +52,7 @@ import UiIcon from '@/views/components/ui-icon/UiIcon.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
 import type { CanvasLayerItemProps } from '@/scripts/pages/canvas/canvas-layer-item.types'
 import { useCanvasLayerItem } from '@/scripts/pages/canvas/use-canvas-layer-item'
-import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
+import { releaseFieldOnMouseDown } from '@/scripts/globals/focus'
 
 const props = defineProps<CanvasLayerItemProps>()
 const rowEl = ref<HTMLElement | null>(null)

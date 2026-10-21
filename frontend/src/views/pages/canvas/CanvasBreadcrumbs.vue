@@ -10,7 +10,7 @@
           'canvas-breadcrumbs__segment',
           { 'canvas-breadcrumbs__segment--current': index === segments.length - 1 },
         ]"
-        @mousedown="keepFocusOnMouseDown"
+        @mousedown="releaseFieldOnMouseDown"
         @click="selectSegment(segment.id)"
       >
         {{ segment.text }}
@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import UiPill from '@/views/components/ui-pill/UiPill.vue'
-import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
+import { releaseFieldOnMouseDown } from '@/scripts/globals/focus'
 import { useCanvasBreadcrumbs } from '@/scripts/pages/canvas/use-canvas-breadcrumbs'
 
 const { segments, selectSegment, separator, emptyText } = useCanvasBreadcrumbs()
