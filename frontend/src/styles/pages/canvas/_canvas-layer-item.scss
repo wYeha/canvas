@@ -128,6 +128,13 @@
     color: var(--color-muted);
   }
 
+  // Значок «есть описание для ИИ» (16.8)
+  &__described {
+    flex: none;
+    font-size: v.$font-size-2xs;
+    color: var(--color-muted);
+  }
+
   &__type {
     flex: none;
     margin-left: auto;

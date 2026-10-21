@@ -141,6 +141,8 @@
     // Узкий блок на экране: без текста, только значок направления (полное имя — в бейдже наведения)
     @container (max-width: #{v.$label-min-screen-width}) {
       #{$b}__text,
+      #{$b}__semantic,
+      #{$b}__described,
       #{$b}__repeat {
         display: none;
       }
@@ -196,6 +198,8 @@
       padding: 0;
 
       #{$b}__text,
+      #{$b}__semantic,
+      #{$b}__described,
       #{$b}__repeat {
         display: none;
       }
@@ -220,6 +224,27 @@
   &__repeat {
     flex: none;
     font-family: v.$font-mono;
+    color: var(--color-muted);
+
+    &--chip {
+      color: var(--color-text);
+    }
+  }
+
+  // Значок смысла (тег не div и смысловой элемент, 16.8): ‹nav ul›
+  &__semantic {
+    flex: none;
+    font-family: v.$font-mono;
+    color: var(--color-muted);
+
+    &--chip {
+      color: var(--color-text);
+    }
+  }
+
+  // Значок «есть описание для ИИ» (16.8): ¶
+  &__described {
+    flex: none;
     color: var(--color-muted);
 
     &--chip {

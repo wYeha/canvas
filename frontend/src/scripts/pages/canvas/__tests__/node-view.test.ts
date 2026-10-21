@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { REPEAT_RENDER_BUDGET } from '@/scripts/pages/canvas/constants'
 import { createBlock, createLinkBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
+  hasDescription,
+  semanticMark,
   depthTierClass,
   blockClasses,
   depthClass,
@@ -203,5 +205,24 @@ describe('второй признак глубины (16.3)', () => {
     expect(depthTierClass(8)).toBe('canvas-node--tier-1')
     expect(depthTierClass(16)).toBe('canvas-node--tier-2')
     expect(depthTierClass(40)).toBe('canvas-node--tier-2')
+  })
+})
+
+describe('значки смысла и описания (16.8)', () => {
+  const base = createBlock('flex', 'a')
+
+  it('semanticMark: тег не div и элемент; у div без элемента и у связи — пусто', () => {
+    expect(semanticMark(base)).toBe('')
+    expect(semanticMark({ ...base, tag: 'nav' })).toBe('‹nav›')
+    expect(semanticMark({ ...base, tag: 'nav', element: 'ul' })).toBe('‹nav ul›')
+    expect(semanticMark({ ...base, element: 'h1' })).toBe('‹h1›')
+    expect(semanticMark({ ...createLinkBlock('src'), tag: 'nav' })).toBe('')
+  })
+
+  it('hasDescription: непустое описание, не у связи', () => {
+    expect(hasDescription(base)).toBe(false)
+    expect(hasDescription({ ...base, description: '  ' })).toBe(false)
+    expect(hasDescription({ ...base, description: 'график' })).toBe(true)
+    expect(hasDescription({ ...createLinkBlock('src'), description: 'x' })).toBe(false)
   })
 })

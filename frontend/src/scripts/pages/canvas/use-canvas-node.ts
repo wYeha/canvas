@@ -18,11 +18,13 @@ import {
   blockClasses,
   blockLabel,
   directionIcon,
+  hasDescription,
   isLeafBlock,
   linkSourceName,
   mirrorBlock,
   renderChildren,
   repeatMark,
+  semanticMark,
   type RenderChild,
 } from './node-view'
 
@@ -44,6 +46,10 @@ export interface NodeView {
   /** Контейнер, в котором лежат дети (у зеркала — контейнер источника): вид и направление для их стилей. */
   childKind: ContainerKind
   childDirection: FlexContainer['direction'] | undefined
+  /** Значок смысла: тег не `div` и смысловой элемент (`‹nav ul›`); пусто — нет (16.8). */
+  semantic: string
+  /** Есть описание для ИИ — значок ¶ на подписи (16.8). */
+  described: boolean
   /** Значки режимов размера в «Структуре» (`↔`, `⊢360⊣`); в «Пропорциях» и у корня — пусто. */
   sizeMarks: string
   /** Оси обрезки в «Пропорциях» (16.4). */
@@ -121,6 +127,8 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
       mirror: source !== null,
       childKind: shown.container.kind,
       childDirection: shown.container.kind === 'flex' ? shown.container.direction : undefined,
+      semantic: semanticMark(node),
+      described: hasDescription(node),
       sizeMarks: !viewSettings.sizesShown && parentKind !== null ? sizeMarks(node.self) : '',
       clip: viewSettings.sizesShown ? clipAxes(shown, parentKind, props.rootFixedHeight === true) : NO_CLIP,
     }

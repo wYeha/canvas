@@ -16,7 +16,7 @@ import {
 } from './layers'
 import { useLayoutStore } from './layout-store'
 import { scrollIntoViewIfHidden } from './node-dom'
-import { NO_SOURCE_LABELS, repeatMark } from './node-view'
+import { hasDescription, NO_SOURCE_LABELS, repeatMark } from './node-view'
 import { nodeTypeLabel } from './selection'
 import { CANVAS_LAYERS_CONTEXT, LAYERS_DND_CONTEXT, type CanvasLayersContext } from './use-canvas-layers'
 import { skipLayersClickAfterDrag } from './use-canvas-layers-dnd'
@@ -30,6 +30,8 @@ export interface LayerItemView {
   caption: string
   /** Знак повтора `×N` после подписи; без повтора — пусто. */
   repeat: string
+  /** Есть описание для ИИ — значок ¶ в строке (16.8). */
+  described: boolean
   type: string
   /** `true` или `undefined`: `aria-current` ставится только выделенной строке. */
   current: true | undefined
@@ -92,6 +94,7 @@ export function useCanvasLayerItem(props: CanvasLayerItemProps, rowEl: Ref<HTMLE
       icon: layerIcon(node),
       caption: caption.value,
       repeat: depth === 0 ? '' : repeatMark(node),
+      described: hasDescription(node),
       type: nodeTypeLabel(node),
       current: selected.value || undefined,
       expandable: children.value.length > 0,

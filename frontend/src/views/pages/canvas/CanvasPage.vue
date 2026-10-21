@@ -8,6 +8,7 @@
       <CanvasToolbar class="canvas-page__toolbar" />
       <CanvasBreadcrumbs class="canvas-page__breadcrumbs" />
       <CanvasZoom class="canvas-page__zoom" />
+      <CanvasMinimap class="canvas-page__minimap" />
     </CanvasViewport>
     <ExportModal v-model:open="exportOpen" />
     <HotkeysModal v-model:open="hotkeysOpen" />
@@ -19,6 +20,7 @@
 import CanvasBreadcrumbs from '@/views/pages/canvas/CanvasBreadcrumbs.vue'
 import CanvasHeader from '@/views/pages/canvas/CanvasHeader.vue'
 import CanvasLayers from '@/views/pages/canvas/CanvasLayers.vue'
+import CanvasMinimap from '@/views/pages/canvas/CanvasMinimap.vue'
 import CanvasProps from '@/views/pages/canvas/CanvasProps.vue'
 import CanvasToolbar from '@/views/pages/canvas/CanvasToolbar.vue'
 import CanvasToast from '@/views/pages/canvas/CanvasToast.vue'

@@ -37,6 +37,14 @@
         <UiIcon :name="view.icon" class="canvas-layer-item__icon" />
         <span class="canvas-layer-item__label">{{ view.caption }}</span>
         <span v-if="view.repeat !== ''" class="canvas-layer-item__repeat">{{ view.repeat }}</span>
+        <span
+          v-if="view.described"
+          class="canvas-layer-item__described"
+          :title="DESCRIPTION_MARK_TITLE"
+          aria-hidden="true"
+        >
+          {{ DESCRIPTION_MARK }}
+        </span>
         <span class="canvas-layer-item__type">{{ view.type }}</span>
       </button>
     </div>
@@ -47,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import { DESCRIPTION_MARK, DESCRIPTION_MARK_TITLE } from '@/scripts/pages/canvas/constants'
 import { ref } from 'vue'
 import UiIcon from '@/views/components/ui-icon/UiIcon.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'

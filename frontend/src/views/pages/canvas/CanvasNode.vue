@@ -14,6 +14,8 @@
       <span class="canvas-node__caption-body">
         <span class="canvas-node__icon">{{ view.icon }}</span>
         <span v-if="view.label !== ''" class="canvas-node__text">{{ view.label }}</span>
+        <span v-if="view.semantic !== ''" class="canvas-node__semantic">{{ view.semantic }}</span>
+        <span v-if="view.described" class="canvas-node__described">{{ DESCRIPTION_MARK }}</span>
         <span v-if="view.repeat !== ''" class="canvas-node__repeat">{{ view.repeat }}</span>
         <span v-if="view.sizeMarks !== ''" class="canvas-node__size">{{ view.sizeMarks }}</span>
       </span>
@@ -22,6 +24,12 @@
       <span class="canvas-node__chip" :data-label-node-id="labelAttr">
         <span class="canvas-node__icon canvas-node__icon--chip">{{ view.icon }}</span>
         <span v-if="view.label !== ''" class="canvas-node__text">{{ view.label }}</span>
+        <span v-if="view.semantic !== ''" class="canvas-node__semantic canvas-node__semantic--chip">
+          {{ view.semantic }}
+        </span>
+        <span v-if="view.described" class="canvas-node__described canvas-node__described--chip">
+          {{ DESCRIPTION_MARK }}
+        </span>
         <span v-if="view.repeat !== ''" class="canvas-node__repeat canvas-node__repeat--chip">{{ view.repeat }}</span>
         <span v-if="view.sizeMarks !== ''" class="canvas-node__size canvas-node__size--chip">{{ view.sizeMarks }}</span>
       </span>
@@ -55,6 +63,7 @@
 <script setup lang="ts">
 import { keepFocusOnMouseDown } from '@/scripts/globals/focus'
 import type { CanvasNodeProps } from '@/scripts/pages/canvas/canvas-node.types'
+import { DESCRIPTION_MARK } from '@/scripts/pages/canvas/constants'
 import { useCanvasNode } from '@/scripts/pages/canvas/use-canvas-node'
 
 const props = withDefaults(defineProps<CanvasNodeProps>(), { inMirror: false })

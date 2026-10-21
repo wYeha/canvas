@@ -16,7 +16,8 @@
   &__props,
   &__toolbar,
   &__breadcrumbs,
-  &__zoom {
+  &__zoom,
+  &__minimap {
     position: absolute;
     z-index: v.$z-panel;
   }
@@ -53,5 +54,11 @@
   &__zoom {
     right: v.$panel-gap;
     bottom: v.$panel-gap;
+  }
+
+  // Мини-карта (16.8): вверху видимой области, левее панели «Свойства» — не перекрывает панели и тулбар
+  &__minimap {
+    top: v.$panel-gap;
+    right: calc(#{v.$props-width} + 2 * #{v.$panel-gap});
   }
 }

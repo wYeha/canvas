@@ -1,0 +1,22 @@
+// Стили фрагмента canvas-minimap: мини-карта на мелком масштабе — плашка с корнями и рамкой видимой области
+@use 'variables' as v;
+
+.canvas-minimap {
+  display: block;
+  cursor: pointer;
+  background: var(--color-panel);
+  border-radius: v.$radius-panel;
+  box-shadow: var(--shadow-pill);
+
+  &__root {
+    fill: var(--color-subtle);
+    stroke: var(--color-line);
+    stroke-width: 1px;
+  }
+
+  &__view {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: v.$minimap-view-stroke;
+  }
+}

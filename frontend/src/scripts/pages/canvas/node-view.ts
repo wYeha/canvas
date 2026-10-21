@@ -12,6 +12,9 @@ import {
 } from '@shared'
 import {
   BLOCK_PALETTE_SIZE,
+  DEFAULT_TAG,
+  SEMANTIC_MARK_CLOSE,
+  SEMANTIC_MARK_OPEN,
   DEPTH_TIER_MAX,
   CSS_PX_UNIT,
   DEFAULT_REPEAT,
@@ -132,6 +135,21 @@ export function blockClasses(block: BlockNode, depth: number, parentKind: Contai
 /** Подпись блока без пробелов по краям; пустая строка, если подписи нет. */
 export function blockLabel(block: BlockNode): string {
   return block.label.trim()
+}
+
+/** Есть ли у блока описание для ИИ (16.8): значок на чипе и в «Слоях» сразу показывает недописанное. У связи — нет. */
+export function hasDescription(block: BlockNode): boolean {
+  return !isLinkBlock(block) && block.description.trim() !== ''
+}
+
+/**
+ * Значок смысла блока (16.8): раскладочный тег, если он не `div`, и смысловой элемент — `‹nav›`, `‹nav ul›`, `‹h1›`.
+ * Без того и другого (и у связи) — пустая строка.
+ */
+export function semanticMark(block: BlockNode): string {
+  if (isLinkBlock(block)) return ''
+  const parts = [block.tag === DEFAULT_TAG ? '' : block.tag, block.element ?? ''].filter((part) => part !== '')
+  return parts.length === 0 ? '' : `${SEMANTIC_MARK_OPEN}${parts.join(' ')}${SEMANTIC_MARK_CLOSE}`
 }
 
 /** Подпись корня над блоком: название и ширина превью (`Дашборд · 1440`) для текста и отдельно ширина. */
