@@ -650,6 +650,9 @@ export const HISTORY_LIMIT = 100
 /** Окно склейки правок одного поля одного узла, мс: стрелки числового поля и сегменты подряд — один шаг истории. */
 export const HISTORY_MERGE_MS = 500
 
+/** Пауза в наборе, после которой подпись и описание блока записываются в документ, мс (без ожидания blur). */
+export const TEXT_DRAFT_COMMIT_MS = 300
+
 /** `KeyboardEvent.code` клавиши Z: Ctrl+Z отменяет, Ctrl+Shift+Z повторяет. */
 export const UNDO_HOTKEY_CODE = 'KeyZ'
 

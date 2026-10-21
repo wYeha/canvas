@@ -24,6 +24,7 @@ import { isAutosaveEnabled } from './save-status'
 import { createDemoDocument } from './demo-document'
 import { createDocument } from './factories'
 import { useLayoutStore } from './layout-store'
+import { useTextDraftStore } from './text-draft-store'
 import { createId } from '@/scripts/globals/id'
 import { useAuthStore } from '@/scripts/globals/auth-store'
 import { createDocumentsSync, type RemoteChanges } from './documents-sync'
@@ -38,6 +39,7 @@ export interface DocumentsInitOptions {
 
 export const useDocumentsStore = defineStore('documents', () => {
   const layout = useLayoutStore()
+  const drafts = useTextDraftStore()
   const auth = useAuthStore()
   /** Индекс сохранённых документов (без живой записи текущего: см. `entries`). */
   const metas = ref<DocumentMeta[]>([])
@@ -150,8 +152,12 @@ export const useDocumentsStore = defineStore('documents', () => {
     { flush: 'sync' },
   )
 
-  /** Немедленно дописывает отложенное сохранение; `false`, если запись не удалась (переключаться нельзя: потеряем правки). */
+  /**
+   * Немедленно дописывает отложенное сохранение; `false`, если запись не удалась (переключаться нельзя: потеряем правки).
+   * Сначала в документ попадает незаписанный ввод полей «Свойств» (смена документа, уход со страницы, выход).
+   */
   function flush(): boolean {
+    drafts.flushAll()
     if (!isAutosaveEnabled(status.value) || currentId.value === null) return true
     if (timer === null && status.value !== 'error') return true
     return persistCurrent()

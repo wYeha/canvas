@@ -1,5 +1,6 @@
 /** Состояние страницы canvas, не нужное другим фрагментам: открыто ли окна экспорта и горячих клавиш. */
 import { ref, type Ref } from 'vue'
+import { useTextDraftStore } from './text-draft-store'
 
 /** Результат `useCanvasPage`. */
 export interface CanvasPageState {
@@ -19,9 +20,11 @@ export interface CanvasPageState {
 export function useCanvasPage(): CanvasPageState {
   const exportOpen = ref(false)
   const hotkeysOpen = ref(false)
+  const drafts = useTextDraftStore()
 
-  /** Открывает окно экспорта. */
+  /** Открывает окно экспорта; незаписанный ввод полей «Свойств» сначала попадает в документ. */
   function openExport(): void {
+    drafts.flushAll()
     exportOpen.value = true
   }
 

@@ -23,14 +23,14 @@ export function useCanvasPropsBlock() {
 
   const label = useBlockTextDraft(
     () => (block.value ? { id: block.value.id, value: block.value.label } : null),
-    { multiline: false },
+    { multiline: false, live: true },
     (id, label) => {
       patch(id, { label })
     },
   )
   const description = useBlockTextDraft(
     () => (block.value ? { id: block.value.id, value: block.value.description } : null),
-    { multiline: true },
+    { multiline: true, live: true },
     (id, description) => {
       patch(id, { description })
     },

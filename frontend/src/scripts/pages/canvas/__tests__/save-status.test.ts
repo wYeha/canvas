@@ -19,6 +19,9 @@ describe('saveStatusLabel', () => {
   it('вид статуса для точки в хедере', () => {
     expect(saveStatusKind('saved', 'off')).toBe('local')
     expect(saveStatusKind('saved', 'failed')).toBe('offline')
+    // Незаписанный ввод в полях «Свойств» — «сохраняется», ошибка и демо важнее
+    expect(saveStatusKind('saved', 'off', true)).toBe('saving')
+    expect(saveStatusKind('error', 'off', true)).toBe('error')
     expect(saveStatusKind('error', 'failed')).toBe('error')
   })
 })
