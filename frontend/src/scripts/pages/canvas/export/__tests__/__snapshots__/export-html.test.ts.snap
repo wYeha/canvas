@@ -11,7 +11,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
   <div style="display:flex; align-items:center; gap:var(--gap-m)">
     <div style="flex:none; width:120px"><!-- logo --></div>
     <!-- nav -->
-    <div style="display:flex; gap:var(--gap-m); flex:1 1 0; min-width:0">
+    <div style="display:flex; gap:var(--gap-m); flex:1; min-width:0">
       <div><!-- nav-item --></div>
       <div><!-- nav-item --></div>
       <div><!-- nav-item --></div>
@@ -19,7 +19,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
     <div style="flex:none; width:160px"><!-- user --></div>
   </div>
   <!-- body -->
-  <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1 1 0; min-height:0">
+  <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1; min-height:0">
     <!-- sidebar -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m)">
       <div><!-- menu-item --></div>
@@ -29,7 +29,7 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
     <!-- main -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m); justify-self:stretch; align-self:stretch">
       <!-- kpi-row -->
-      <div style="display:grid; grid-template-columns:repeat(4, 1fr)">
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--gap-m)">
         <!-- компонент «KPI-карточка» ×4 -->
         <div data-repeat="4" style="display:flex; flex-direction:column; gap:var(--gap-m)">
           <div><!-- kpi-title --></div>

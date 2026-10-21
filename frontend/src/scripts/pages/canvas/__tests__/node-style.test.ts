@@ -188,10 +188,10 @@ describe('режимы размера (этап 14)', () => {
     return toStyleObject(styleEntries(make('flex', {}, { self }), 'flex', direction))
   }
 
-  it('заполнить по главной оси: flex 1 1 0 и минимум 0 по ней', () => {
-    expect(child({ widthMode: 'fill' })).toEqual({ display: 'flex', flex: '1 1 0', 'min-width': '0' })
-    expect(child({ heightMode: 'fill' }, 'column')).toEqual({ display: 'flex', flex: '1 1 0', 'min-height': '0' })
-    expect(child({ widthMode: 'fill' }, 'row-reverse')).toEqual({ display: 'flex', flex: '1 1 0', 'min-width': '0' })
+  it('заполнить по главной оси: flex 1 (базис 0%, не 0 — иначе схлопывается в колонке без высоты) и минимум 0', () => {
+    expect(child({ widthMode: 'fill' })).toEqual({ display: 'flex', flex: '1', 'min-width': '0' })
+    expect(child({ heightMode: 'fill' }, 'column')).toEqual({ display: 'flex', flex: '1', 'min-height': '0' })
+    expect(child({ widthMode: 'fill' }, 'row-reverse')).toEqual({ display: 'flex', flex: '1', 'min-width': '0' })
   })
 
   it('заполнить по поперечной оси: align-self stretch', () => {
@@ -208,7 +208,7 @@ describe('режимы размера (этап 14)', () => {
     expect(child({ widthMode: 'fill', flex: '2 1 0' })).toEqual({ display: 'flex', flex: '2 1 0' })
     expect(child({ widthMode: 'fill', minWidth: '120px' })).toEqual({
       display: 'flex',
-      flex: '1 1 0',
+      flex: '1',
       'min-width': '120px',
     })
   })
@@ -238,5 +238,10 @@ describe('режимы размера (этап 14)', () => {
     })
     // У листа и единственного ребёнка зазор ничего не делает и не выводится
     expect(styles(make('grid', { gap: 'l' }, { children: [createBlock('flex', 'a')] }))).not.toHaveProperty('gap')
+  })
+
+  it('единственный ребёнок с повтором ×N — это N соседей, зазор нужен', () => {
+    const repeated = { children: [{ ...createBlock('flex', 'a'), repeat: 4 }] }
+    expect(styles(make('flex', { gap: 'm' }, repeated))).toHaveProperty('gap', 'var(--gap-m)')
   })
 })

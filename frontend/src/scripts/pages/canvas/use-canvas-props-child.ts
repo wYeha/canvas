@@ -104,6 +104,11 @@ export function useCanvasPropsChild() {
   /** Подсказка под режимом: что он даст в экспорте (у «Заполнить» — по оси родителя). */
   function modeHint(axis: SizeAxis, mode: ComputedRef<SizeMode | null>): ComputedRef<string> {
     return computed(() => {
+      // Свободный flex (например, `1` из старых документов) перекрывает режим главной оси — иначе «Авто» обманывает
+      const self = node.value?.self
+      if (self && isMain(axis) && displayChildFlex(self.flex) !== displayChildFlex(undefined)) {
+        return CHILD_SIZE_MODE_HINTS.flexOverride
+      }
       if (mode.value === 'content' || mode.value === null) return CHILD_SIZE_MODE_HINTS.content
       if (mode.value === 'fixed') return CHILD_SIZE_MODE_HINTS.fixed
       if (gridParent.value) return CHILD_SIZE_MODE_HINTS.fillGrid

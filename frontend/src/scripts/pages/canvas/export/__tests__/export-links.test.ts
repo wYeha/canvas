@@ -122,7 +122,7 @@ describe('зазор, режимы и экран целиком в экспор�
     const html = exportScopeHtml(docOf(entry), { kind: 'all' }, {})
     expect(html).toContain('<!-- sidebar, фиксированная ширина -->')
     expect(html).toContain('flex:none')
-    expect(html).toContain('flex:1 1 0; min-width:0')
+    expect(html).toContain('flex:1; min-width:0')
     expect(html).toContain('height:100vh')
     expect(html).toContain('экран целиком (100vh)')
   })

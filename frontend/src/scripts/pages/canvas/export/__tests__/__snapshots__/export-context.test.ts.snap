@@ -35,7 +35,7 @@ exports[`exportSelectedHtml > демо: «kpi-row» без замера 1`] = `
   «KPI-карточка»
 -->
 <!-- kpi-row -->
-<div style="display:grid; grid-template-columns:repeat(4, 1fr); --gap-m:16px">
+<div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--gap-m); --gap-m:16px">
   <!-- компонент «KPI-карточка» ×4 -->
   <div data-repeat="4" style="display:flex; flex-direction:column; gap:var(--gap-m)">
     <div><!-- kpi-title --></div>

@@ -22,6 +22,7 @@ import {
   MIN_CHILDREN_FOR_GAP,
   INLINE_STYLE_SEPARATOR,
 } from './constants'
+import { repeatCount } from './node-view'
 import { mainAxis, otherAxis, sizeMode, sizeValue, type SizeAxis } from './size-mode'
 
 /** Оси размера в порядке вывода. */
@@ -161,9 +162,17 @@ export function styleEntries(
   parentKind: ContainerKind | null,
   parentDirection: FlexContainer['direction'] = CSS_DEFAULT_FLEX_DIRECTION,
 ): StyleEntry[] {
-  const entries = containerEntries(node.container, node.children.length)
+  const entries = containerEntries(node.container, renderedChildCount(node))
   entries.push(...selfEntries(node.self, parentKind, parentDirection))
   return entries
+}
+
+/**
+ * Сколько соседей окажется внутри узла с учётом повторов: ребёнок ×4 — четыре соседа. Единственный ребёнок с
+ * повтором тоже требует зазора (в превью — копии, в экспорте `data-repeat` разворачивается в соседей).
+ */
+export function renderedChildCount(node: LayoutNode): number {
+  return node.children.reduce((sum, child) => sum + repeatCount(child), 0)
 }
 
 /** Объект для Vue `:style` (ключи в kebab-case). */

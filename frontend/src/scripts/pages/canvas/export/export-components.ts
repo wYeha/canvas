@@ -4,7 +4,7 @@
  */
 import { GAP_TOKENS, isLinkBlock, type BlockNode, type LayoutDocument, type NodeId } from '@shared'
 import { CSS_PX_UNIT, GAP_TOKEN_PX, GAP_VAR_PREFIX, MIN_CHILDREN_FOR_GAP } from '@/scripts/pages/canvas/constants'
-import type { StyleEntry } from '@/scripts/pages/canvas/node-style'
+import { renderedChildCount, type StyleEntry } from '@/scripts/pages/canvas/node-style'
 import { findRootEntry } from '@/scripts/pages/canvas/tree-query'
 
 /** Токен зазора. */
@@ -51,7 +51,8 @@ export function usedGaps(doc: LayoutDocument, nodes: readonly BlockNode[]): GapT
       visit(source)
       return
     }
-    if (node.container.gap !== undefined && node.children.length >= MIN_CHILDREN_FOR_GAP) found.add(node.container.gap)
+    if (node.container.gap !== undefined && renderedChildCount(node) >= MIN_CHILDREN_FOR_GAP)
+      found.add(node.container.gap)
     node.children.forEach(visit)
   }
   nodes.forEach(visit)
