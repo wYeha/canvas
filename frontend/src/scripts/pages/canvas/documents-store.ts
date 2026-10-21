@@ -180,6 +180,8 @@ export const useDocumentsStore = defineStore('documents', () => {
    */
   function applyRemoteChanges(changes: RemoteChanges): void {
     if (status.value === 'demo') return
+    // Незаписанный ввод полей «Свойств» — сначала в документ: он считается несохранённой правкой ниже
+    drafts.flushAll()
     metas.value = readIndex()
     const id = currentId.value
     if (id === null) return

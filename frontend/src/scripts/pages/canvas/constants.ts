@@ -656,6 +656,9 @@ export const RULES_MERGE_KEY = 'document:rules'
 /** Пауза в наборе, после которой подпись и описание блока записываются в документ, мс (без ожидания blur). */
 export const TEXT_DRAFT_COMMIT_MS = 300
 
+/** Префикс ключа склейки истории сеанса набора в поле «Свойств» (записи одного сеанса — один шаг). */
+export const TEXT_DRAFT_MERGE_PREFIX = 'text-draft:'
+
 /** `KeyboardEvent.code` клавиши Z: Ctrl+Z отменяет, Ctrl+Shift+Z повторяет. */
 export const UNDO_HOTKEY_CODE = 'KeyZ'
 

@@ -5,7 +5,8 @@
  */
 import { onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import type { NodeId } from '@shared'
-import { TEXT_DRAFT_COMMIT_MS } from './constants'
+import { TEXT_DRAFT_COMMIT_MS, TEXT_DRAFT_MERGE_PREFIX } from './constants'
+import { useLayoutStore } from './layout-store'
 import { draftKeyCommand } from './props-block'
 import { useTextDraftStore } from './text-draft-store'
 
@@ -25,11 +26,14 @@ export interface TextDraftOptions {
   live?: boolean
 }
 
-/** Возвращает черновик и обработчики; `commit` вызывается с id блока, который редактировался (даже если выделение уже сменилось). */
+/**
+ * Возвращает черновик и обработчики; `commit` вызывается с id блока, который редактировался (даже если выделение уже
+ * сменилось), и ключом склейки истории сеанса набора (`live`: записи одного сеанса — один шаг; иначе `null`).
+ */
 export function useBlockTextDraft(
   source: () => TextDraftSource | null,
   options: TextDraftOptions,
-  commit: (id: NodeId, value: string) => void,
+  commit: (id: NodeId, value: string, mergeKey: string | null) => void,
 ) {
   const draft: Ref<string> = ref('')
   /** Последняя запись отклонена как недопустимая; сбрасывается правкой, Esc и сменой значения. */
@@ -40,6 +44,11 @@ export function useBlockTextDraft(
   /** Отложенная запись ввода (`live`); `null` — не запланирована. */
   let liveTimer: ReturnType<typeof setTimeout> | null = null
   const draftStore = useTextDraftStore()
+  const layoutStore = useLayoutStore()
+  /** Документ владельца: после смены документа черновик старого блока никуда не пишется. */
+  let ownerDocId: NodeId | null = null
+  /** Ключ склейки текущего сеанса набора; новый сеанс — после blur/Enter, смены владельца и внешней правки. */
+  let sessionKey: string | null = null
   const key = Symbol('text-draft')
   const unregister = draftStore.register(key, flush)
 
@@ -53,7 +62,9 @@ export function useBlockTextDraft(
       // Эхо собственной записи по паузе: набор мог продолжиться до этого тика — черновик не трогаем
       if (current !== null && current.id === ownerId && current.value === ownerValue) return
       clearLiveTimer()
+      sessionKey = null
       ownerId = current?.id ?? null
+      ownerDocId = layoutStore.document.id
       ownerValue = current?.value ?? ''
       draft.value = ownerValue
       error.value = false
@@ -70,6 +81,25 @@ export function useBlockTextDraft(
     return ownerId !== null && draft.value !== ownerValue
   }
 
+  /** Владелец черновика — в открытом сейчас документе (иначе писать некуда: блок мог совпасть по id с чужим). */
+  function isOwnDocument(): boolean {
+    return ownerDocId === layoutStore.document.id
+  }
+
+  /** Черновик, который `flush` запишет (допустим и нормализация его не меняет); `null` — дождётся blur или Enter. */
+  function flushable(): string | null {
+    if (!isDirty()) return null
+    const next = options.normalize ? options.normalize(draft.value) : draft.value
+    return next === draft.value ? next : null
+  }
+
+  /** Ключ склейки сеанса набора (у `live`): создаётся при первой записи сеанса. */
+  function liveMergeKey(): string | null {
+    if (options.live !== true) return null
+    sessionKey ??= `${TEXT_DRAFT_MERGE_PREFIX}${String(Date.now())}:${String(Math.random())}`
+    return sessionKey
+  }
+
   /** Отменяет отложенную запись ввода. */
   function clearLiveTimer(): void {
     if (liveTimer !== null) clearTimeout(liveTimer)
@@ -82,20 +112,20 @@ export function useBlockTextDraft(
    */
   function flush(): void {
     clearLiveTimer()
-    if (ownerId === null || !isDirty()) return
-    const next = options.normalize ? options.normalize(draft.value) : draft.value
-    if (next !== draft.value) return
+    const next = flushable()
+    if (ownerId === null || next === null || !isOwnDocument()) return
     ownerValue = next
     draftStore.setDirty(key, false)
-    commit(ownerId, next)
+    commit(ownerId, next, liveMergeKey())
   }
 
-  // Набор: отметка «есть незаписанный ввод» и (у `live`) запись через паузу
+  // Набор: отметка «есть незаписанный ввод» (только то, что запишется без blur — иначе статус «Сохраняется…» висел бы)
+  // и (у `live`) запись через паузу
   watch(draft, () => {
-    const dirtyNow = isDirty()
-    draftStore.setDirty(key, dirtyNow)
+    const pending = flushable() !== null
+    draftStore.setDirty(key, pending)
     clearLiveTimer()
-    if (dirtyNow && options.live === true) liveTimer = setTimeout(flush, TEXT_DRAFT_COMMIT_MS)
+    if (pending && options.live === true) liveTimer = setTimeout(flush, TEXT_DRAFT_COMMIT_MS)
   })
 
   onBeforeUnmount(() => {
@@ -105,9 +135,10 @@ export function useBlockTextDraft(
 
   /** Сохраняет несохранённый изменённый черновик прежнего владельца (смена выделения без blur); недопустимый — отбрасывается. */
   function flushOldOwner(oldId: NodeId, oldValue: string | undefined): void {
-    if (draft.value === (oldValue ?? '')) return
+    // Сравнение с `ownerValue`: черновик мог уже записаться (`flushAll`) в этом же обработчике
+    if (draft.value === ownerValue || !isOwnDocument()) return
     const next = options.normalize ? options.normalize(draft.value) : draft.value
-    if (next !== null && next !== oldValue) commit(oldId, next)
+    if (next !== null && next !== oldValue) commit(oldId, next, liveMergeKey())
   }
 
   /**
@@ -116,6 +147,9 @@ export function useBlockTextDraft(
    */
   function apply(): void {
     clearLiveTimer()
+    const mergeKey = sessionKey
+    // blur и Enter закрывают сеанс набора: следующий ввод — новый шаг истории
+    sessionKey = null
     if (ownerId === null) return
     if (draft.value === (source()?.value ?? '')) return
     const next = options.normalize ? options.normalize(draft.value) : draft.value
@@ -126,7 +160,7 @@ export function useBlockTextDraft(
     }
     error.value = false
     draft.value = next
-    commit(ownerId, next)
+    commit(ownerId, next, mergeKey)
   }
 
   /** Откатывает черновик к значению документа; если правка была, Esc не уходит выше (не закрывает модалки). */

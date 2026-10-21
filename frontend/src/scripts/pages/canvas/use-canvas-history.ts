@@ -2,11 +2,13 @@
 import { computed } from 'vue'
 import { useLabelEditStore } from './label-edit-store'
 import { useLayoutStore } from './layout-store'
+import { useTextDraftStore } from './text-draft-store'
 
 /** Возвращает `undo()`, `redo()` и флаги доступности `canUndo` / `canRedo`. */
 export function useCanvasHistory() {
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
+  const drafts = useTextDraftStore()
 
   const canUndo = computed(() => layoutStore.canUndo)
   const canRedo = computed(() => layoutStore.canRedo)
@@ -17,12 +19,16 @@ export function useCanvasHistory() {
    */
   function undo(): void {
     labelEdit.finish()
+    // Незаписанный ввод полей «Свойств» (кнопки тулбара фокус не забирают) — сначала в документ: иначе отмена
+    // сбросила бы его, а запись по паузе после отмены очистила бы повтор
+    drafts.flushAll()
     layoutStore.undo()
   }
 
   /** Повторяет отменённый шаг; открытый ввод подписи сначала применяется (и сам очистит повтор, если что-то записал). */
   function redo(): void {
     labelEdit.finish()
+    drafts.flushAll()
     layoutStore.redo()
   }
 

@@ -236,10 +236,14 @@ export const useLayoutStore = defineStore('layout', () => {
     return { key: `${prefix}:${id}:${fields}`, window: HISTORY_MERGE_MS }
   }
 
-  /** Правит поля узла (см. `updateNode`); `false`, если ничего не изменилось. Частые правки одного поля — один шаг. */
-  function updateNode(id: NodeId, patch: NodePatch): boolean {
+  /**
+   * Правит поля узла (см. `updateNode`); `false`, если ничего не изменилось. Частые правки одного поля — один шаг;
+   * `mergeKey` (сеанс набора в поле) склеивает все записи сеанса в один шаг без ограничения по времени.
+   */
+  function updateNode(id: NodeId, patch: NodePatch, mergeKey: string | null = null): boolean {
     const next = tree.updateNode(document.value, id, patch)
     if (next === document.value) return false
+    if (mergeKey !== null) return commit(next, { key: mergeKey, window: UNLIMITED_MERGE_WINDOW })
     return commit(next, fieldMerge('node', id, tree.findNode(document.value, id), tree.findNode(next, id)))
   }
 

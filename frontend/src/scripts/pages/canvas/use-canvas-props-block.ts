@@ -16,23 +16,23 @@ export function useCanvasPropsBlock() {
     return node ?? null
   })
 
-  /** Правит поля выделенного блока по id; без изменений стор ничего не пишет. */
-  function patch(id: NodeId, change: NodePatch): void {
-    layoutStore.updateNode(id, change)
+  /** Правит поля блока по id; `mergeKey` — склейка сеанса набора в один шаг истории. Без изменений стор ничего не пишет. */
+  function patch(id: NodeId, change: NodePatch, mergeKey: string | null = null): void {
+    layoutStore.updateNode(id, change, mergeKey)
   }
 
   const label = useBlockTextDraft(
     () => (block.value ? { id: block.value.id, value: block.value.label } : null),
     { multiline: false, live: true },
-    (id, label) => {
-      patch(id, { label })
+    (id, label, mergeKey) => {
+      patch(id, { label }, mergeKey)
     },
   )
   const description = useBlockTextDraft(
     () => (block.value ? { id: block.value.id, value: block.value.description } : null),
     { multiline: true, live: true },
-    (id, description) => {
-      patch(id, { description })
+    (id, description, mergeKey) => {
+      patch(id, { description }, mergeKey)
     },
   )
 

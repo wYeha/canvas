@@ -9,6 +9,7 @@ import { TEXT_DRAFT_COMMIT_MS } from '@/scripts/pages/canvas/constants'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import { useTextDraftStore } from '@/scripts/pages/canvas/text-draft-store'
 import { findNode } from '@/scripts/pages/canvas/tree-query'
+import { useCanvasHistory } from '@/scripts/pages/canvas/use-canvas-history'
 import { useCanvasPage } from '@/scripts/pages/canvas/use-canvas-page'
 import CanvasPropsBlock from '@/views/pages/canvas/CanvasPropsBlock.vue'
 import { makeDoc } from './tree-fixture'
@@ -53,16 +54,44 @@ describe('черновик описания', () => {
     expect(useTextDraftStore().hasPending).toBe(false)
   })
 
-  it('продолжение набора — один шаг истории', async () => {
+  it('сеанс набора с паузами дольше окна склейки — один шаг истории', async () => {
     const wrapper = await setup()
     const area = wrapper.get('textarea')
     await area.setValue('Ша')
     vi.advanceTimersByTime(TEXT_DRAFT_COMMIT_MS)
+    // Пауза в наборе дольше HISTORY_MERGE_MS: сеанс тот же, шаг тот же
+    vi.advanceTimersByTime(2000)
     await area.setValue('Шапка')
     vi.advanceTimersByTime(TEXT_DRAFT_COMMIT_MS)
     expect(description()).toBe('Шапка')
     useLayoutStore().undo()
     expect(description()).toBe('')
+  })
+
+  it('отмена с тулбара во время паузы: ввод сначала записывается, отмена убирает сеанс, повтор возвращает', async () => {
+    const wrapper = await setup()
+    const area = wrapper.get('textarea')
+    await area.setValue('Шапка')
+    vi.advanceTimersByTime(TEXT_DRAFT_COMMIT_MS)
+    await area.setValue('Шапка сайта')
+    const history = useCanvasHistory()
+    history.undo()
+    expect(description()).toBe('')
+    vi.advanceTimersByTime(TEXT_DRAFT_COMMIT_MS)
+    expect(useLayoutStore().canRedo).toBe(true)
+    history.redo()
+    expect(description()).toBe('Шапка сайта')
+  })
+
+  it('черновик не пишется в другой документ с теми же id', async () => {
+    const wrapper = await setup()
+    await wrapper.get('textarea').setValue('Чужой ввод')
+    const store = useLayoutStore()
+    store.loadDocument({ ...makeDoc(), id: 'other-doc' })
+    wrapper.unmount()
+    mounted = null
+    expect(description()).toBe('')
+    expect(store.canUndo).toBe(false)
   })
 
   it('открытие экспорта дописывает ввод сразу', async () => {
