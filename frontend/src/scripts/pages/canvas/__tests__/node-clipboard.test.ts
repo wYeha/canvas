@@ -5,6 +5,9 @@ import { parseDocument } from '@shared'
 import { useLabelEditStore } from '@/scripts/pages/canvas/label-edit-store'
 import { useLayoutStore } from '@/scripts/pages/canvas/layout-store'
 import { useNodeClipboardStore } from '@/scripts/pages/canvas/node-clipboard-store'
+import { buildFragment } from '@/scripts/pages/canvas/clipboard-fragment'
+import { findNode } from '@/scripts/pages/canvas/tree-query'
+import { linkedDoc, otherDoc } from './clipboard-fixture'
 import { block, makeDoc } from './tree-fixture'
 
 beforeEach(() => {
@@ -26,14 +29,67 @@ function a2Label(store: ReturnType<typeof useLayoutStore>): string {
 }
 
 describe('буфер блоков', () => {
-  it('copy кладёт узел, clear очищает', () => {
+  it('copy кладёт фрагмент, clear очищает', () => {
     const clip = useNodeClipboardStore()
     expect(clip.hasContent).toBe(false)
-    clip.copy(block('x', 'flex'), 480)
+    clip.copy(buildFragment(makeDoc(), block('x', 'flex'), 480))
     expect(clip.hasContent).toBe(true)
     expect(clip.entry?.rootWidth).toBe(480)
     clip.clear()
     expect(clip.entry).toBeNull()
+  })
+})
+
+describe('pasteFragment (17.4)', () => {
+  /** Фрагмент блока p1 (связь на K, а в K — на I) из документа со связями. */
+  function linkFragment() {
+    const doc = linkedDoc()
+    const p1 = findNode(doc, 'p1')
+    if (p1 === undefined) throw new Error('нет p1')
+    return buildFragment(doc, p1, null)
+  }
+
+  /** Id корней документа по порядку. */
+  function rootIds(store: ReturnType<typeof useLayoutStore>): string[] {
+    return store.document.roots.map((entry) => entry.node.id)
+  }
+
+  it('в другой документ: источники добавлены со своими id, связь работает, один шаг истории', () => {
+    const store = useLayoutStore()
+    store.loadDocument(otherDoc())
+    const id = store.pasteFragment(linkFragment(), 'X', { x: 0, y: 500 }, 960)
+    expect(id).not.toBeNull()
+    expect(rootIds(store)).toEqual(['X', 'I', 'K'])
+    const pasted = id === null ? undefined : findNode(store.document, id)
+    expect(pasted?.sourceId).toBe('K')
+    expect(parseDocument(store.document).ok).toBe(true)
+    store.undo()
+    expect(rootIds(store)).toEqual(['X'])
+  })
+
+  it('в тот же документ источники не дублируются; без родителя — отказ, документ не меняется', () => {
+    const store = useLayoutStore()
+    store.loadDocument(linkedDoc())
+    expect(store.pasteFragment(linkFragment(), 'p2', { x: 0, y: 0 }, 960)).not.toBeNull()
+    expect(store.document.roots).toHaveLength(3)
+    const before = store.document
+    expect(store.pasteFragment(linkFragment(), 'nope', { x: 0, y: 0 }, 960)).toBeNull()
+    expect(store.document).toBe(before)
+  })
+
+  it('без родителя — новым корнем в точке заданной ширины; связь корнем не вставляется', () => {
+    const store = useLayoutStore()
+    store.loadDocument(otherDoc())
+    const doc = linkedDoc()
+    const card = findNode(doc, 'K')
+    if (card === undefined) throw new Error('нет K')
+    const id = store.pasteFragment(buildFragment(doc, card, 320), null, { x: 7, y: 8 }, 480)
+    const entry = store.document.roots.find((root) => root.node.id === id)
+    expect(entry?.canvas).toMatchObject({ x: 7, y: 8, width: 480 })
+    expect(parseDocument(store.document).ok).toBe(true)
+    const before = store.document
+    expect(store.pasteFragment(linkFragment(), null, { x: 0, y: 0 }, 480)).toBeNull()
+    expect(store.document).toBe(before)
   })
 })
 

@@ -5,8 +5,17 @@
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { parseDocument, type ParseDocumentResult } from '@shared'
-import type { CanvasPlacement, ContainerKind, LayoutDocument, LayoutNode, NodeId, RootEntry } from '@shared'
-import { HISTORY_LIMIT, HISTORY_MERGE_MS, RULES_MERGE_KEY } from './constants'
+import type {
+  CanvasPlacement,
+  ContainerKind,
+  LayoutDocument,
+  LayoutFragment,
+  LayoutNode,
+  NodeId,
+  RootEntry,
+} from '@shared'
+import { withFragmentSources } from './clipboard-fragment'
+import { HISTORY_LIMIT, HISTORY_MERGE_MS, IMPORTED_SOURCE_GAP, RULES_MERGE_KEY } from './constants'
 import { changedFields, emptyHistory, recordStep, redoStep, undoStep, type HistoryMove } from './history'
 import {
   createBlock,
@@ -202,6 +211,29 @@ export const useLayoutStore = defineStore('layout', () => {
     return node.id
   }
 
+  /**
+   * Вставляет фрагмент из буфера обмена (17.4) одним шагом истории: сначала недостающие корни-источники его связей
+   * (со своими id, столбиком справа от точки `at`), затем копию блока с новыми id — ребёнком `parentId` или новым
+   * корнем в точке `at` шириной `width`. Связи на источники, которых так и нет, отбрасываются. `null` при отказе.
+   */
+  function pasteFragment(
+    fragment: LayoutFragment,
+    parentId: NodeId | null,
+    at: CanvasPoint,
+    width: number,
+  ): NodeId | null {
+    const sourcesAt = { x: at.x + width + IMPORTED_SOURCE_GAP, y: at.y }
+    const withSources = withFragmentSources(document.value, fragment.sources, sourcesAt)
+    const node = tree.cloneSubtree(withoutDanglingLinks(fragment.node, withSources))
+    const canvas = { x: at.x, y: at.y, width, height: null, exportMaxWidth: false }
+    const next =
+      parentId === null ? tree.addRoot(withSources, { canvas, node }) : tree.addChild(withSources, parentId, node)
+    // Блок не встал (нет родителя, отказ правил дерева) — источники одни не добавляем
+    if (next === withSources || !commit(next)) return null
+    selectedId.value = node.id
+    return node.id
+  }
+
   /** Удаляет узел с поддеревом и снимает выделение и ховер, если они указывали на удалённое. */
   function removeNode(id: NodeId): boolean {
     const changed = commit(tree.removeNode(document.value, id))
@@ -338,6 +370,7 @@ export const useLayoutStore = defineStore('layout', () => {
     setLabelOrAuto,
     pasteChild,
     pasteRoot,
+    pasteFragment,
     addLink,
     extractToCanvas,
     removeNode,

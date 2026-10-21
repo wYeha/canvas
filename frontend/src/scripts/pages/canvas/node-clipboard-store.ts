@@ -1,26 +1,21 @@
 /**
- * Pinia-хранилище внутреннего буфера блоков: копия поддерева живёт только в редакторе, системный буфер обмена
- * не трогается (не мешает копированию текста). Узлы документа неизменяемы, поэтому хранится ссылка на снимок.
+ * Pinia-хранилище внутреннего буфера блоков: последний скопированный фрагмент (поддерево и источники его связей).
+ * Основной путь копирования — системный буфер обмена (17.4); внутренний — запасной: если браузер не дал записать или
+ * прочитать системный буфер, а также когда в системном буфере чужой текст. Узлы неизменяемы — хранится ссылка.
  */
 import { computed, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
-import type { LayoutNode } from '@shared'
-
-/** Содержимое буфера: поддерево и ширина превью, если копировался корень (для вставки корнем). */
-export interface ClipboardEntry {
-  node: LayoutNode
-  rootWidth: number | null
-}
+import type { LayoutFragment } from '@shared'
 
 export const useNodeClipboardStore = defineStore('node-clipboard', () => {
-  /** Скопированное поддерево; `null` — буфер пуст. */
-  const entry = shallowRef<ClipboardEntry | null>(null)
+  /** Скопированный фрагмент; `null` — буфер пуст. */
+  const entry = shallowRef<LayoutFragment | null>(null)
   /** Есть ли что вставлять. */
   const hasContent = computed(() => entry.value !== null)
 
-  /** Кладёт поддерево в буфер, заменяя прежнее содержимое. */
-  function copy(node: LayoutNode, rootWidth: number | null): void {
-    entry.value = { node, rootWidth }
+  /** Кладёт фрагмент в буфер, заменяя прежнее содержимое. */
+  function copy(fragment: LayoutFragment): void {
+    entry.value = fragment
   }
 
   /** Очищает буфер. */

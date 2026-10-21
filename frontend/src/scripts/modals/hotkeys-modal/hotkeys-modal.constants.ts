@@ -26,7 +26,10 @@ export const HOTKEY_GROUPS: readonly HotkeyGroup[] = [
       { keys: '`Del` / `Backspace`', action: 'Удалить выделенный блок' },
       { keys: '`Ctrl` + `D`', action: 'Дублировать' },
       { keys: '`Alt` + `↑` / `↓`', action: 'Переставить среди соседей' },
-      { keys: '`Ctrl` + `C` / `Ctrl` + `V`', action: 'Копировать / вставить' },
+      {
+        keys: '`Ctrl` + `C` / `Ctrl` + `V`',
+        action: 'Копировать / вставить (через системный буфер, в том числе между вкладками)',
+      },
       { keys: '`F2`', action: 'Переименовать' },
     ],
   },

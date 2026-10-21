@@ -24,6 +24,7 @@ import { useCanvasPropsActions } from './use-canvas-props-actions'
 import { useCanvasCreate } from './use-canvas-create'
 import { useCanvasHistory } from './use-canvas-history'
 import { layerIdFromTarget, measureNodeWorldRect } from './node-dom'
+import { useCanvasSystemClipboard, type ClipboardCommand } from './use-canvas-system-clipboard'
 import { useFocusModeStore } from './focus-mode-store'
 import { firstChildSelection, parentSelection } from './selection'
 
@@ -43,7 +44,8 @@ export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasH
   const focusMode = useFocusModeStore()
   const { createBlock } = useCanvasCreate()
   const { run } = useCanvasPropsActions()
-  const { copySelected, pasteClipboard, renameSelected } = useCanvasClipboard()
+  const { renameSelected } = useCanvasClipboard()
+  const systemClipboard = useCanvasSystemClipboard()
   const history = useCanvasHistory()
 
   /** Вписывает выделенный блок: прямоугольник берётся из DOM в координатах поля. */
@@ -89,9 +91,7 @@ export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasH
   }
 
   /** Выполняет команду редактирования общей с кнопками логикой; `true`, если событие обработано (нужен preventDefault). */
-  function runEdit(command: EditCommand, target: EventTarget | null): boolean {
-    if (command === 'copy') return !hasTextSelection() && copySelected()
-    if (command === 'paste') return pasteClipboard()
+  function runEdit(command: Exclude<EditCommand, ClipboardCommand>, target: EventTarget | null): boolean {
     if (command === 'rename') return renameSelected(layerIdFromTarget(target) !== null)
     // Ctrl+D всегда перехватываем: иначе браузер добавит закладку
     if (layoutStore.selectedId === null) return command === 'duplicate'
@@ -106,6 +106,11 @@ export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasH
     if (e.repeat && !isRepeatableEdit(command)) {
       e.preventDefault()
       return true
+    }
+    // Ctrl+C / Ctrl+V не отменяем: нужны события copy / paste с доступом к системному буферу (17.4).
+    // При выделенном тексте Ctrl+C копирует текст, а не блок
+    if (command === 'copy' || command === 'paste') {
+      return !(command === 'copy' && hasTextSelection()) && systemClipboard.begin(command)
     }
     if (!runEdit(command, e.target)) return false
     e.preventDefault()

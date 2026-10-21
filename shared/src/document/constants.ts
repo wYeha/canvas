@@ -50,6 +50,12 @@ export const CHILD_POSITIONS = [
   'bottom-right',
 ] as const
 
+/** Метка формата фрагмента в системном буфере обмена (17.4): по ней чужой текст отличается от нашего. */
+export const FRAGMENT_FORMAT = 'layout-canvas/fragment'
+
+/** Версия формата фрагмента. */
+export const FRAGMENT_VERSION = 1
+
 /** Наибольшее число колонок в списке «колонки на узких экранах» (15.5). */
 export const NARROW_COLUMNS_MAX = 12
 
