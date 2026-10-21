@@ -1,4 +1,4 @@
-<!-- Фрагмент страницы canvas: секция «Контейнер» — тип flex/grid, зазор (gap) и flex- и grid-поля -->
+<!-- Фрагмент страницы canvas: секция «Контейнер» — тип flex/grid, зазор (gap), прокрутка и flex- и grid-поля -->
 <template>
   <div v-if="block" class="canvas-props-container">
     <UiField v-slot="{ id, describedBy }" :label="CONTAINER_KIND_LABEL">
@@ -14,6 +14,14 @@
         v-model="gap"
         :label="CONTAINER_GAP_LABEL"
         :options="CONTAINER_GAP_OPTIONS"
+        :input-attrs="{ id, 'aria-describedby': describedBy }"
+      />
+    </UiField>
+    <UiField v-slot="{ id, describedBy }" :label="CONTAINER_SCROLL_LABEL" :hint="CONTAINER_SCROLL_HINT">
+      <UiSegmented
+        v-model="scroll"
+        :label="CONTAINER_SCROLL_LABEL"
+        :options="CONTAINER_SCROLL_OPTIONS"
         :input-attrs="{ id, 'aria-describedby': describedBy }"
       />
     </UiField>
@@ -121,6 +129,9 @@ import {
   CONTAINER_GAP_OPTIONS,
   CONTAINER_JUSTIFY_LABEL,
   CONTAINER_KIND_LABEL,
+  CONTAINER_SCROLL_HINT,
+  CONTAINER_SCROLL_LABEL,
+  CONTAINER_SCROLL_OPTIONS,
   CONTAINER_WRAP_LABEL,
   CONTAINER_WRAP_TEXT,
   GRID_ALIGN_ITEMS_LABEL,
@@ -140,6 +151,7 @@ const {
   flex,
   kind,
   gap,
+  scroll,
   direction,
   wrap,
   justify,

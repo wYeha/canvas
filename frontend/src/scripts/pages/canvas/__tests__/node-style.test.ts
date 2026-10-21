@@ -245,3 +245,48 @@ describe('режимы размера (этап 14)', () => {
     expect(styles(make('flex', { gap: 'm' }, repeated))).toHaveProperty('gap', 'var(--gap-m)')
   })
 })
+
+describe('прокрутка (15.2)', () => {
+  /** Ребёнок с прокруткой `scroll` и `self` в родителе `parent` (flex — с направлением `direction`). */
+  function scrolled(scroll: 'x' | 'y', self: SelfProps, parent: ContainerKind | null, direction?: 'row' | 'column') {
+    return toStyleObject(styleEntries(make('flex', { scroll }, { self }), parent, direction))
+  }
+
+  it('overflow-y / overflow-x: auto после остальных свойств, у корня тоже', () => {
+    expect(scrolled('y', {}, null)).toEqual({ display: 'flex', 'overflow-y': 'auto' })
+    expect(scrolled('x', { widthMode: 'fixed', width: '300px' }, 'flex')).toEqual({
+      display: 'flex',
+      flex: 'none',
+      width: '300px',
+      'overflow-x': 'auto',
+    })
+  })
+
+  it('«Заполнить» по оси прокрутки даёт минимум 0 по ней и в grid, и на поперечной оси flex', () => {
+    expect(scrolled('y', { heightMode: 'fill' }, 'grid')).toEqual({
+      display: 'flex',
+      'align-self': 'stretch',
+      'min-height': '0',
+      'overflow-y': 'auto',
+    })
+    expect(scrolled('y', { heightMode: 'fill' }, 'flex', 'row')).toEqual({
+      display: 'flex',
+      'align-self': 'stretch',
+      'min-height': '0',
+      'overflow-y': 'auto',
+    })
+    // Главная ось колонки: минимум 0 уже есть от «Заполнить», не дублируется
+    expect(scrolled('y', { heightMode: 'fill' }, 'flex', 'column')).toEqual({
+      display: 'flex',
+      flex: '1',
+      'min-height': '0',
+      'overflow-y': 'auto',
+    })
+    // Явный минимум важнее
+    expect(scrolled('y', { heightMode: 'fill', minHeight: '80px' }, 'grid')).toHaveProperty('min-height', '80px')
+  })
+
+  it('без «Заполнить» по оси прокрутки минимум не добавляется', () => {
+    expect(scrolled('y', { widthMode: 'fill' }, 'grid')).not.toHaveProperty('min-height')
+  })
+})

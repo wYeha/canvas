@@ -14,6 +14,7 @@ import { arrowSegment, type ArrowSegment } from './link-arrows'
 import { useLayoutStore } from './layout-store'
 import { useViewSettingsStore } from './view-settings-store'
 import { measureNodeWorldRect } from './node-dom'
+import { useNodeScroll } from './use-node-scroll'
 
 /** Стрелка до отрисовки классов: связь, её источник и отрезок. */
 interface MeasuredArrow {
@@ -93,6 +94,8 @@ export function useCanvasLinks(): CanvasLinksView {
   onMounted(() => {
     void nextTick(measure)
   })
+  // Прокрутка области блока сдвигает плашки и источники внутри неё
+  useNodeScroll(measure)
 
   /**
    * Стрелки с классами: выделение не пересчитывает замеры; перепривязываемая связь без стрелки. Без «все стрелки»

@@ -13,6 +13,7 @@ import {
   convertContainer,
   iconOrientation,
   withGap,
+  withScroll,
 } from '@/scripts/pages/canvas/props-container'
 import { useCanvasPropsContainer } from '@/scripts/pages/canvas/use-canvas-props-container'
 
@@ -143,5 +144,19 @@ describe('withGap', () => {
     expect(withGap(flex, 'none')).toEqual(createFlexContainer())
     expect(withGap(flex, 'xl')).toEqual(createFlexContainer())
     expect(convertContainer(flex, 'grid').gap).toBe('m')
+  })
+})
+
+describe('withScroll', () => {
+  it('ось ставится, «нет» и чужое значение стирают поле; переключение flex↔grid сохраняет прокрутку', () => {
+    const flex = { ...createFlexContainer(), scroll: 'y' as const }
+    expect(withScroll(flex, 'x')).toEqual({ ...createFlexContainer(), scroll: 'x' })
+    expect(withScroll(flex, 'none')).toEqual(createFlexContainer())
+    expect(withScroll(flex, 'z')).toEqual(createFlexContainer())
+    const grid = convertContainer(flex, 'grid')
+    expect(grid.scroll).toBe('y')
+    expect(convertContainer(grid, 'flex').scroll).toBe('y')
+    // Без заданных полей ключей нет вовсе (не undefined): документ сохраняется без мусора
+    expect(convertContainer(createFlexContainer(), 'grid')).not.toHaveProperty('scroll')
   })
 })

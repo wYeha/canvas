@@ -21,10 +21,8 @@ exports[`exportScopeHtml > демо: все корни (снапшот) 1`] = `
   <!-- body -->
   <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1; min-height:0">
     <!-- sidebar -->
-    <div style="display:flex; flex-direction:column; gap:var(--gap-m)">
-      <div><!-- menu-item --></div>
-      <div><!-- menu-item --></div>
-      <div><!-- menu-item --></div>
+    <div style="display:flex; flex-direction:column; gap:var(--gap-m); align-self:stretch; min-height:0; overflow-y:auto">
+      <div data-repeat="16"><!-- menu-item ×16 --></div>
     </div>
     <!-- main -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m); justify-self:stretch; align-self:stretch">

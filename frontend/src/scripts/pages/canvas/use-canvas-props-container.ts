@@ -1,7 +1,7 @@
-/** Composable секции «Контейнер»: тип, зазор, flex-поля и (через use-canvas-props-container-grid) grid-поля выделенного блока; запись через экшен стора. */
+/** Composable секции «Контейнер»: тип, зазор, прокрутка, flex-поля и (через use-canvas-props-container-grid) grid-поля выделенного блока; запись через экшен стора. */
 import { computed, type ComputedRef, type WritableComputedRef } from 'vue'
 import type { BlockNode, FlexContainer } from '@shared'
-import { GAP_NONE } from './constants'
+import { GAP_NONE, SCROLL_NONE } from './constants'
 import { useLayoutStore } from './layout-store'
 import {
   asContainerKind,
@@ -10,6 +10,7 @@ import {
   asFlexJustify,
   convertContainer,
   withGap,
+  withScroll,
   iconOrientation,
   type AlignAxis,
 } from './props-container'
@@ -77,6 +78,16 @@ export function useCanvasPropsContainer() {
     },
   })
 
+  /** Прокрутка содержимого: ось `y`/`x` или `SCROLL_NONE` (поле стирается). Общая для flex и grid. */
+  const scroll: WritableComputedRef<string | null> = computed({
+    /** Читает ось прокрутки; без поля — «нет». */
+    get: () => (block.value ? (block.value.container.scroll ?? SCROLL_NONE) : null),
+    /** Пишет ось или стирает поле. */
+    set: (value) => {
+      if (block.value) layoutStore.updateNode(block.value.id, { container: withScroll(block.value.container, value) })
+    },
+  })
+
   /** Перенос строк. */
   const wrap: WritableComputedRef<boolean> = computed({
     /** Читает флаг переноса. */
@@ -101,6 +112,7 @@ export function useCanvasPropsContainer() {
     flex,
     kind,
     gap,
+    scroll,
     direction: flexField('direction', asFlexDirection),
     wrap,
     justify: flexField('justify', asFlexJustify),

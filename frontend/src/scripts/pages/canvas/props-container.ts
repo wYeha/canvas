@@ -1,6 +1,7 @@
 /** Чистая логика секции «Контейнер»: варианты переключателей, смена типа flex↔grid с переносом значений, повороты иконок. Без Vue. */
 import {
   GAP_TOKENS,
+  SCROLL_AXES,
   FLEX_ALIGN_VALUES,
   FLEX_DIRECTIONS,
   FLEX_JUSTIFY_VALUES,
@@ -117,16 +118,22 @@ export function asContainerKind(value: string | null): ContainerKind | null {
   return asOneOf(CONTAINER_KINDS, value)
 }
 
-/** Переводит flex в grid: align → alignItems, зазор сохраняется, остальное — по умолчанию. */
-function flexToGrid(container: FlexContainer): GridContainer {
-  const grid: GridContainer = { ...createGridContainer(), alignItems: FLEX_TO_GRID_ALIGN[container.align] }
-  return container.gap === undefined ? grid : { ...grid, gap: container.gap }
+/** Общие для flex и grid поля контейнера, которые переживают смену типа: зазор и прокрутка (только заданные). */
+function sharedFields(container: Container): Pick<Container, 'gap' | 'scroll'> {
+  return {
+    ...(container.gap === undefined ? {} : { gap: container.gap }),
+    ...(container.scroll === undefined ? {} : { scroll: container.scroll }),
+  }
 }
 
-/** Переводит grid во flex: alignItems → align, зазор сохраняется, остальное — по умолчанию. */
+/** Переводит flex в grid: align → alignItems, зазор и прокрутка сохраняются, остальное — по умолчанию. */
+function flexToGrid(container: FlexContainer): GridContainer {
+  return { ...createGridContainer(), alignItems: FLEX_TO_GRID_ALIGN[container.align], ...sharedFields(container) }
+}
+
+/** Переводит grid во flex: alignItems → align, зазор и прокрутка сохраняются, остальное — по умолчанию. */
 function gridToFlex(container: GridContainer): FlexContainer {
-  const flex: FlexContainer = { ...createFlexContainer(), align: GRID_TO_FLEX_ALIGN[container.alignItems] }
-  return container.gap === undefined ? flex : { ...flex, gap: container.gap }
+  return { ...createFlexContainer(), align: GRID_TO_FLEX_ALIGN[container.alignItems], ...sharedFields(container) }
 }
 
 /** Меняет тип контейнера, перенося совместимые значения; тот же тип возвращается как есть. */
@@ -153,4 +160,12 @@ export function withGap(container: Container, value: string | null): Container {
   const base: Container = { ...container }
   Reflect.deleteProperty(base, 'gap')
   return token === undefined ? base : { ...base, gap: token }
+}
+
+/** Контейнер с осью прокрутки; `SCROLL_NONE` и чужое значение стирают поле (вход не меняется). */
+export function withScroll(container: Container, value: string | null): Container {
+  const axis = SCROLL_AXES.find((item) => item === value)
+  const base: Container = { ...container }
+  Reflect.deleteProperty(base, 'scroll')
+  return axis === undefined ? base : { ...base, scroll: axis }
 }

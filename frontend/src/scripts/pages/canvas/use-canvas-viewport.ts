@@ -10,6 +10,7 @@ import { VIEWPORT_LABELS_HIDDEN_CLASS } from './constants'
 import { createCameraSettle } from './camera-settle'
 import { wheelToAction } from './camera-input'
 import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
+import { wheelScrollsArea } from './node-dom'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
 import { useViewSettingsStore } from './view-settings-store'
@@ -55,7 +56,8 @@ export function useCanvasViewport() {
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);
-   * обычное колесо — пан, только над поверхностью поля (над панелями прокручивается панель).
+   * обычное колесо — пан, только над поверхностью поля (над панелями прокручивается панель). Над областью прокрутки
+   * блока колесо прокручивает её, пока есть куда (браузер сам), а у края снова двигает поле.
    */
   function onWheel(e: WheelEvent): void {
     const action = wheelToAction(e)
@@ -66,6 +68,8 @@ export function useCanvasViewport() {
       return
     }
     if (!isSurface(e.target)) return
+    const el = viewportEl.value
+    if (el !== null && wheelScrollsArea(e.target, el, { x: -action.dx, y: -action.dy })) return
     e.preventDefault()
     cameraStore.panBy(action.dx, action.dy)
   }

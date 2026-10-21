@@ -230,6 +230,17 @@ describe('отбрасывание gap', () => {
     if (!result.ok) throw new Error(result.error)
     expect(result.document.roots[0]?.node.container.gap).toBe('m')
   })
+
+  it('прокрутка: ось y/x принимается, мусор — без прокрутки', () => {
+    const ok = parseDocument(documentOf({ ...block('a'), container: { ...block('a').container, scroll: 'y' } }))
+    if (!ok.ok) throw new Error(ok.error)
+    expect(ok.document.roots[0]?.node.container.scroll).toBe('y')
+    const bad = parseDocument(
+      documentOf({ ...block('a'), container: { ...block('a').container, scroll: 'auto' } } as unknown as BlockNode),
+    )
+    if (!bad.ok) throw new Error(bad.error)
+    expect(bad.document.roots[0]?.node.container.scroll).toBeUndefined()
+  })
 })
 
 describe('режимы размера и экран целиком', () => {

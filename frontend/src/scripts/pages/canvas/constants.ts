@@ -180,6 +180,21 @@ export const CSS_STRETCH = 'stretch'
 /** `min-width` / `min-height` для «Заполнить» по главной оси: иначе длинное содержимое распирает блок. */
 export const CSS_MIN_ZERO = '0'
 
+/** Допуск у края области прокрутки, px: дробные `scrollTop` при зуме не должны считаться «ещё есть куда». */
+export const SCROLL_EDGE_EPSILON = 1
+
+/** Модификатор блока-области прокрутки по оси: `canvas-node--scroll-y`. */
+export const SCROLL_NODE_CLASS_PREFIX = 'canvas-node--scroll-'
+
+/** Значение `overflow-*` у области прокрутки. */
+export const CSS_OVERFLOW_AUTO = 'auto'
+
+/** CSS-свойство прокрутки по оси `scroll` контейнера. */
+export const SCROLL_OVERFLOW_PROPERTY = { y: 'overflow-y', x: 'overflow-x' } as const
+
+/** Ось размера, вдоль которой идёт прокрутка: `y` — высота, `x` — ширина. */
+export const SCROLL_SIZE_AXIS = { y: 'height', x: 'width' } as const
+
 /** Значения токенов зазора в px (TOKENS.md): превью и определения переменных в экспорте. */
 export const GAP_TOKEN_PX = { s: 8, m: 16, l: 32 } as const
 
@@ -637,6 +652,23 @@ export const CONTAINER_GAP_OPTIONS = [
 
 /** Подсказка поля зазора. */
 export const CONTAINER_GAP_HINT = 'S 8 · M 16 · L 32 px; в экспорте — var(--gap-…), без пикселей в описаниях'
+
+/** Подпись поля прокрутки содержимого контейнера. */
+export const CONTAINER_SCROLL_LABEL = 'Прокрутка'
+
+/** Значение сегмента «без прокрутки». */
+export const SCROLL_NONE = 'none'
+
+/** Сегменты прокрутки: нет, по вертикали, по горизонтали. */
+export const CONTAINER_SCROLL_OPTIONS = [
+  { value: SCROLL_NONE, label: 'Нет' },
+  { value: 'y', label: '↕ Вертик.' },
+  { value: 'x', label: '↔ Гориз.' },
+] as const
+
+/** Подсказка поля прокрутки. */
+export const CONTAINER_SCROLL_HINT =
+  'Содержимое прокручивается внутри блока: overflow-y / overflow-x: auto. Блоку нужен ограниченный размер — «Заполнить» или «Фикс.»'
 
 /** Подпись поля min-width. */
 export const CHILD_MIN_WIDTH_LABEL = 'min-width'

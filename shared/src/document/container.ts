@@ -1,10 +1,18 @@
 /**
  * Zod-схемы и типы контейнера блока: flex или grid, различаются по полю `kind`. Зазор между детьми — токеном `gap`
  * (s/m/l, без поля — без зазора); числовые `gap`, `columnGap`, `rowGap` документов до 8.4 отбрасываются при разборе.
+ * Прокрутка содержимого — `scroll` (общая для flex и grid, как и зазор).
  */
 import { z } from 'zod'
 import { isSafeCssValue, UNSAFE_CSS_MESSAGE } from './css-value'
-import { FLEX_ALIGN_VALUES, FLEX_DIRECTIONS, FLEX_JUSTIFY_VALUES, GAP_TOKENS, GRID_ALIGN_VALUES } from './constants'
+import {
+  FLEX_ALIGN_VALUES,
+  FLEX_DIRECTIONS,
+  FLEX_JUSTIFY_VALUES,
+  GAP_TOKENS,
+  GRID_ALIGN_VALUES,
+  SCROLL_AXES,
+} from './constants'
 
 /** Безопасная CSS-строка: без символов, разрывающих декларацию или разметку при экспорте. */
 export const safeCssStringSchema = z.string().refine(isSafeCssValue, { message: UNSAFE_CSS_MESSAGE })
@@ -18,6 +26,8 @@ export const flexContainerSchema = z.object({
   align: z.enum(FLEX_ALIGN_VALUES),
   // Числовой gap документов до 8.4 и любой мусор — без зазора (поле молча отбрасывается)
   gap: z.enum(GAP_TOKENS).optional().catch(undefined),
+  /** Прокрутка содержимого (15.2): `y` — по вертикали, `x` — по горизонтали; нет поля — не прокручивается. */
+  scroll: z.enum(SCROLL_AXES).optional().catch(undefined),
 })
 
 /** Grid-контейнер: `columns` и `rows` — строки в синтаксисе `grid-template-*`. */
@@ -29,6 +39,8 @@ export const gridContainerSchema = z.object({
   alignItems: z.enum(GRID_ALIGN_VALUES),
   // Числовой gap документов до 8.4 и любой мусор — без зазора (поле молча отбрасывается)
   gap: z.enum(GAP_TOKENS).optional().catch(undefined),
+  /** Прокрутка содержимого (15.2): `y` — по вертикали, `x` — по горизонтали; нет поля — не прокручивается. */
+  scroll: z.enum(SCROLL_AXES).optional().catch(undefined),
 })
 
 /**
@@ -45,6 +57,9 @@ export type GridContainer = z.infer<typeof gridContainerSchema>
 
 /** Контейнер блока: flex или grid. */
 export type Container = z.infer<typeof containerSchema>
+
+/** Ось прокрутки содержимого: `'y'` или `'x'`. */
+export type ScrollAxis = NonNullable<Container['scroll']>
 
 /** Вид контейнера: `'flex'` или `'grid'`. */
 export type ContainerKind = Container['kind']

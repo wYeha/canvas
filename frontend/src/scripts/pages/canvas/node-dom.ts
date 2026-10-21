@@ -2,7 +2,7 @@
  * Работа с DOM блоков на канвасе: цель клика по `data-node-id`, заголовок и порт связи корня, строка «Слоёв» под курсором,
  * элемент и цепочка узлов под точкой (поиск приёмника при перетаскивании),
  * измерение прямоугольников узлов (в том числе прямых детей приёмника для позиции вставки)
- * и прокрутка строки в видимую часть панели.
+ * прокрутка строки в видимую часть панели и поиск области прокрутки под колесом.
  * DOM трогаем только здесь (правила: прямая работа с DOM — в scripts/).
  * Оверлеи поверх поля (призрак, выделение, линия вставки `CanvasDropInsert`, оверлей выделения) обязаны иметь
  * `pointer-events: none`: иначе `elementAtPoint` попадёт в них, а не в блок под курсором.
@@ -10,6 +10,7 @@
  * Копии повтора помечены `data-repeat-of` (id исходного блока) вместо `data-node-id`: клик, ховер, двойной клик
  * и начало перетаскивания по копии относятся к исходному блоку, а замеры, оверлей и поиск приёмника копий не видят.
  */
+import { SCROLL_AXES } from '@shared'
 import type { Rect } from './camera'
 import type { CanvasPoint } from './factories'
 import {
@@ -29,7 +30,9 @@ import {
   ROOT_HANDLE_SELECTOR,
   VIEWPORT_LABELS_HIDDEN_SELECTOR,
   WORLD_SELECTOR,
+  SCROLL_NODE_CLASS_PREFIX,
 } from './constants'
+import { canScrollBy, type ScrollDelta } from './scroll-area'
 import { rectContains, toWorldRect } from './selection'
 
 /** Id блока по ближайшему помеченному элементу: свой id у блока, id исходного блока у копии повтора. */
@@ -171,4 +174,19 @@ export function measureNodeWorldRect(id: string, zoom: number): Rect | null {
   if (el === null || world === null) return null
   const origin = clientRectOf(world)
   return toWorldRect(clientRectOf(el), { x: origin.x, y: origin.y }, zoom)
+}
+
+/**
+ * Есть ли между `target` и `stop` (не включая его) область прокрутки блока, которую колесо сдвинет на `delta`.
+ * Тогда колесо отдаётся браузеру (прокрутка области), иначе им двигается поле. Ось области — по модификатору блока.
+ */
+export function wheelScrollsArea(target: EventTarget | null, stop: Element, delta: ScrollDelta): boolean {
+  let el = target instanceof Element ? target : null
+  while (el !== null && el !== stop) {
+    const current = el
+    const axis = SCROLL_AXES.find((item) => current.classList.contains(`${SCROLL_NODE_CLASS_PREFIX}${item}`))
+    if (axis !== undefined && canScrollBy(current, axis, delta)) return true
+    el = el.parentElement
+  }
+  return false
 }

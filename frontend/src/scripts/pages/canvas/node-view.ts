@@ -23,6 +23,7 @@ import {
   REPEAT_RENDER_BUDGET,
   ROOT_TITLE_SEPARATOR,
   ROOT_UNTITLED_LABEL,
+  SCROLL_NODE_CLASS_PREFIX,
 } from './constants'
 
 /**
@@ -101,12 +102,13 @@ export function needsLeafMinHeight(block: BlockNode, parentKind: ContainerKind |
   return (height ?? '').trim() === '' && (minHeight ?? '').trim() === ''
 }
 
-/** BEM-классы блока: база, цвет по глубине, лист и пустой лист. */
+/** BEM-классы блока: база, цвет по глубине, лист и пустой лист, область прокрутки. */
 export function blockClasses(block: BlockNode, depth: number, parentKind: ContainerKind | null): string[] {
   const classes = ['canvas-node', depthClass(depth)]
   if (isLinkBlock(block)) classes.push('canvas-node--link')
   if (isLeafBlock(block)) classes.push('canvas-node--leaf')
   if (needsLeafMinHeight(block, parentKind)) classes.push('canvas-node--min-height')
+  if (block.container.scroll !== undefined) classes.push(`${SCROLL_NODE_CLASS_PREFIX}${block.container.scroll}`)
   return classes
 }
 

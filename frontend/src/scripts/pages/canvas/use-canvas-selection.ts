@@ -11,6 +11,7 @@ import { useDragStore } from './dnd/drag-store'
 import { useLayoutStore } from './layout-store'
 import { useViewSettingsStore } from './view-settings-store'
 import { clientRectOf, findNodeElement } from './node-dom'
+import { useNodeScroll } from './use-node-scroll'
 import { isBadgeInside, overlayRectStyle, selectionBadgeText, sizeText, toLocalRect, visibleHoverId } from './selection'
 import { findNode } from './tree-query'
 
@@ -110,6 +111,9 @@ export function useCanvasSelection() {
     recompute,
     { flush: 'post' },
   )
+
+  // Прокрутка области блока сдвигает выделенного или наведённого ребёнка
+  useNodeScroll(recompute)
 
   onMounted(() => {
     window.addEventListener('resize', schedule)

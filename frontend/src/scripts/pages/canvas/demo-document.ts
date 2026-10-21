@@ -67,12 +67,13 @@ function buildHeader(): BlockNode {
   ])
 }
 
-/** Левая колонка: три пункта меню. */
+/** Пунктов меню в левой колонке: больше, чем помещается на экране, — колонка прокручивается. */
+const MENU_ITEM_COUNT = 16
+
+/** Левая колонка: длинное меню (пункт ×N) с прокруткой по вертикали на всю высоту тела. */
 function buildSidebar(): BlockNode {
-  return block('sidebar', { container: flex('column') }, [
-    block('menu-item', {}),
-    block('menu-item', {}),
-    block('menu-item', {}),
+  return block('sidebar', { container: { ...flex('column'), scroll: 'y' }, self: { heightMode: 'fill' } }, [
+    block('menu-item', { repeat: MENU_ITEM_COUNT }),
   ])
 }
 

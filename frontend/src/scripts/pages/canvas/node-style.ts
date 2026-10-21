@@ -2,7 +2,7 @@
  * Единственный источник раскладочных стилей узла: чистые функции для превью и экспорта, только отличия от CSS по
  * умолчанию. Режимы размера (по содержимому / заполнить / фиксированный) превращаются в flex, растяжение и минимумы.
  */
-import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, SelfProps } from '@shared'
+import type { Container, ContainerKind, FlexContainer, GridContainer, LayoutNode, ScrollAxis, SelfProps } from '@shared'
 import {
   CSS_DEFAULT_ALIGN,
   CSS_DEFAULT_FLEX,
@@ -17,6 +17,9 @@ import {
   CSS_FLEX_NONE,
   CSS_MIN_SPAN,
   CSS_MIN_ZERO,
+  CSS_OVERFLOW_AUTO,
+  SCROLL_OVERFLOW_PROPERTY,
+  SCROLL_SIZE_AXIS,
   CSS_STRETCH,
   GAP_VAR_PREFIX,
   MIN_CHILDREN_FOR_GAP,
@@ -100,27 +103,47 @@ function fixedSizeEntries(self: SelfProps): StyleEntry[] {
  * Минимумы и максимумы: заданные явно; у «Заполнить» по главной оси flex-родителя минимум по ней — 0
  * (иначе длинное содержимое распирает блок и ломает раскладку), если он не задан.
  */
-function limitEntries(self: SelfProps, fillMain: SizeAxis | null): StyleEntry[] {
+function limitEntries(self: SelfProps, zeroAxes: readonly SizeAxis[]): StyleEntry[] {
   const entries: StyleEntry[] = []
-  push(entries, 'min-width', clean(self.minWidth) ?? (fillMain === 'width' ? CSS_MIN_ZERO : null))
+  push(entries, 'min-width', clean(self.minWidth) ?? (zeroAxes.includes('width') ? CSS_MIN_ZERO : null))
   push(entries, 'max-width', clean(self.maxWidth))
-  push(entries, 'min-height', clean(self.minHeight) ?? (fillMain === 'height' ? CSS_MIN_ZERO : null))
+  push(entries, 'min-height', clean(self.minHeight) ?? (zeroAxes.includes('height') ? CSS_MIN_ZERO : null))
   return entries
 }
 
+/**
+ * Ось размера, по которой блок прокручивается и «Заполняет» родителя: ей тоже нужен минимум 0 — иначе цепочка
+ * растягивающихся предков вырастет по содержимому и прокрутки не будет. `null`, если такой оси нет.
+ */
+function scrollFillAxis(self: SelfProps, scroll: ScrollAxis | undefined): SizeAxis | null {
+  if (scroll === undefined) return null
+  const axis = SCROLL_SIZE_AXIS[scroll]
+  return sizeMode(self, axis) === 'fill' ? axis : null
+}
+
+/** Прокрутка содержимого блока: `overflow-y:auto` или `overflow-x:auto` (у корня тоже). */
+function scrollEntries(scroll: ScrollAxis | undefined): StyleEntry[] {
+  return scroll === undefined ? [] : [[SCROLL_OVERFLOW_PROPERTY[scroll], CSS_OVERFLOW_AUTO]]
+}
+
 /** «Как ребёнок» во flex-родителе с направлением `direction`: flex по главной оси, растяжение по поперечной. */
-function flexChildEntries(self: SelfProps, direction: FlexContainer['direction']): StyleEntry[] {
+function flexChildEntries(
+  self: SelfProps,
+  direction: FlexContainer['direction'],
+  zeroAxis: SizeAxis | null,
+): StyleEntry[] {
   const main = mainAxis(direction)
   const entries: StyleEntry[] = []
   push(entries, 'flex', childFlex(self, main))
   entries.push(...fixedSizeEntries(self))
   if (sizeMode(self, otherAxis(main)) === 'fill') entries.push(['align-self', CSS_STRETCH])
   const fillMain = isDefaultFlex(self.flex) && sizeMode(self, main) === 'fill' ? main : null
-  return [...entries, ...limitEntries(self, fillMain)]
+  const zeroAxes = [fillMain, zeroAxis].filter((axis): axis is SizeAxis => axis !== null)
+  return [...entries, ...limitEntries(self, zeroAxes)]
 }
 
 /** «Как ребёнок» в grid-родителе: span, числа, растяжение в ячейке по осям «Заполнить». */
-function gridChildEntries(self: SelfProps): StyleEntry[] {
+function gridChildEntries(self: SelfProps, zeroAxis: SizeAxis | null): StyleEntry[] {
   const entries: StyleEntry[] = []
   if (self.colSpan !== undefined && self.colSpan > CSS_MIN_SPAN) {
     entries.push(['grid-column', `${CSS_GRID_SPAN} ${String(self.colSpan)}`])
@@ -131,7 +154,7 @@ function gridChildEntries(self: SelfProps): StyleEntry[] {
   entries.push(...fixedSizeEntries(self))
   if (sizeMode(self, 'width') === 'fill') entries.push(['justify-self', CSS_STRETCH])
   if (sizeMode(self, 'height') === 'fill') entries.push(['align-self', CSS_STRETCH])
-  return [...entries, ...limitEntries(self, null)]
+  return [...entries, ...limitEntries(self, zeroAxis === null ? [] : [zeroAxis])]
 }
 
 /**
@@ -139,12 +162,15 @@ function gridChildEntries(self: SelfProps): StyleEntry[] {
  * растяжение, минимумы и максимумы (у старых документов без режимов вывод прежний: flex, width, height, min-height).
  */
 function selfEntries(
-  self: SelfProps,
+  node: LayoutNode,
   parentKind: ContainerKind | null,
   direction: FlexContainer['direction'],
 ): StyleEntry[] {
   if (parentKind === null) return []
-  return parentKind === 'flex' ? flexChildEntries(self, direction) : gridChildEntries(self)
+  const zeroAxis = scrollFillAxis(node.self, node.container.scroll)
+  return parentKind === 'flex'
+    ? flexChildEntries(node.self, direction, zeroAxis)
+    : gridChildEntries(node.self, zeroAxis)
 }
 
 /** Контейнерная часть стилей блока (display, flex/grid-свойства, gap при `childCount` ≥ 2); в `styleEntries` она всегда первая. */
@@ -153,7 +179,7 @@ export function containerEntries(container: Container, childCount = 0): StyleEnt
 }
 
 /**
- * Стили узла в стабильном порядке; `parentKind` — вид контейнера родителя (`null` у корня), `parentDirection` —
+ * Стили узла в стабильном порядке (контейнер, «как ребёнок», прокрутка); `parentKind` — вид контейнера родителя (`null` у корня), `parentDirection` —
  * направление flex-родителя (главная ось для режимов размера; по умолчанию row).
  * Внутреннего отступа здесь нет: в редакторе он фиксированный и задаётся классом, в экспорт не идёт.
  */
@@ -163,7 +189,7 @@ export function styleEntries(
   parentDirection: FlexContainer['direction'] = CSS_DEFAULT_FLEX_DIRECTION,
 ): StyleEntry[] {
   const entries = containerEntries(node.container, renderedChildCount(node))
-  entries.push(...selfEntries(node.self, parentKind, parentDirection))
+  entries.push(...selfEntries(node, parentKind, parentDirection), ...scrollEntries(node.container.scroll))
   return entries
 }
 
