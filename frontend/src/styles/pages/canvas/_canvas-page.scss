@@ -6,7 +6,10 @@
   grid-template-rows: v.$header-height minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
-  min-width: v.$min-screen-width;
+  // Оболочка не прокручивается ни мышью, ни фокусом, ни scrollIntoView (clip, а не hidden: hidden можно прокрутить
+  // программно) — прокручиваются только тела панелей. Ширину не фиксируем: панели плавающие, на окне уже 1366px
+  // они просто ближе друг к другу, а документ не уезжает вбок
+  overflow: clip;
 
   &__layers,
   &__props,
