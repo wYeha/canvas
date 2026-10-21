@@ -20,6 +20,18 @@
       outline: v.$selection-outline-width solid var(--color-accent);
       outline-offset: -#{v.$selection-outline-width};
     }
+
+    // Контур предка наведённого блока (16.7): видно, во что он вложен, до самого корня
+    &--ancestor {
+      outline: v.$hover-outline-width dashed var(--color-accent);
+      outline-offset: -#{v.$hover-outline-width};
+      opacity: v.$ancestor-outline-opacity;
+    }
+
+    // Режим фокуса (16.7): всё вокруг блока затемнено огромной тенью (оверлей обрезает её по краю поля)
+    &--focus {
+      box-shadow: 0 0 0 v.$focus-scrim-spread var(--color-scrim);
+    }
   }
 
   &__badge {

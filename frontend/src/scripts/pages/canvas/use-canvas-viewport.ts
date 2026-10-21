@@ -14,6 +14,7 @@ import { viewportBackgroundStyle, worldLayerStyle } from './camera-style'
 import { wheelScrollsArea } from './node-dom'
 import { provideCanvasOverflow } from './use-canvas-overflow'
 import { provideLabelFocus } from './use-label-focus'
+import { useCanvasFocusMode } from './use-canvas-focus-mode'
 import { useCanvasPan } from './use-canvas-pan'
 import { useCanvasSelect } from './use-canvas-select'
 import { useViewSettingsStore } from './view-settings-store'
@@ -60,6 +61,8 @@ export function useCanvasViewport() {
   provideCanvasOverflow(worldEl)
   // Фокус подписей (16.2): на мелком масштабе чипы только у выделенного, наведённого и их предков
   provideLabelFocus()
+  // Режим фокуса (16.7): сброс, если блок пропал или документ сменился
+  useCanvasFocusMode()
 
   /**
    * Колесо: Ctrl/щипок — зум к курсору где угодно во viewport (иначе зумится вся страница);

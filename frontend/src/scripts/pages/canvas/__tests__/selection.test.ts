@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { matchSelectionHotkey } from '@/scripts/pages/canvas/camera-input'
 import { CLICK_DRAG_THRESHOLD } from '@/scripts/pages/canvas/constants'
 import {
+  ancestorIds,
+  isInSubtree,
   hoverBadgeText,
   breadcrumbSegments,
   firstChildSelection,
@@ -162,5 +164,21 @@ describe('hoverBadgeText (16.1)', () => {
   it('у узкого блока и при выключенных подписях — имя и размер', () => {
     expect(hoverBadgeText(node, rect(30), '30×100', NO_SOURCE_LABELS, true)).toBe(`${node.label} · 30×100`)
     expect(hoverBadgeText(node, rect(200), '200×100', NO_SOURCE_LABELS, false)).toBe(`${node.label} · 200×100`)
+  })
+})
+
+describe('поддерево и предки (16.7)', () => {
+  it('isInSubtree: сам блок и потомки — да, соседи и null — нет', () => {
+    const doc = makeDoc()
+    expect(isInSubtree(doc, 'a1', 'a1')).toBe(true)
+    expect(isInSubtree(doc, 'a1', 'a1x')).toBe(true)
+    expect(isInSubtree(doc, 'a1', 'a2')).toBe(false)
+    expect(isInSubtree(doc, 'a1', null)).toBe(false)
+  })
+
+  it('ancestorIds: от корня до родителя, без самого блока', () => {
+    expect(ancestorIds(makeDoc(), 'a1x')).toEqual(['A', 'a1'])
+    expect(ancestorIds(makeDoc(), 'A')).toEqual([])
+    expect(ancestorIds(makeDoc(), null)).toEqual([])
   })
 })

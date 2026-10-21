@@ -16,7 +16,7 @@ import {
 } from './constants'
 import type { CanvasPoint } from './factories'
 import { blockLabel, linkSourceName, type SourceLabels } from './node-view'
-import { findNode, findParent } from './tree-query'
+import { findNode, findParent, getPath } from './tree-query'
 
 /** Сегмент плашки пути: id узла и текст кнопки. */
 export interface BreadcrumbSegment {
@@ -126,4 +126,18 @@ export function overlayRectStyle(rect: Rect): Record<string, string> {
 /** Сегменты плашки пути по цепочке узлов от корня до выделенного. */
 export function breadcrumbSegments(path: readonly LayoutNode[], labels: SourceLabels): BreadcrumbSegment[] {
   return path.map((node) => ({ id: node.id, text: nodeCaption(node, labels) }))
+}
+
+/** Лежит ли блок `id` в поддереве блока `rootId` (включая его самого): для выхода из режима фокуса по клику мимо. */
+export function isInSubtree(doc: LayoutDocument, rootId: NodeId, id: NodeId | null): boolean {
+  return id !== null && getPath(doc, id).some((node) => node.id === rootId)
+}
+
+/** Предки блока `id` от корня до родителя (без него самого): их контуры видны при наведении (16.7). */
+export function ancestorIds(doc: LayoutDocument, id: NodeId | null): NodeId[] {
+  return id === null
+    ? []
+    : getPath(doc, id)
+        .slice(0, -1)
+        .map((node) => node.id)
 }

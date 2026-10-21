@@ -1,8 +1,8 @@
-<!-- Фрагмент страницы canvas: оверлей выделения и наведения в экранных координатах поверх слоя мира -->
+<!-- Фрагмент страницы canvas: оверлей выделения, наведения, контуров предков и затемнения фокуса в экранных координатах поверх слоя мира -->
 <template>
   <div ref="overlayEl" class="canvas-selection">
-    <div v-for="box in boxes" :key="box.kind" :class="box.classes" :style="box.style">
-      <span :class="box.badgeClasses">{{ box.badge }}</span>
+    <div v-for="box in boxes" :key="box.key" :class="box.classes" :style="box.style">
+      <span v-if="box.badge !== ''" :class="box.badgeClasses">{{ box.badge }}</span>
     </div>
   </div>
 </template>

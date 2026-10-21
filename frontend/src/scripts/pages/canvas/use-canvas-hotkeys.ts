@@ -24,6 +24,7 @@ import { useCanvasPropsActions } from './use-canvas-props-actions'
 import { useCanvasCreate } from './use-canvas-create'
 import { useCanvasHistory } from './use-canvas-history'
 import { layerIdFromTarget, measureNodeWorldRect } from './node-dom'
+import { useFocusModeStore } from './focus-mode-store'
 import { firstChildSelection, parentSelection } from './selection'
 
 /** Зависимости хоткеев страницы: открытие окон экспорта и горячих клавиш и признак «хоткеи сейчас заблокированы» (открыто окно). */
@@ -39,6 +40,7 @@ export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasH
   const layoutStore = useLayoutStore()
   const labelEdit = useLabelEditStore()
   const dragStore = useDragStore()
+  const focusMode = useFocusModeStore()
   const { createBlock } = useCanvasCreate()
   const { run } = useCanvasPropsActions()
   const { copySelected, pasteClipboard, renameSelected } = useCanvasClipboard()
@@ -64,6 +66,12 @@ export function useCanvasHotkeys({ openExport, openHotkeys, isBlocked }: CanvasH
   /** Esc и Enter: перемещают выделение; без выделения ничего не делают, Enter на кнопках и ссылках не забираем. */
   function handleSelectionKey(e: KeyboardEvent): void {
     const command = matchSelectionHotkey(e)
+    // В режиме фокуса Esc сначала выходит из него (16.7), выделение остаётся
+    if (command === 'select-parent' && focusMode.focusId !== null) {
+      e.preventDefault()
+      focusMode.exit()
+      return
+    }
     const id = layoutStore.selectedId
     if (command === null || id === null) return
     const target = e.target
