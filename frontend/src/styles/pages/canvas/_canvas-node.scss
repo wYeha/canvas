@@ -44,6 +44,22 @@
     }
   }
 
+  // Пустой лист — пунктир, контейнер — сплошная обводка (16.3): лист и контейнер различимы без подписей
+  &--leaf {
+    outline-style: dashed;
+  }
+
+  // Второй признак глубины (16.3): цвета палитры повторяются, следующий круг палитры — толще обводка
+  &--tier-1 {
+    outline-width: v.$block-outline-tier-1;
+    outline-offset: calc(-1 * #{v.$block-outline-tier-1});
+  }
+
+  &--tier-2 {
+    outline-width: v.$block-outline-tier-2;
+    outline-offset: calc(-1 * #{v.$block-outline-tier-2});
+  }
+
   // Связь: плашка на месте ребёнка — нейтральный цвет, пунктир и штриховка; при экспорте здесь встанет источник
   &--link {
     --node-color: var(--color-link);
@@ -281,7 +297,7 @@
   // высоты, чтобы «Группа ×3 → Карточка ×4» не раздувала превью
   &--repeat-shadow {
     min-height: v.$empty-leaf-min-height;
-    outline-style: dashed;
+    outline-style: dotted; // не пунктир: пунктиром нарисованы пустые листы и связи
   }
 
   // Перетаскиваемый узел на своём месте: пунктирный след акцентом

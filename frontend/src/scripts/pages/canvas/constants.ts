@@ -254,6 +254,9 @@ export const INLINE_STYLE_SEPARATOR = '; '
 /** Размер палитры блоков: цвет блока берётся по `depth % BLOCK_PALETTE_SIZE`. */
 export const BLOCK_PALETTE_SIZE = 8
 
+/** Сколько кругов палитры различаются толщиной обводки (16.3): дальше толщина как у последнего. */
+export const DEPTH_TIER_MAX = 2
+
 /** Значки направления контейнера в чипе подписи. */
 export const DIRECTION_ICONS = {
   row: '→',

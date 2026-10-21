@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { REPEAT_RENDER_BUDGET } from '@/scripts/pages/canvas/constants'
 import { createBlock, createLinkBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
+  depthTierClass,
   blockClasses,
   depthClass,
   directionIcon,
@@ -46,11 +47,12 @@ describe('node-view', () => {
     expect(needsLeafMinHeight({ ...leaf, children: [createBlock('flex', 'b')] }, 'flex')).toBe(false)
   })
 
-  it('классы блока: база, глубина, лист, min-height', () => {
+  it('классы блока: база, глубина и круг палитры, лист, min-height', () => {
     const leaf = createBlock('flex', 'a')
     expect(blockClasses(leaf, 9, 'flex')).toEqual([
       'canvas-node',
       'canvas-node--depth-1',
+      'canvas-node--tier-1',
       'canvas-node--leaf',
       'canvas-node--min-height',
     ])
@@ -191,5 +193,15 @@ describe('связь', () => {
     expect(labels.get('B')).toBe('B')
     expect(linkSourceName('B', labels)).toBe('B')
     expect(linkSourceName('nope', labels)).toBe('источник не найден')
+  })
+})
+
+describe('второй признак глубины (16.3)', () => {
+  it('первый круг палитры без класса, дальше tier-1 и tier-2 (не больше)', () => {
+    expect(depthTierClass(0)).toBeNull()
+    expect(depthTierClass(7)).toBeNull()
+    expect(depthTierClass(8)).toBe('canvas-node--tier-1')
+    expect(depthTierClass(16)).toBe('canvas-node--tier-2')
+    expect(depthTierClass(40)).toBe('canvas-node--tier-2')
   })
 })

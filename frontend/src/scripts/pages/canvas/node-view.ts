@@ -12,6 +12,7 @@ import {
 } from '@shared'
 import {
   BLOCK_PALETTE_SIZE,
+  DEPTH_TIER_MAX,
   CSS_PX_UNIT,
   DEFAULT_REPEAT,
   DIRECTION_ICONS,
@@ -61,6 +62,15 @@ export function depthClass(depth: number): string {
   return `canvas-node--depth-${String(paletteIndex(depth))}`
 }
 
+/**
+ * Второй признак глубины (16.3): цвета палитры повторяются через `BLOCK_PALETTE_SIZE` уровней, поэтому каждый
+ * следующий круг палитры рисуется толще (`canvas-node--tier-1`, `--tier-2`, дальше — как второй). На первом круге — `null`.
+ */
+export function depthTierClass(depth: number): string | null {
+  const tier = Math.min(Math.floor(depth / BLOCK_PALETTE_SIZE), DEPTH_TIER_MAX)
+  return tier <= 0 ? null : `canvas-node--tier-${String(tier)}`
+}
+
 /** Значок узла: у связи — `→`, у блока — направление контейнера (стрелка для flex, `#` для grid). */
 export function directionIcon(block: BlockNode): string {
   if (isLinkBlock(block)) return LINK_ICON
@@ -107,9 +117,11 @@ export function needsLeafMinHeight(block: BlockNode, parentKind: ContainerKind |
   return (height ?? '').trim() === '' && (minHeight ?? '').trim() === ''
 }
 
-/** BEM-классы блока: база, цвет по глубине, лист и пустой лист, область прокрутки. */
+/** BEM-классы блока: база, цвет и круг палитры по глубине, лист и пустой лист, область прокрутки. */
 export function blockClasses(block: BlockNode, depth: number, parentKind: ContainerKind | null): string[] {
   const classes = ['canvas-node', depthClass(depth)]
+  const tier = depthTierClass(depth)
+  if (tier !== null) classes.push(tier)
   if (isLinkBlock(block)) classes.push('canvas-node--link')
   if (isLeafBlock(block)) classes.push('canvas-node--leaf')
   if (needsLeafMinHeight(block, parentKind)) classes.push('canvas-node--min-height')
