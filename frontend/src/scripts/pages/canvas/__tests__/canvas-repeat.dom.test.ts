@@ -88,12 +88,12 @@ describe('повтор на канвасе: отрисовка', () => {
     expect(wrapper.findAll('[data-repeat-of] [data-label-node-id]')).toHaveLength(0)
   })
 
-  it('копия контейнера повторяет поддерево без чипа; приглушена только сама копия; ×N — у исходного блока', () => {
+  it('копия контейнера — тень без содержимого и без чипа (16.5); ×N — у исходного блока', () => {
     const wrapper = setup(CanvasViewport)
     const copy = firstCopy(wrapper, 'a1')
-    expect(copy.querySelectorAll('[data-repeat-of="a1"]')).toHaveLength(2)
+    expect(copy.classList.contains('canvas-node--repeat-shadow')).toBe(true)
+    expect(copy.querySelectorAll('.canvas-node')).toHaveLength(0)
     expect(copy.querySelector('.canvas-node__chip')).toBeNull()
-    expect(copy.querySelectorAll('.canvas-node--repeat-copy')).toHaveLength(0)
     expect(wrapper.get('[data-node-id="a1"] > .canvas-node__label-box > .canvas-node__chip').text()).toContain('×2')
     expect(wrapper.get('[data-node-id="a2"] > .canvas-node__caption').text()).toContain('×3')
     expect(wrapper.get('[data-node-id="a3"] > .canvas-node__caption').text()).not.toContain('×')
@@ -109,12 +109,11 @@ describe('повтор на канвасе: отрисовка', () => {
 })
 
 describe('повтор на канвасе: выделение и ховер', () => {
-  it('клик по содержимому копии выделяет исходный блок с повтором', async () => {
+  it('клик по тени копии выделяет исходный блок с повтором', async () => {
     const wrapper = setup(CanvasViewport)
-    const inner = firstCopy(wrapper, 'a1').querySelector('[data-repeat-of]')
-    if (inner === null) throw new Error('нет содержимого копии')
-    pointer(inner, 'pointerdown', 10, 10)
-    pointer(inner, 'pointerup', 10, 10)
+    const shadow = firstCopy(wrapper, 'a1')
+    pointer(shadow, 'pointerdown', 10, 10)
+    pointer(shadow, 'pointerup', 10, 10)
     await wrapper.vm.$nextTick()
     expect(useLayoutStore().selectedId).toBe('a1')
   })
@@ -145,8 +144,7 @@ describe('повтор на канвасе: перетаскивание', () =>
 
   it('над копией приёмник — родитель исходного блока, а не копия', async () => {
     const wrapper = setup(CanvasViewport)
-    const inner = firstCopy(wrapper, 'a1').querySelector('[data-repeat-of]')
-    hitAt(inner)
+    hitAt(firstCopy(wrapper, 'a1'))
     pointer(wrapper.get('[data-node-id="c1"]').element, 'pointerdown', 10, 10)
     pointer(wrapper.element, 'pointermove', 40, 10)
     await wrapper.vm.$nextTick()

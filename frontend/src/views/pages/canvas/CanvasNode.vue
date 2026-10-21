@@ -46,6 +46,7 @@
       :copy-of="child.copyOf"
       :copy-root="child.copyRoot"
       :copy-budget="child.budget"
+      :shadow="child.shadow"
       :in-mirror="view.mirror || inMirror"
     />
   </div>

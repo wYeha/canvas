@@ -17,6 +17,8 @@ export interface CanvasNodeProps {
   copyRoot?: boolean
   /** Остаток бюджета копий повтора для поддерева настоящего блока; по умолчанию — весь бюджет (`REPEAT_RENDER_BUDGET`). */
   copyBudget?: number
+  /** Копия повтора рисуется тенью без содержимого (16.5). */
+  shadow?: boolean
   /** Узел внутри живого зеркала связи: вложенные связи здесь рисуются плашками, не зеркалом. */
   inMirror?: boolean
 }

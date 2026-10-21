@@ -262,6 +262,13 @@
     opacity: v.$repeat-copy-opacity;
   }
 
+  // Тень копии повтора (16.5): место и размеры как у исходного блока, содержимого нет — пунктир и редакторский минимум
+  // высоты, чтобы «Группа ×3 → Карточка ×4» не раздувала превью
+  &--repeat-shadow {
+    min-height: v.$empty-leaf-min-height;
+    outline-style: dashed;
+  }
+
   // Перетаскиваемый узел на своём месте: пунктирный след акцентом
   &--drag-source {
     outline: 1px dashed var(--color-accent);

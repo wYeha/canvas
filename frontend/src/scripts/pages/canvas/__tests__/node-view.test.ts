@@ -4,7 +4,6 @@ import { REPEAT_RENDER_BUDGET } from '@/scripts/pages/canvas/constants'
 import { createBlock, createLinkBlock, createRootEntry } from '@/scripts/pages/canvas/factories'
 import {
   blockClasses,
-  cloneSize,
   depthClass,
   directionIcon,
   linkSourceName,
@@ -122,17 +121,17 @@ describe('бюджет копий повтора', () => {
     for (const item of renderChildren(children, copyOf, budget)) {
       total += 1
       if (item.copyOf !== null) copies += 1
-      const inner = drawn(item.node.children, item.copyOf, item.budget)
+      // Тень копии рисуется без содержимого
+      const inner = item.shadow ? { total: 0, copies: 0 } : drawn(item.node.children, item.copyOf, item.budget)
       total += inner.total
       copies += inner.copies
     }
     return { total, copies }
   }
 
-  it('cloneSize: блок плюс поддерево с учётом повторов внутри', () => {
-    expect(cloneSize(rep('a', 1))).toBe(1)
-    expect(cloneSize(rep('a', 1, [rep('b', 3)]))).toBe(4)
-    expect(cloneSize(rep('a', 1, [rep('b', 3, [rep('c', 2)])]))).toBe(1 + 3 * (1 + 2))
+  it('копии — тени (16.5), исходные блоки — нет', () => {
+    const items = renderChildren([rep('x', 3)], null)
+    expect(items.map((item) => item.shadow)).toEqual([false, true, true])
   })
 
   it('сверх бюджета копии не рисуются, исходные блоки — всегда', () => {
@@ -158,12 +157,12 @@ describe('бюджет копий повтора', () => {
   it('поддерево настоящего блока получает остаток после братьев и своих копий', () => {
     const tree = [rep('a', 3, [rep('b', 2)]), rep('c', 2)]
     const items = renderChildren(tree, null, 10)
-    // a: поддерево тратит 1 (копия b), копии a по 3 блока каждая; c получает остаток
+    // a: поддерево тратит 1 (копия b), копии a — тени по 1 блоку; c получает остаток
     expect(items.map((item) => [item.key, item.budget])).toEqual([
       ['a', 10],
       ['a#1', 0],
       ['a#2', 0],
-      ['c', 10 - 1 - 3 - 3],
+      ['c', 10 - 1 - 1 - 1],
       ['c#1', 0],
     ])
   })

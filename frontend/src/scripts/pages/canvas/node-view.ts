@@ -38,6 +38,11 @@ export interface RenderChild {
   copyOf: NodeId | null
   copyRoot: boolean
   budget: number
+  /**
+   * Копия повтора рисуется «тенью» (16.5): своё место и размеры в раскладке родителя, но без содержимого — иначе
+   * «Группа ×3 → Карточка ×4» раздувает превью в разы. Содержимое видно у исходного блока.
+   */
+  shadow: boolean
 }
 
 /** План отрисовки детей: список и сколько бюджета копий он израсходовал (вместе с поддеревьями настоящих детей). */
@@ -159,11 +164,6 @@ export function repeatMark(block: BlockNode, mark: string = REPEAT_MARK): string
   return block.repeat > DEFAULT_REPEAT ? `${mark}${String(block.repeat)}` : ''
 }
 
-/** Сколько блоков рисует копия узла: он сам и его поддерево со всеми копиями повтора внутри (N × M для вложенных). */
-export function cloneSize(node: BlockNode): number {
-  return node.children.reduce((sum, child) => sum + repeatCount(child) * cloneSize(child), 1)
-}
-
 /** Копия `index` (с 1) блока `node`; `copyOf` родителя — внутри копии всё относится к её исходному блоку. */
 function copyItem(node: BlockNode, index: number, copyOf: NodeId | null): RenderChild {
   return {
@@ -172,34 +172,35 @@ function copyItem(node: BlockNode, index: number, copyOf: NodeId | null): Render
     copyOf: copyOf ?? node.id,
     copyRoot: copyOf === null,
     budget: 0,
+    shadow: true,
   }
 }
 
 /**
- * Список отрисовки детей настоящего блока с бюджетом копий: за каждым ребёнком идут его копии, пока они
- * помещаются в остаток `budget`; поддерево ребёнка получает остаток после предыдущих братьев (обход по порядку,
+ * Список отрисовки детей настоящего блока с бюджетом копий: за каждым ребёнком идут его копии-тени (по одному блоку
+ * отрисовки), пока остаток `budget` не исчерпан; поддерево ребёнка получает остаток после предыдущих братьев (обход по порядку,
  * без общего изменяемого счётчика между компонентами). Исходные блоки рисуются всегда.
  */
 function planOwnChildren(children: readonly BlockNode[], budget: number): RenderPlan {
   const items: RenderChild[] = []
   let remaining = budget
   for (const node of children) {
-    items.push({ key: node.id, node, copyOf: null, copyRoot: false, budget: remaining })
+    items.push({ key: node.id, node, copyOf: null, copyRoot: false, budget: remaining, shadow: false })
     remaining -= planOwnChildren(node.children, remaining).used
-    const size = cloneSize(node)
-    for (let index = 1; index < repeatCount(node) && size <= remaining; index += 1) {
+    // Копия — тень без поддерева: один блок отрисовки
+    for (let index = 1; index < repeatCount(node) && remaining > 0; index += 1) {
       items.push(copyItem(node, index, null))
-      remaining -= size
+      remaining -= 1
     }
   }
   return { items, used: budget - remaining }
 }
 
 /**
- * Список отрисовки детей блока: каждый ребёнок, а сразу за ним — его копии повтора (N − 1 штук).
+ * Список отрисовки детей блока: каждый ребёнок, а сразу за ним — его копии повтора тенями (N − 1 штук).
  * `copyOf` — в копии ли сам родитель: тогда и дети, и их копии относятся к тому же исходному блоку, а бюджет
- * не тратится (копию приняли целиком, её размер учтён у владельца). Вложенный повтор даёт N × M копий,
- * но не больше `budget` блоков на всё дерево корня (`REPEAT_RENDER_BUDGET`).
+ * не тратится. Тени без содержимого, поэтому вложенный повтор внутри копии не рисуется; на всё дерево корня — не
+ * больше `budget` теней (`REPEAT_RENDER_BUDGET`).
  */
 export function renderChildren(
   children: readonly BlockNode[],
@@ -208,7 +209,7 @@ export function renderChildren(
 ): RenderChild[] {
   if (copyOf === null) return planOwnChildren(children, budget).items
   return children.flatMap((node) => [
-    { key: node.id, node, copyOf, copyRoot: false, budget: 0 },
+    { key: node.id, node, copyOf, copyRoot: false, budget: 0, shadow: false },
     ...Array.from({ length: repeatCount(node) - 1 }, (_, index) => copyItem(node, index + 1, copyOf)),
   ])
 }

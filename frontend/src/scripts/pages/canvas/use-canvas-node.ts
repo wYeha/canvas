@@ -99,6 +99,7 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
     const classes = blockClasses(shown, depth, parentKind)
     if (source !== null) classes.push('canvas-node--mirror')
     if (props.copyRoot === true) classes.push('canvas-node--repeat-copy')
+    if (props.shadow === true) classes.push('canvas-node--repeat-shadow')
     // Содержимое зеркала — копии, относящиеся к связи: клик, ховер и перетаскивание по ним — к самой связи
     const childrenCopyOf = source === null ? copyOf.value : (copyOf.value ?? node.id)
     return {
@@ -111,7 +112,11 @@ export function useCanvasNode(props: CanvasNodeProps): CanvasNodeState {
       // У корня ×N не показываем: повтор корня не рисуется и не экспортируется
       repeat: copyOf.value === null && parentKind !== null ? repeatMark(node) : '',
       leaf: isLeafBlock(shown),
-      children: renderChildren(shown.children, childrenCopyOf, props.copyBudget ?? REPEAT_RENDER_BUDGET),
+      // Тень копии повтора — без содержимого (16.5)
+      children:
+        props.shadow === true
+          ? []
+          : renderChildren(shown.children, childrenCopyOf, props.copyBudget ?? REPEAT_RENDER_BUDGET),
       mirror: source !== null,
       childKind: shown.container.kind,
       childDirection: shown.container.kind === 'flex' ? shown.container.direction : undefined,
