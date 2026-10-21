@@ -386,6 +386,9 @@ export const LABEL_NODE_ATTR = 'data-label-node-id'
 /** CSS-селектор подписи блока на канвасе. */
 export const LABEL_NODE_SELECTOR = `[${LABEL_NODE_ATTR}]`
 
+/** Своя подпись блока: подпись листа (прямой ребёнок) или чип контейнера в слое подписи — без подписей детей. */
+export const OWN_LABEL_SELECTOR = `:scope > ${LABEL_NODE_SELECTOR}, :scope > .canvas-node__label-box > ${LABEL_NODE_SELECTOR}`
+
 /** BEM-модификатор поля: подписи блоков (чипы и подписи листов) скрыты; заголовки корней остаются. */
 export const VIEWPORT_LABELS_HIDDEN_CLASS = 'canvas-viewport--labels-hidden'
 
@@ -463,6 +466,9 @@ export const WORLD_SELECTOR = '[data-canvas-world]'
 
 /** Разделитель частей бейджа выделения: `подпись · тип · Ш×В`. */
 export const BADGE_SEPARATOR = ' · '
+
+/** Ширина блока на экране, px, уже которой подпись показывает только значок (16.1; = `$label-min-screen-width`). */
+export const LABEL_MIN_SCREEN_WIDTH = 40
 
 /** Разделитель ширины и высоты в бейдже. */
 export const SIZE_SEPARATOR = '×'

@@ -12,7 +12,15 @@ import { useLayoutStore } from './layout-store'
 import { useViewSettingsStore } from './view-settings-store'
 import { clientRectOf, findNodeElement } from './node-dom'
 import { useNodeScroll } from './use-node-scroll'
-import { isBadgeInside, overlayRectStyle, selectionBadgeText, sizeText, toLocalRect, visibleHoverId } from './selection'
+import {
+  hoverBadgeText,
+  isBadgeInside,
+  overlayRectStyle,
+  selectionBadgeText,
+  sizeText,
+  toLocalRect,
+  visibleHoverId,
+} from './selection'
 import { findNode } from './tree-query'
 
 /** Рамка оверлея для шаблона: классы, стиль положения, текст и классы бейджа. */
@@ -56,7 +64,10 @@ export function useCanvasSelection() {
       kind,
       classes: ['canvas-selection__box', `canvas-selection__box--${kind}`],
       style: overlayRectStyle(rect),
-      badge: kind === 'selected' ? selectionBadgeText(node, size, layoutStore.rootLabels) : size,
+      badge:
+        kind === 'selected'
+          ? selectionBadgeText(node, size, layoutStore.rootLabels)
+          : hoverBadgeText(node, rect, size, layoutStore.rootLabels, viewSettings.labelsVisible),
       badgeClasses: [
         'canvas-selection__badge',
         `canvas-selection__badge--${kind}`,
@@ -107,6 +118,7 @@ export function useCanvasSelection() {
       () => dragStore.draggingId,
       () => dragStore.rootPosition,
       () => viewSettings.linksMirrored,
+      () => viewSettings.labelsVisible,
     ],
     recompute,
     { flush: 'post' },

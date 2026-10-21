@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { matchSelectionHotkey } from '@/scripts/pages/canvas/camera-input'
 import { CLICK_DRAG_THRESHOLD } from '@/scripts/pages/canvas/constants'
 import {
+  hoverBadgeText,
   breadcrumbSegments,
   firstChildSelection,
   isBadgeInside,
@@ -143,5 +144,23 @@ describe('rectContains', () => {
     expect(rectContains(rect, { x: 30, y: 20 })).toBe(true)
     expect(rectContains(rect, { x: 31, y: 15 })).toBe(false)
     expect(rectContains(rect, { x: 15, y: 9 })).toBe(false)
+  })
+})
+
+describe('hoverBadgeText (16.1)', () => {
+  const node = findNode(makeDoc(), 'a1')
+  if (node === undefined) throw new Error('нет узла')
+  /** Прямоугольник блока шириной `width` на экране. */
+  function rect(width: number) {
+    return { x: 0, y: 0, width, height: 100 }
+  }
+
+  it('у блока, где подпись видна, — только размер', () => {
+    expect(hoverBadgeText(node, rect(200), '200×100', NO_SOURCE_LABELS, true)).toBe('200×100')
+  })
+
+  it('у узкого блока и при выключенных подписях — имя и размер', () => {
+    expect(hoverBadgeText(node, rect(30), '30×100', NO_SOURCE_LABELS, true)).toBe(`${node.label} · 30×100`)
+    expect(hoverBadgeText(node, rect(200), '200×100', NO_SOURCE_LABELS, false)).toBe(`${node.label} · 200×100`)
   })
 })

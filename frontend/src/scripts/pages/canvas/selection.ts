@@ -7,6 +7,7 @@ import type { Rect } from './camera'
 import {
   BADGE_SEPARATOR,
   CSS_PX_UNIT,
+  LABEL_MIN_SCREEN_WIDTH,
   LINK_ICON,
   LINK_TYPE_LABEL,
   ROOT_UNTITLED_LABEL,
@@ -65,6 +66,21 @@ export function nodeCaption(node: LayoutNode, labels: SourceLabels): string {
 /** Размер `Ш×В` в px поля: экранные размеры делятся на зум и округляются. */
 export function sizeText(rect: Rect, zoom: number): string {
   return `${String(Math.round(rect.width / zoom))}${SIZE_SEPARATOR}${String(Math.round(rect.height / zoom))}`
+}
+
+/**
+ * Текст бейджа наведения: размер `Ш×В`, а у блока уже `LABEL_MIN_SCREEN_WIDTH` на экране (его подпись без текста)
+ * или при выключенных подписях — `подпись · Ш×В`, чтобы имя было видно хотя бы при наведении (16.1).
+ */
+export function hoverBadgeText(
+  node: LayoutNode,
+  rect: Rect,
+  size: string,
+  labels: SourceLabels,
+  labelsVisible: boolean,
+): string {
+  if (labelsVisible && rect.width >= LABEL_MIN_SCREEN_WIDTH) return size
+  return [nodeCaption(node, labels), size].join(BADGE_SEPARATOR)
 }
 
 /** Текст бейджа выделения: `подпись · тип · Ш×В`. */

@@ -16,6 +16,7 @@ import type { CanvasPoint } from './factories'
 import {
   LABEL_NODE_ATTR,
   LABEL_NODE_SELECTOR,
+  OWN_LABEL_SELECTOR,
   LAYER_ID_ATTR,
   LAYER_SELECTOR,
   LINK_END_ATTR,
@@ -119,8 +120,9 @@ export function labelNodeIdAt(target: EventTarget | null, point: CanvasPoint): s
   // Скрытые подписи проверяем раньше копии: иначе двойной клик по копии откроет переименование невидимой подписи
   if (node?.closest(VIEWPORT_LABELS_HIDDEN_SELECTOR) != null) return null
   if (node?.hasAttribute(REPEAT_OF_ATTR) === true) return node.getAttribute(REPEAT_OF_ATTR)
-  const label = node === null ? undefined : Array.from(node.children).find((el) => el.hasAttribute(LABEL_NODE_ATTR))
-  if (label === undefined || !rectContains(clientRectOf(label), point)) return null
+  // Подпись листа — прямой ребёнок блока, чип контейнера — внутри слоя подписи (16.1); подписи детей не задеваем
+  const label = node?.querySelector(OWN_LABEL_SELECTOR) ?? null
+  if (label === null || !rectContains(clientRectOf(label), point)) return null
   return label.getAttribute(LABEL_NODE_ATTR)
 }
 

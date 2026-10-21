@@ -199,6 +199,9 @@ $layer-indent: 12px; // отступ вложенного уровня в «Сл
 $layer-toggle-width: 18px; // колонка шеврона сворачивания строки слоя
 $label-chip-height: 16px;
 $label-chip-offset: 4px; // отступ чипа от угла блока (4–5)
+$label-min-screen-width: 40px; // уже — подпись без текста, только значок (16.1); продублировано в LABEL_MIN_SCREEN_WIDTH
+$label-vertical-max-width: 64px; // не шире и …
+$label-vertical-min-height: 120px; // … не ниже — подпись вертикально (рейл, ось таймлайна)
 $root-header-gap: 6px; // зазор между подписью корня и блоком
 $preset-chip-height: 22px;
 $switch-width: 32px;
