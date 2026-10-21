@@ -180,6 +180,47 @@ export const CSS_STRETCH = 'stretch'
 /** `min-width` / `min-height` для «Заполнить» по главной оси: иначе длинное содержимое распирает блок. */
 export const CSS_MIN_ZERO = '0'
 
+/** Прилипание по умолчанию при выборе «Прилипает»: к верху (заголовок группы в списке). */
+export const POSITION_DEFAULT_STICKY = 'sticky-top' as const
+
+/** Угол по умолчанию при выборе «Поверх»: правый верхний (значок, счётчик, точка «онлайн»). */
+export const POSITION_DEFAULT_CORNER = 'top-right' as const
+
+/** Стили положения ребёнка (15.3): прилипание к краю или угол родителя; нулевые отступы — у самого края. */
+export const POSITION_STYLE_ENTRIES = {
+  'sticky-top': [
+    ['position', 'sticky'],
+    ['top', '0'],
+  ],
+  'sticky-bottom': [
+    ['position', 'sticky'],
+    ['bottom', '0'],
+  ],
+  'top-left': [
+    ['position', 'absolute'],
+    ['top', '0'],
+    ['left', '0'],
+  ],
+  'top-right': [
+    ['position', 'absolute'],
+    ['top', '0'],
+    ['right', '0'],
+  ],
+  'bottom-left': [
+    ['position', 'absolute'],
+    ['bottom', '0'],
+    ['left', '0'],
+  ],
+  'bottom-right': [
+    ['position', 'absolute'],
+    ['bottom', '0'],
+    ['right', '0'],
+  ],
+} as const
+
+/** `position` родителя, у которого есть дети поверх него: точка отсчёта для их углов. */
+export const CSS_POSITION_ANCHOR = 'relative'
+
 /** Допуск у края области прокрутки, px: дробные `scrollTop` при зуме не должны считаться «ещё есть куда». */
 export const SCROLL_EDGE_EPSILON = 1
 
@@ -669,6 +710,43 @@ export const CONTAINER_SCROLL_OPTIONS = [
 /** Подсказка поля прокрутки. */
 export const CONTAINER_SCROLL_HINT =
   'Содержимое прокручивается внутри блока: overflow-y / overflow-x: auto. Блоку нужен ограниченный размер — «Заполнить» или «Фикс.»'
+
+/** Подпись переключателя положения блока в родителе. */
+export const CHILD_POSITION_LABEL = 'Положение'
+
+/** Сегменты вида положения: обычно, прилипает, поверх родителя. */
+export const CHILD_POSITION_KIND_OPTIONS = [
+  { value: 'static', label: 'Обычно' },
+  { value: 'sticky', label: 'Прилипает' },
+  { value: 'overlay', label: 'Поверх' },
+] as const
+
+/** Подсказки вида положения: что попадёт в экспорт. */
+export const CHILD_POSITION_HINTS = {
+  static: 'в потоке родителя, как соседи',
+  sticky: 'position: sticky — держится у края прокручиваемой области (заголовок группы, шапка таблицы)',
+  overlay: 'position: absolute в углу родителя, родитель получает position: relative (значок, счётчик, точка «онлайн»)',
+} as const
+
+/** Подпись переключателя края прилипания. */
+export const CHILD_STICKY_SIDE_LABEL = 'Прилипает к краю'
+
+/** Сегменты края прилипания. */
+export const CHILD_STICKY_SIDE_OPTIONS = [
+  { value: 'sticky-top', label: 'Сверху' },
+  { value: 'sticky-bottom', label: 'Снизу' },
+] as const
+
+/** Подпись переключателя угла родителя. */
+export const CHILD_CORNER_LABEL = 'Угол родителя'
+
+/** Сегменты угла: значок-стрелка на кнопке, подпись — имя для скринридера и подсказка. */
+export const CHILD_CORNER_OPTIONS = [
+  { value: 'top-left', label: 'Сверху слева', glyph: '↖', iconOnly: true },
+  { value: 'top-right', label: 'Сверху справа', glyph: '↗', iconOnly: true },
+  { value: 'bottom-left', label: 'Снизу слева', glyph: '↙', iconOnly: true },
+  { value: 'bottom-right', label: 'Снизу справа', glyph: '↘', iconOnly: true },
+] as const
 
 /** Подпись поля min-width. */
 export const CHILD_MIN_WIDTH_LABEL = 'min-width'

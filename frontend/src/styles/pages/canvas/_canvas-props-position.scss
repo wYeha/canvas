@@ -1,0 +1,13 @@
+// Стили фрагмента canvas-props-position: вид положения и его вариант (край или угол) друг под другом
+@use 'variables' as v;
+
+.canvas-props-position {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-8;
+
+  &__glyph {
+    font-size: v.$font-size-md;
+    line-height: 1;
+  }
+}

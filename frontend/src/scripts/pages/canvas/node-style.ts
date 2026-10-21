@@ -18,6 +18,8 @@ import {
   CSS_MIN_SPAN,
   CSS_MIN_ZERO,
   CSS_OVERFLOW_AUTO,
+  CSS_POSITION_ANCHOR,
+  POSITION_STYLE_ENTRIES,
   SCROLL_OVERFLOW_PROPERTY,
   SCROLL_SIZE_AXIS,
   CSS_STRETCH,
@@ -26,6 +28,7 @@ import {
   INLINE_STYLE_SEPARATOR,
 } from './constants'
 import { repeatCount } from './node-view'
+import { isOverlayChild } from './position'
 import { mainAxis, otherAxis, sizeMode, sizeValue, type SizeAxis } from './size-mode'
 
 /** Оси размера в порядке вывода. */
@@ -121,6 +124,21 @@ function scrollFillAxis(self: SelfProps, scroll: ScrollAxis | undefined): SizeAx
   return sizeMode(self, axis) === 'fill' ? axis : null
 }
 
+/** Положение ребёнка: прилипание к краю (`position:sticky`) или угол родителя (`position:absolute`). */
+function positionEntries(self: SelfProps): StyleEntry[] {
+  return self.position === undefined ? [] : [...POSITION_STYLE_ENTRIES[self.position]]
+}
+
+/**
+ * `position:relative` у блока, внутри которого есть дети поверх него: иначе их углы отсчитываются от далёкого предка.
+ * Не нужен, если блок сам уже позиционирован (прилипает или лежит поверх своего родителя).
+ */
+function anchorEntries(node: LayoutNode, parentKind: ContainerKind | null): StyleEntry[] {
+  if (!node.children.some(isOverlayChild)) return []
+  if (parentKind !== null && node.self.position !== undefined) return []
+  return [['position', CSS_POSITION_ANCHOR]]
+}
+
 /** Прокрутка содержимого блока: `overflow-y:auto` или `overflow-x:auto` (у корня тоже). */
 function scrollEntries(scroll: ScrollAxis | undefined): StyleEntry[] {
   return scroll === undefined ? [] : [[SCROLL_OVERFLOW_PROPERTY[scroll], CSS_OVERFLOW_AUTO]]
@@ -168,9 +186,9 @@ function selfEntries(
 ): StyleEntry[] {
   if (parentKind === null) return []
   const zeroAxis = scrollFillAxis(node.self, node.container.scroll)
-  return parentKind === 'flex'
-    ? flexChildEntries(node.self, direction, zeroAxis)
-    : gridChildEntries(node.self, zeroAxis)
+  const entries =
+    parentKind === 'flex' ? flexChildEntries(node.self, direction, zeroAxis) : gridChildEntries(node.self, zeroAxis)
+  return [...entries, ...positionEntries(node.self)]
 }
 
 /** Контейнерная часть стилей блока (display, flex/grid-свойства, gap при `childCount` ≥ 2); в `styleEntries` она всегда первая. */
@@ -179,7 +197,7 @@ export function containerEntries(container: Container, childCount = 0): StyleEnt
 }
 
 /**
- * Стили узла в стабильном порядке (контейнер, «как ребёнок», прокрутка); `parentKind` — вид контейнера родителя (`null` у корня), `parentDirection` —
+ * Стили узла в стабильном порядке (контейнер, опора для детей поверх, «как ребёнок» с положением, прокрутка); `parentKind` — вид контейнера родителя (`null` у корня), `parentDirection` —
  * направление flex-родителя (главная ось для режимов размера; по умолчанию row).
  * Внутреннего отступа здесь нет: в редакторе он фиксированный и задаётся классом, в экспорт не идёт.
  */
@@ -189,7 +207,11 @@ export function styleEntries(
   parentDirection: FlexContainer['direction'] = CSS_DEFAULT_FLEX_DIRECTION,
 ): StyleEntry[] {
   const entries = containerEntries(node.container, renderedChildCount(node))
-  entries.push(...selfEntries(node, parentKind, parentDirection), ...scrollEntries(node.container.scroll))
+  entries.push(
+    ...anchorEntries(node, parentKind),
+    ...selfEntries(node, parentKind, parentDirection),
+    ...scrollEntries(node.container.scroll),
+  )
   return entries
 }
 

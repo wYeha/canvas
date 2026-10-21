@@ -63,16 +63,20 @@ function buildHeader(): BlockNode {
       block('nav-item', {}),
       block('nav-item', {}),
     ]),
-    block('user', { self: { widthMode: 'fixed', width: '160px' } }),
+    // Точка статуса лежит поверх блока пользователя в правом верхнем углу
+    block('user', { self: { widthMode: 'fixed', width: '160px' } }, [
+      block('status', { self: { position: 'top-right' } }),
+    ]),
   ])
 }
 
 /** Пунктов меню в левой колонке: больше, чем помещается на экране, — колонка прокручивается. */
 const MENU_ITEM_COUNT = 16
 
-/** Левая колонка: длинное меню (пункт ×N) с прокруткой по вертикали на всю высоту тела. */
+/** Левая колонка: заголовок, прилипающий к верху, и длинное меню (пункт ×N) с прокруткой на всю высоту тела. */
 function buildSidebar(): BlockNode {
   return block('sidebar', { container: { ...flex('column'), scroll: 'y' }, self: { heightMode: 'fill' } }, [
+    block('menu-title', { self: { position: 'sticky-top' } }),
     block('menu-item', { repeat: MENU_ITEM_COUNT }),
   ])
 }

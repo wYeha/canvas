@@ -290,3 +290,24 @@ describe('прокрутка (15.2)', () => {
     expect(scrolled('y', { widthMode: 'fill' }, 'grid')).not.toHaveProperty('min-height')
   })
 })
+
+describe('положение (15.3)', () => {
+  it('прилипание и угол — после «как ребёнок»; у корня не выводится', () => {
+    const sticky = make('flex', {}, { self: { position: 'sticky-top' } })
+    expect(styles(sticky, 'flex')).toEqual({ display: 'flex', position: 'sticky', top: '0' })
+    const corner = make('flex', {}, { self: { position: 'bottom-right' } })
+    expect(styles(corner, 'grid')).toEqual({ display: 'flex', position: 'absolute', bottom: '0', right: '0' })
+    expect(styles(corner, null)).toEqual({ display: 'flex' })
+  })
+
+  it('родитель детей поверх него получает position:relative, если сам не позиционирован', () => {
+    const dot = { ...createBlock('flex', 'dot'), self: { position: 'top-right' as const } }
+    expect(styles(make('flex', {}, { children: [dot] }))).toEqual({ display: 'flex', position: 'relative' })
+    // Сам прилипает — уже точка отсчёта, второй position не нужен
+    const stickyParent = make('flex', {}, { children: [dot], self: { position: 'sticky-top' } })
+    expect(styles(stickyParent, 'flex')).toEqual({ display: 'flex', position: 'sticky', top: '0' })
+    // Прилипающий ребёнок опоры не требует
+    const stickyChild = { ...createBlock('flex', 's'), self: { position: 'sticky-top' as const } }
+    expect(styles(make('flex', {}, { children: [stickyChild] }))).toEqual({ display: 'flex' })
+  })
+})

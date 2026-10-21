@@ -31,6 +31,19 @@ export const SIZE_MODES = ['fill', 'fixed'] as const
 /** Токены зазора между детьми контейнера (без поля — без зазора): маленький, средний, большой. */
 export const GAP_TOKENS = ['s', 'm', 'l'] as const
 
+/**
+ * Положение блока в родителе (15.3), кроме обычного (это отсутствие поля): прилипает к верху или низу прокручиваемой
+ * области (`position: sticky`) или лежит поверх родителя в углу (`position: absolute`).
+ */
+export const CHILD_POSITIONS = [
+  'sticky-top',
+  'sticky-bottom',
+  'top-left',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+] as const
+
 /** Оси прокрутки содержимого блока (без поля — не прокручивается): по вертикали или по горизонтали. */
 export const SCROLL_AXES = ['y', 'x'] as const
 

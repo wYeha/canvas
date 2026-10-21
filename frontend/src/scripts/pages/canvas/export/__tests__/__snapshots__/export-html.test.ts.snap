@@ -16,12 +16,16 @@ exports[`exportRootHtml > демо-документ: корень «Дашбор
       <div><!-- nav-item --></div>
       <div><!-- nav-item --></div>
     </div>
-    <div style="flex:none; width:160px"><!-- user --></div>
+    <!-- user -->
+    <div style="display:flex; position:relative; flex:none; width:160px">
+      <div style="position:absolute; top:0; right:0"><!-- status --></div>
+    </div>
   </div>
   <!-- body -->
   <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--gap-m); flex:1; min-height:0">
     <!-- sidebar -->
     <div style="display:flex; flex-direction:column; gap:var(--gap-m); align-self:stretch; min-height:0; overflow-y:auto">
+      <div style="position:sticky; top:0"><!-- menu-title --></div>
       <div data-repeat="16"><!-- menu-item ×16 --></div>
     </div>
     <!-- main -->

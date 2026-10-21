@@ -1,5 +1,5 @@
 <!--
-  Фрагмент страницы canvas: секция «Как ребёнок» — режимы ширины и высоты, span в grid-родителе, повтор ×N,
+  Фрагмент страницы canvas: секция «Как ребёнок» — режимы ширины и высоты, положение, span в grid-родителе, повтор ×N,
   «Дополнительно» (свободный flex, min/max-width, min-height)
 -->
 <template>
@@ -22,6 +22,7 @@
       @apply="applyHeightValue"
       @keydown="onHeightValueKeydown"
     />
+    <CanvasPropsPosition />
     <template v-if="gridParent">
       <UiField v-slot="{ id, describedBy }" :label="CHILD_COL_SPAN_LABEL">
         <UiNumberInput
@@ -130,6 +131,7 @@ import UiField from '@/views/components/ui-field/UiField.vue'
 import UiNumberInput from '@/views/components/ui-number-input/UiNumberInput.vue'
 import UiPanelSection from '@/views/components/ui-panel-section/UiPanelSection.vue'
 import UiTextInput from '@/views/components/ui-text-input/UiTextInput.vue'
+import CanvasPropsPosition from '@/views/pages/canvas/CanvasPropsPosition.vue'
 import CanvasPropsSize from '@/views/pages/canvas/CanvasPropsSize.vue'
 import {
   CHILD_ADVANCED_TITLE,

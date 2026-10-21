@@ -1,6 +1,12 @@
 /** Zod-схемы и типы узлов дерева: блок с детьми и его части, связь — блок с `sourceId`; старые плашки становятся связями. */
 import { z } from 'zod'
-import { LAYOUT_TAGS, LEGACY_LINK_BLOCK_DEFAULTS, LEGACY_LINK_NODE_TYPE, SIZE_MODES } from './constants'
+import {
+  CHILD_POSITIONS,
+  LAYOUT_TAGS,
+  LEGACY_LINK_BLOCK_DEFAULTS,
+  LEGACY_LINK_NODE_TYPE,
+  SIZE_MODES,
+} from './constants'
 import { containerSchema, safeCssStringSchema } from './container'
 
 /** Идентификатор узла или документа: непустая строка. */
@@ -23,6 +29,8 @@ export const selfPropsSchema = z.object({
   minHeight: safeCssStringSchema.optional(),
   colSpan: z.int().min(1).optional(),
   rowSpan: z.int().min(1).optional(),
+  /** Положение в родителе: прилипание или поверх родителя в углу; нет поля — обычный поток. Мусор отбрасывается. */
+  position: z.enum(CHILD_POSITIONS).optional().catch(undefined),
 })
 
 /** Узел-плашка старого формата (до 8.1): объект с `type`, равным `LEGACY_LINK_NODE_TYPE`. */
@@ -83,6 +91,9 @@ export type LayoutTag = z.infer<typeof layoutTagSchema>
 
 /** Свойства «как ребёнок». */
 export type SelfProps = z.infer<typeof selfPropsSchema>
+
+/** Положение блока в родителе (без поля — обычный поток). */
+export type ChildPosition = NonNullable<SelfProps['position']>
 
 /** Блок с детьми. */
 export type BlockNode = z.infer<typeof blockNodeSchema>
